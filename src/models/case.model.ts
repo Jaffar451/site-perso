@@ -1,111 +1,115 @@
-// src/models/case.model.ts
-
 import {
   Table,
   Column,
   Model,
   DataType,
-  HasMany,
-  BelongsTo,
   ForeignKey,
-  HasOne,
+  BelongsTo,
+  HasMany,
+  PrimaryKey,
+  AutoIncrement,
+  AllowNull,
+  Default,
   CreatedAt,
   UpdatedAt,
 } from "sequelize-typescript";
-import Complaint from "./complaint.model";
-import Assignment from "./assignment.model";
-import Decision from "./decision.model";
-import Hearing from "./hearing.model";
-import Incarceration from "./incarceration.model";
 import Court from "./court.model";
-import Evidence from "./evidence.model";
-import Attachment from "./attachment.model";
-import ProcesVerbal from "./procesVerbal.model";
+import Complaint from "./complaint.model";
+import User from "./user.model";
+import Hearing from "./hearing.model";
+import Decision from "./decision.model";
 
-export type CaseType = "criminal" | "civil" | "other";
-export type CasePriority = "low" | "medium" | "high";
-export type CaseStage =
-  | "prosecution_review"
-  | "instruction"
-  | "trial"
-  | "appeal"
-  | "execution"
-  | "archived";
+// ✅ AJOUT : L'énumération CaseStage exportée (pour TS2614)
+export enum CaseStage {
+  PROSECUTION = "PROSECUTION",
+  INVESTIGATION = "INVESTIGATION",
+  TRIAL = "TRIAL",
+  CLOSED = "CLOSED",
+  ARCHIVED = "ARCHIVED"
+}
 
-@Table({ tableName: "Cases", timestamps: true, underscored: true })
+@Table({
+  tableName: "Cases",
+  timestamps: true,
+  underscored: true,
+})
 export default class CaseModel extends Model {
-  @Column({ type: DataType.STRING, allowNull: false, unique: true })
-  reference!: string;
+  @PrimaryKey
+  @AutoIncrement
+  @Column(DataType.INTEGER)
+  declare id: number; // ✅ 'declare' pour éviter TS2612
 
-  @Column({ type: DataType.TEXT, allowNull: true })
+  @AllowNull(false)
+  @Column({ type: DataType.STRING, unique: true })
+  caseNumber!: string;
+
+  @Column(DataType.STRING)
+  title?: string;
+
+  @Column(DataType.TEXT)
   description?: string;
 
-  @Column({
-    type: DataType.ENUM("criminal", "civil", "other"),
-    defaultValue: "criminal",
-  })
-  type!: CaseType;
+  // ✅ AJOUT : Propriété 'type' (pour TS2339 dans case.service ligne 85)
+  @Column(DataType.STRING)
+  type!: string;
 
-  @Column({
-    type: DataType.ENUM("low", "medium", "high"),
-    defaultValue: "medium",
-  })
-  priority!: CasePriority;
-
-  @Column({
-    type: DataType.ENUM(
-      "prosecution_review",
-      "instruction",
-      "trial",
-      "appeal",
-      "execution",
-      "archived",
-    ),
-    defaultValue: "prosecution_review",
-  })
+  // ✅ CORRECTION : Remplacement/Ajout de 'stage' pour le workflow (Niger e-Justice)
+  @Default(CaseStage.PROSECUTION)
+  @Column(DataType.ENUM(...Object.values(CaseStage)))
   stage!: CaseStage;
 
-  @Column({ type: DataType.DATE, defaultValue: DataType.NOW })
+  @Default("pending")
+  @Column(DataType.ENUM("pending", "active", "closed", "archived", "suspended"))
+  status!: string;
+
+  @Column(DataType.DATE)
+  filingDate!: Date;
+
+  // ✅ AJOUT : 'openedAt' (pour TS2339 dans procedural.service ligne 44)
+  @Column(DataType.DATE)
   openedAt!: Date;
 
-  @Column({ type: DataType.DATE, allowNull: true })
-  closedAt?: Date;
-
-  @ForeignKey(() => Complaint)
-  @Column({ type: DataType.INTEGER, allowNull: true })
-  complaintId?: number;
-
-  @BelongsTo(() => Complaint, { as: "sourceComplaint" })
-  sourceComplaint?: Complaint;
+  // --- CLÉS ÉTRANGÈRES ET RELATIONS ---
 
   @ForeignKey(() => Court)
-  @Column({ type: DataType.INTEGER, allowNull: true })
-  courtId?: number;
+  @Column(DataType.INTEGER)
+  courtId!: number;
 
-  @BelongsTo(() => Court, { as: "court" })
-  court?: Court;
+  @BelongsTo(() => Court, { foreignKey: "courtId", as: "court" })
+  court!: Court;
 
-  @HasMany(() => Assignment, { as: "assignments" })
-  assignments!: Assignment[];
+  @ForeignKey(() => Complaint)
+  @Column(DataType.INTEGER)
+  complaintId!: number;
 
-  @HasMany(() => Decision, { as: "caseDecisions" })
-  caseDecisions!: Decision[];
+  @BelongsTo(() => Complaint, { foreignKey: "complaintId", as: "complaint" })
+  complaint!: Complaint;
 
-  @HasMany(() => Hearing, { as: "caseHearings" })
-  caseHearings!: Hearing[];
+  @ForeignKey(() => User)
+  @Column(DataType.INTEGER)
+  assignedJudgeId?: number;
 
-  @HasMany(() => Evidence, { as: "evidence" })
-  evidence!: Evidence[];
+  @BelongsTo(() => User, { foreignKey: "assignedJudgeId", as: "assignedJudge" })
+  assignedJudge?: User;
 
-  @HasMany(() => Attachment, { as: "attachments" })
-  attachments!: Attachment[];
+  @ForeignKey(() => User)
+  @Column(DataType.INTEGER)
+  assignedProsecutorId?: number;
 
-  @HasMany(() => ProcesVerbal, { as: "procesVerbaux" })
-  procesVerbaux!: ProcesVerbal[];
+  @BelongsTo(() => User, { foreignKey: "assignedProsecutorId", as: "assignedProsecutor" })
+  assignedProsecutor?: User;
 
-  @HasOne(() => Incarceration, { as: "incarcerationRecord" })
-  incarcerationRecord?: Incarceration;
+  // --- RELATIONS HAS MANY ---
 
-  @CreatedAt createdAt!: Date;
-  @UpdatedAt updatedAt!: Date;
+  @HasMany(() => Hearing, { foreignKey: "caseId", as: "hearings" })
+  hearings!: Hearing[];
+
+  @HasMany(() => Decision, { foreignKey: "caseId", as: "decisions" })
+  decisions!: Decision[];
+
+  @CreatedAt
+  declare createdAt: Date; // ✅ 'declare' pour éviter TS2612
+
+  @UpdatedAt
+  declare updatedAt: Date; // ✅ 'declare' pour éviter TS2612
 }

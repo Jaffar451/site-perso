@@ -1,9 +1,9 @@
 // src/middleware/assignment.middleware.ts
 import { Request, Response, NextFunction } from "express";
-import Assignment from "../models/assignment.model";
+import Assignment from "../../models/assignment.model";
 
 type AssignmentRole =
-  | "police_investigator"
+  | "officier_police"
   | "prosecutor_supervisor"
   | "judge_instruction"
   | "judge_trial"

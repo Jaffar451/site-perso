@@ -9,7 +9,7 @@ import {
 } from "../controllers/indictment.controller";
 
 // 👇 2. Import des middlewares standards
-import { authenticate, authorize } from "../../middleware/auth.middleware";
+import { authenticate, authorize } from "../middleware/auth.middleware";
 
 const router = Router();
 

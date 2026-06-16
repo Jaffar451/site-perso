@@ -6,7 +6,7 @@ import {
   updateSentence,
   deleteSentence,
 } from "../controllers/sentence.controller";
-import { authenticate, authorize } from "../../middleware/auth.middleware";
+import { authenticate, authorize } from "../middleware/auth.middleware";
 
 const router = Router();
 
@@ -15,7 +15,7 @@ const router = Router();
  * - Consultation : Juges, Greffiers, Procureurs, Police (pour suivi), Admin
  * - Modification/Création : Juges et Admins uniquement
  */
-const judicialStaff = ["judge", "clerk", "police", "prosecutor", "admin"];
+const judicialStaff = ["judge", "greffier", "officier_police", "prosecutor", "admin"];
 const magistrateOnly = ["judge", "admin"];
 
 // 📌 LISTER LES PEINES

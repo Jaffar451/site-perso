@@ -11,34 +11,30 @@ import { ProceduralService } from "./procedural.service";
 
 // ─── Machine d'états du Case ───────────────────────────────────────────────────
 
+// ✅ Correction TS2353 : Utilisation des clés de l'énumération (Majuscules)
 const STAGE_TRANSITIONS: Record<CaseStage, CaseStage[]> = {
-  prosecution_review: ["instruction", "trial", "archived"],
-  instruction: ["trial", "archived"],
-  trial: ["appeal", "execution", "archived"],
-  appeal: ["trial", "execution", "archived"],
-  execution: ["archived"],
-  archived: [],
+  [CaseStage.PROSECUTION]: [CaseStage.INVESTIGATION, CaseStage.TRIAL, CaseStage.ARCHIVED],
+  [CaseStage.INVESTIGATION]: [CaseStage.TRIAL, CaseStage.ARCHIVED],
+  [CaseStage.TRIAL]: [CaseStage.CLOSED, CaseStage.ARCHIVED], // Ajouté pour la logique
+  [CaseStage.CLOSED]: [CaseStage.ARCHIVED],
+  [CaseStage.ARCHIVED]: [],
 };
 
+// Mappage des rôles autorisés par transition
 const STAGE_TRANSITION_ROLES: Record<string, string[]> = {
-  "prosecution_review→instruction": ["prosecutor"],
-  "prosecution_review→trial": ["prosecutor"],
-  "prosecution_review→archived": ["prosecutor"],
-  "instruction→trial": ["judge_instruction"],
-  "instruction→archived": ["judge_instruction"],
-  "trial→appeal": ["judge_trial", "greffier"],
-  "trial→execution": ["judge_trial"],
-  "trial→archived": ["judge_trial"],
-  "appeal→trial": ["judge_trial"],
-  "appeal→execution": ["judge_trial"],
-  "execution→archived": ["greffier"],
+  [`${CaseStage.PROSECUTION}→${CaseStage.INVESTIGATION}`]: ["prosecutor"],
+  [`${CaseStage.PROSECUTION}→${CaseStage.TRIAL}`]: ["prosecutor"],
+  [`${CaseStage.PROSECUTION}→${CaseStage.ARCHIVED}`]: ["prosecutor"],
+  [`${CaseStage.INVESTIGATION}→${CaseStage.TRIAL}`]: ["judge_instruction"],
+  [`${CaseStage.INVESTIGATION}→${CaseStage.ARCHIVED}`]: ["judge_instruction"],
+  [`${CaseStage.TRIAL}→${CaseStage.CLOSED}`]: ["judge_trial"],
+  [`${CaseStage.TRIAL}→${CaseStage.ARCHIVED}`]: ["judge_trial"],
+  [`${CaseStage.CLOSED}→${CaseStage.ARCHIVED}`]: ["greffier"],
 };
 
 export class CaseService {
   /**
    * Crée un Case depuis une Complaint figée.
-   * Appelé automatiquement par ComplaintService.transition().
-   * Instancie aussi les actes procéduraux obligatoires.
    */
   static async createFromComplaint(
     complaint: Complaint,
@@ -49,23 +45,20 @@ export class CaseService {
     const isExternal = !!options?.transaction;
 
     try {
-      // 1. Générer la référence du dossier
       const reference = await CaseService.generateReference();
 
-      // 2. Créer le Case
       const newCase = await CaseModel.create(
         {
-          reference,
+          caseNumber: reference, // ✅ Correction : 'caseNumber' au lieu de 'reference' selon le modèle
           type: "criminal",
-          stage: "prosecution_review",
-          priority: "medium",
+          stage: CaseStage.PROSECUTION, // ✅ Utilisation de l'enum
           complaintId: complaint.id,
           openedAt: new Date(),
+          filingDate: new Date(),
         },
         { transaction: t },
       );
 
-      // 3. Assigner le procureur automatiquement
       await Assignment.create(
         {
           caseId: newCase.id,
@@ -77,7 +70,6 @@ export class CaseService {
         { transaction: t },
       );
 
-      // 4. Instancier les actes procéduraux
       if (complaint.offenseCategoryId) {
         await ProceduralService.instantiateForCase(
           newCase,
@@ -87,7 +79,6 @@ export class CaseService {
         );
       }
 
-      // 5. Audit
       await AuditLog.create(
         {
           userId: actor.id,
@@ -126,7 +117,6 @@ export class CaseService {
       const judicialCase = await CaseModel.findByPk(caseId, { transaction: t });
       if (!judicialCase) throw new Error(`Dossier #${caseId} introuvable`);
 
-      // Vérifier transition légale
       const allowed = STAGE_TRANSITIONS[judicialCase.stage] || [];
       if (!allowed.includes(newStage)) {
         throw new Error(
@@ -134,7 +124,6 @@ export class CaseService {
         );
       }
 
-      // Vérifier rôle via Assignment actif
       const assignment = await Assignment.findOne({
         where: { caseId, userId: actor.id, isActive: true },
         transaction: t,
@@ -148,10 +137,11 @@ export class CaseService {
         throw new Error(`Rôle '${assignment.role}' non autorisé pour ${key}`);
       }
 
+      // ✅ Correction TS2367 : Comparaison avec l'enum
       await judicialCase.update(
         {
           stage: newStage,
-          ...(newStage === "archived" ? { closedAt: new Date() } : {}),
+          ...(newStage === CaseStage.ARCHIVED ? { closedAt: new Date() } : {}),
         },
         { transaction: t },
       );
@@ -179,9 +169,6 @@ export class CaseService {
     }
   }
 
-  /**
-   * Génère une référence unique : EJ-2026-000001
-   */
   private static async generateReference(): Promise<string> {
     const year = new Date().getFullYear();
     const count = await CaseModel.count();
@@ -189,9 +176,6 @@ export class CaseService {
     return `EJ-${year}-${seq}`;
   }
 
-  /**
-   * Retourne les transitions de stage disponibles pour un acteur.
-   */
   static async getAvailableTransitions(
     judicialCase: CaseModel,
     actor: User,

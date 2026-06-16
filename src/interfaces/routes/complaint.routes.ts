@@ -11,13 +11,14 @@ import {
   transitionComplaint,
   getAvailableTransitions,
 } from "../controllers/complaint.controller";
-import { authenticate } from "../../middleware/auth.middleware";
+import { authenticate } from "../middleware/auth.middleware";
 import {
   onlyCitizen,
   onlyOfficialAgents,
   requireRole,
-} from "../../middleware/role.middleware";
-import { uploadEvidence } from "../../middleware/upload-evidence.middleware";
+} from "../middleware/role.middleware";
+import { uploadEvidence } from "../middleware/upload-evidence.middleware";
+import { get } from "axios";
 const router = Router();
 router.post("/", authenticate, onlyCitizen, createComplaint);
 router.get(
@@ -25,23 +26,25 @@ router.get(
   authenticate,
   requireRole("citizen", "officier_police", "gendarme", "commissaire"),
   getMyComplaints,
+  getComplaint,
 );
 router.get(
   "/my-complaints",
   authenticate,
   requireRole("citizen", "officier_police", "gendarme", "commissaire"),
   getMyComplaints,
+  getComplaint,
 );
 router.patch(
   "/:id",
   authenticate,
-  requireRole("citizen", "officier_police", "gendarme", "admin"),
+  requireRole("citizen", "officier_police", "gendarme", "admin", "commissaire", "prosecutor", "judge"),
   updateComplaint,
 );
 router.post(
   "/:id/attachments",
   authenticate,
-  requireRole("citizen", "officier_police", "gendarme", "commissaire"),
+  requireRole("citizen", "officier_police", "gendarme", "commissaire", "prosecutor", "judge"),
   uploadEvidence,
   addAttachment,
 );
@@ -69,6 +72,7 @@ router.get(
     "inspecteur",
     "commissaire",
     "prosecutor",
+    "judge",
     "admin",
   ),
   getAvailableTransitions,
@@ -88,7 +92,7 @@ router.post(
 router.post(
   "/:id/transmit",
   authenticate,
-  requireRole("officier_police", "gendarme", "inspecteur"),
+  requireRole("officier_police", "gendarme", "inspecteur", "commissaire", "prosecutor", "judge", "admin"),
   transmitToHierarchy,
 );
 router.put(

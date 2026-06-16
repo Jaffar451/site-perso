@@ -2,7 +2,7 @@
 import { Router } from "express";
 import { createWitness, getWitnesses } from "../controllers/witness.controller";
 // 👇 Import de la sécurité
-import { authenticate, authorize } from "../../middleware/auth.middleware";
+import { authenticate, authorize } from "../middleware/auth.middleware";
 
 const router = Router();
 
@@ -10,7 +10,7 @@ const router = Router();
 router.post(
   "/",
   authenticate,
-  authorize(["police", "judge", "clerk", "admin"]),
+  authorize(["officier_police", "judge", "greffier", "admin"]),
   createWitness,
 );
 
@@ -18,7 +18,7 @@ router.post(
 router.get(
   "/",
   authenticate,
-  authorize(["police", "judge", "clerk", "prosecutor", "admin"]),
+  authorize(["officier_police", "judge", "greffier", "prosecutor", "admin"]),
   getWitnesses,
 );
 

@@ -8,12 +8,12 @@ import {
   deleteHearing,
   getDailyRoll,
 } from "../controllers/hearing.controller";
-import { authenticate, authorize } from "../../middleware/auth.middleware";
+import { authenticate, authorize } from "../middleware/auth.middleware";
 
 const router = Router();
 
 // --- ACCÈS GÉNÉRAL (Consultation) ---
-const judicialStaff = ["judge", "clerk", "police", "prosecutor", "admin"];
+const judicialStaff = ["judge", "greffier", "officier_police", "prosecutor", "admin"];
 
 // 📌 RÔLE D'AUDIENCE DU JOUR (Placé avant /:id)
 router.get("/daily-roll", authenticate, authorize(judicialStaff), getDailyRoll);
@@ -38,7 +38,7 @@ router.get("/:id", authenticate, authorize(judicialStaff), getHearing);
 router.post(
   "/",
   authenticate,
-  authorize(["judge", "clerk", "admin"]),
+  authorize(["judge", "greffier", "admin"]),
   createHearing,
 );
 
@@ -46,7 +46,7 @@ router.post(
 router.patch(
   "/:id",
   authenticate,
-  authorize(["judge", "clerk", "admin"]),
+  authorize(["judge", "greffier", "admin"]),
   updateHearing,
 );
 

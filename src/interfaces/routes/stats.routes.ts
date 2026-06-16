@@ -3,7 +3,7 @@ import {
   getDashboardStats,
   getMonthlyTrends,
 } from "../controllers/stats.controller";
-import { authenticate, authorize } from "../../middleware/auth.middleware";
+import { authenticate, authorize } from "../middleware/auth.middleware";
 
 const router = Router();
 

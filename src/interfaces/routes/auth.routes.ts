@@ -1,6 +1,4 @@
-// PATH: src/interfaces/routes/auth.routes.ts
 import { Router } from "express";
-// ✅ Import nommé (les accolades sont importantes)
 import {
   register,
   login,
@@ -8,17 +6,20 @@ import {
   me,
   createSuperAdmin,
   logout,
+  updateProfile,
 } from "../controllers/auth.controller";
-import { authenticate } from "../../middleware/auth.middleware"; // Si tu as ce middleware
+import { authenticate } from "../middleware/auth.middleware";
 
 const router = Router();
 
-router.post("/register", register);
-router.post("/login", login);
-router.post("/refresh-token", refreshToken);
-router.get("/me", authenticate, me);
-router.post("/logout",logout);
+router.post("/register",           register);
+router.post("/login",              login);
+router.post("/refresh-token",      refreshToken);
+router.get("/me",     authenticate, me);
+router.post("/logout",             logout);
+router.put("/update", authenticate, updateProfile);  // ← route manquante
+
 // ✨ Route Magique Admin
-router.get("/create-super-admin", createSuperAdmin);
+router.get("/create-super-admin",  createSuperAdmin);
 
 export default router;

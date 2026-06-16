@@ -13,16 +13,19 @@ import AuditLog from "../../models/auditLog.model";
 
 const TRANSITIONS: Record<ComplaintStatus, ComplaintStatus[]> = {
   soumise: ["en_cours_OPJ"],
-
   en_cours_OPJ: ["attente_validation", "classée_sans_suite_par_OPJ"],
-
   attente_validation: ["transmise_parquet", "classée_sans_suite_par_OPJ"],
-
   transmise_parquet: ["figée", "classée_sans_suite_par_procureur"],
-
   figée: [],
   classée_sans_suite_par_OPJ: [],
   classée_sans_suite_par_procureur: [],
+  saisi_juge: [],
+  audience_programmée: [],
+  jugée: [],
+  
+  // Ajoute ces deux-là pour satisfaire TypeScript :
+  instruction: [], 
+  non_lieu: [],
 };
 
 // ======================================================

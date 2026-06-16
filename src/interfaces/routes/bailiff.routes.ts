@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { BailiffController } from "../controllers/bailiff.controller";
 // ✅ Import avec le chemin exact vers le dossier "middleware"
-import { authenticate, authorize } from "../../middleware/auth.middleware";
+import { authenticate, authorize } from "../middleware/auth.middleware";
 
 const router = Router();
 const controller = new BailiffController();

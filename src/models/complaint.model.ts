@@ -24,6 +24,11 @@ export type ComplaintStatus =
   | "transmise_parquet"
   | "classée_sans_suite_par_OPJ"
   | "classée_sans_suite_par_procureur"
+  | "saisi_juge"
+  | "instruction"
+  | "audience_programmée"
+  | "jugée"
+  | "non_lieu"
   | "figée";
 
 @Table({ tableName: "Complaints", timestamps: true, underscored: true })
@@ -45,11 +50,20 @@ export default class Complaint extends Model {
       "transmise_parquet",
       "classée_sans_suite_par_OPJ",
       "classée_sans_suite_par_procureur",
+      "saisi_juge",
+      "instruction",
+      "audience_programmée",
+      "jugée",
+      "non_lieu",
       "figée",
     ),
     defaultValue: "soumise",
   })
   status!: ComplaintStatus;
+
+  // ✅ Synthèse OPJ — rédigée par l'OPJ, affichée au Commissaire
+  @Column({ type: DataType.TEXT, allowNull: true })
+  pvDetails?: string;
 
   @Column({ type: DataType.DATE, defaultValue: DataType.NOW })
   filedAt!: Date;
@@ -75,39 +89,32 @@ export default class Complaint extends Model {
   @Column({ type: DataType.UUID, defaultValue: DataType.UUIDV4, unique: true })
   verification_token!: string;
 
-  // --- RELATIONS ---
-
   @ForeignKey(() => User)
-  @Column({ type: DataType.INTEGER, allowNull: false })
+  @Column({ type: DataType.INTEGER, allowNull: false, field: "citizen_id" })
   citizenId!: number;
 
-  @BelongsTo(() => User, { as: "complainant" })
+  @BelongsTo(() => User, { as: "complainant", foreignKey: "citizenId" })
   complainant!: User;
 
   @ForeignKey(() => PoliceStation)
-  @Column({ type: DataType.INTEGER, allowNull: true })
+  @Column({ type: DataType.INTEGER, allowNull: true, field: "police_station_id" })
   policeStationId?: number;
 
-  @BelongsTo(() => PoliceStation, { as: "originStation" })
+  @BelongsTo(() => PoliceStation, { as: "originStation", foreignKey: "policeStationId" })
   originStation?: PoliceStation;
 
-  // OPJ assigné à l'enquête — manquait dans l'original
   @ForeignKey(() => User)
-  @Column({ type: DataType.INTEGER, allowNull: true })
+  @Column({ type: DataType.INTEGER, allowNull: true, field: "assigned_opj_id" })
   assignedOpjId?: number;
 
-  @BelongsTo(() => User, { as: "assignedOPJ" })
+  @BelongsTo(() => User, { as: "assignedOPJ", foreignKey: "assignedOpjId" })
   assignedOPJ?: User;
 
-  // Supprimé : assignedJudgeId — le juge appartient au Case, pas à la Complaint
-
-  // Qualification provisoire — catégorie large seulement
-  // L'article précis est qualifié par le procureur dans CaseQualification
   @ForeignKey(() => OffenseCategory)
-  @Column({ type: DataType.INTEGER, allowNull: true })
+  @Column({ type: DataType.INTEGER, allowNull: true, field: "offense_category_id" })
   offenseCategoryId?: number;
 
-  @BelongsTo(() => OffenseCategory, { as: "offenseCategory" })
+  @BelongsTo(() => OffenseCategory, { as: "offenseCategory", foreignKey: "offenseCategoryId" })
   offenseCategory?: OffenseCategory;
 
   @HasOne(() => CaseModel, { as: "judicialCase" })

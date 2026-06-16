@@ -6,7 +6,7 @@ import {
   getCase,
   updateCase,
 } from "../controllers/case.controller";
-import { authenticate, authorize } from "../../middleware/auth.middleware";
+import { authenticate, authorize } from "../middleware/auth.middleware";
 
 import qualificationRoutes from "./qualification.routes";
 import proceduralRoutes from "./procedural.routes";

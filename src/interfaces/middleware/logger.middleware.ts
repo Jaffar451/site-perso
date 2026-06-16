@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import AuditLog from "../models/auditLog.model"; // Assurez-vous du bon chemin
+import AuditLog from "../../models/auditLog.model"; // Assurez-vous du bon chemin
 
 export const requestLogger = (
   req: Request,

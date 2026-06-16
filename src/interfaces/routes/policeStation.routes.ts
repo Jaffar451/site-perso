@@ -2,7 +2,7 @@
 import { Router } from "express";
 // 👇 On importe tout en tant que "StationController" (pas de classe)
 import * as StationController from "../controllers/policeStation.controller";
-import { authenticate, authorize } from "../../middleware/auth.middleware";
+import { authenticate, authorize } from "../middleware/auth.middleware";
 
 const router = Router();
 

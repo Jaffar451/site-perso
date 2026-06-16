@@ -8,7 +8,7 @@ import {
 } from "../controllers/summon.controller";
 
 // 👇 1. Import des middlewares standards
-import { authenticate, authorize } from "../../middleware/auth.middleware";
+import { authenticate, authorize } from "../middleware/auth.middleware";
 
 const router = Router();
 
@@ -19,28 +19,25 @@ router.use(authenticate);
 // 🔹 Créer une convocation (Police, Juge, Greffier)
 router.post(
   "/",
-  authorize(["police", "judge", "clerk", "admin"]),
+  authorize(["officier_police", "gendarme", "inspecteur", "commissaire", "judge", "greffier", "admin"]),
   createSummon,
 );
 
-// 🔹 Lister toutes les convocations
 router.get(
   "/",
-  authorize(["police", "judge", "clerk", "prosecutor", "admin"]),
+  authorize(["officier_police", "gendarme", "inspecteur", "commissaire", "judge", "greffier", "prosecutor", "admin"]),
   listSummons,
 );
 
-// 🔹 Lister les convocations pour une plainte spécifique
 router.get(
   "/complaint/:complaintId",
-  authorize(["police", "judge", "clerk", "prosecutor", "admin"]),
+  authorize(["officier_police", "gendarme", "inspecteur", "commissaire", "judge", "greffier", "prosecutor", "admin"]),
   getSummonsByComplaint,
 );
 
-// 🔹 Mettre à jour le statut (ex: 'distribuée', 'signée')
 router.patch(
   "/:id/status",
-  authorize(["police", "judge", "clerk", "admin"]),
+  authorize(["officier_police", "gendarme", "inspecteur", "commissaire", "judge", "greffier", "admin"]),
   updateSummonStatus,
 );
 

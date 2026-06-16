@@ -1,7 +1,7 @@
 // PATH: src/interfaces/routes/resource.routes.ts
 import { Router } from "express";
 import * as ResourceController from "../controllers/resource.controller";
-import { authenticate } from "../../middleware/auth.middleware";
+import { authenticate } from "../middleware/auth.middleware";
 
 const router = Router();
 

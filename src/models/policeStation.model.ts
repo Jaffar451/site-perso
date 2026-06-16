@@ -4,8 +4,6 @@ import {
   Model,
   DataType,
   HasMany,
-  CreatedAt,
-  UpdatedAt,
 } from "sequelize-typescript";
 import User from "./user.model";
 import Complaint from "./complaint.model";
@@ -13,24 +11,35 @@ import SosAlert from "./sosAlert.model";
 
 @Table({ 
   tableName: "police_stations", 
-  timestamps: true, 
-  underscored: false // Désactivé pour correspondre à votre structure réelle
+  timestamps: true, // Active createdAt et updatedAt automatiquement
+  underscored: true // Indique à Sequelize d'utiliser le format snake_case (created_at, updated_at)
 })
 export default class PoliceStation extends Model {
-  @Column({ type: DataType.INTEGER, primaryKey: true, autoIncrement: true })
+  @Column({ 
+    type: DataType.INTEGER, 
+    primaryKey: true, 
+    autoIncrement: true 
+  })
   id!: number;
 
-  @Column({ type: DataType.STRING, allowNull: false })
+  @Column({ 
+    type: DataType.STRING, 
+    allowNull: false 
+  })
   name!: string;
 
-  // Assurez-vous que l'ENUM correspond exactement à ce qui est en base
+  // Puisque votre BDD utilise un type ENUM spécifique, 
+  // on utilise DataType.ENUM pour garantir la validation.
   @Column({
-    type: DataType.STRING, // Souvent plus simple que l'ENUM natif si les noms diffèrent
+    type: DataType.ENUM("POLICE", "GENDARMERIE"), // Remplacez par vos valeurs exactes si besoin
     defaultValue: "POLICE",
   })
   type!: string;
 
-  @Column({ type: DataType.STRING, defaultValue: "Niamey" })
+  @Column({ 
+    type: DataType.STRING, 
+    defaultValue: "Niamey" 
+  })
   city!: string;
 
   @Column({ type: DataType.STRING, allowNull: true })
@@ -43,6 +52,7 @@ export default class PoliceStation extends Model {
   phone?: string;
 
   // --- RELATIONS ---
+  // Le foreignKey doit correspondre au nom de la colonne dans les tables cibles (ex: users)
   @HasMany(() => User, { foreignKey: "police_station_id" })
   agents!: User[];
 
@@ -51,12 +61,4 @@ export default class PoliceStation extends Model {
 
   @HasMany(() => SosAlert, { foreignKey: "police_station_id" })
   receivedAlerts!: SosAlert[];
-
-  @CreatedAt 
-  @Column({ type: DataType.DATE, field: "created_at" }) 
-  createdAt!: Date;
-
-  @UpdatedAt 
-  @Column({ type: DataType.DATE, field: "updated_at" }) 
-  updatedAt!: Date;
 }

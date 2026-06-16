@@ -10,13 +10,16 @@
 
     "types": ["node"],
 
-    "strict": false,
+    "strict": true,
     "strictPropertyInitialization": false,
 
     "skipLibCheck": true,
 
+    /* --- SOLUTIONS POUR LES DÉCORATEURS SEQUELIZE --- */
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+    "useDefineForClassFields": false, 
+    /* ----------------------------------------------- */
 
     "moduleResolution": "node16",
     "resolveJsonModule": true

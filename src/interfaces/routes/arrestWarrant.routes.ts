@@ -8,7 +8,7 @@ import {
 } from "../controllers/arrestWarrant.controller";
 
 // 👇 2. Imports des middlewares standards
-import { authenticate, authorize } from "../../middleware/auth.middleware";
+import { authenticate, authorize } from "../middleware/auth.middleware";
 
 // Je commente ceci pour éviter le crash tant que ce middleware n'est pas mis à jour
 // import { requireAssignmentRole } from "../../middleware/assignment.middleware";
@@ -28,7 +28,7 @@ router.post(
 router.get(
   "/",
   authenticate,
-  authorize(["police", "prosecutor", "judge", "clerk", "admin"]),
+  authorize(["officier_police", "prosecutor", "judge", "greffier", "admin"]),
   getArrestWarrants,
 );
 

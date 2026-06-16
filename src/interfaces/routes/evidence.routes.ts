@@ -9,7 +9,7 @@ import {
 } from "../controllers/evidence.controller";
 
 // 👇 1. Import des middlewares standards
-import { authenticate, authorize } from "../../middleware/auth.middleware";
+import { authenticate, authorize } from "../middleware/auth.middleware";
 
 // 👇 2. Si tu as ce middleware, décommente-le. Sinon, laisse commenté pour éviter le crash.
 // import { uploadEvidence } from "../../middleware/upload-evidence.middleware";
@@ -20,7 +20,7 @@ const router = Router();
 router.get(
   "/",
   authenticate,
-  authorize(["police", "judge", "clerk", "prosecutor", "admin"]),
+  authorize(["officier_police", "judge", "greffier", "prosecutor", "admin"]),
   listEvidence,
 );
 
@@ -28,7 +28,7 @@ router.get(
 router.post(
   "/",
   authenticate,
-  authorize(["police"]),
+  authorize(["officier_police"]),
   // uploadEvidence, // Décommente si le fichier existe
   createEvidence,
 );
@@ -36,7 +36,7 @@ router.post(
 router.get(
   "/:id",
   authenticate,
-  authorize(["police", "judge", "clerk", "admin"]),
+  authorize(["officier_police", "judge", "greffier", "admin"]),
   getEvidence,
 );
 
@@ -44,7 +44,7 @@ router.get(
 router.put(
   "/:id",
   authenticate,
-  authorize(["police", "judge"]),
+  authorize(["officier_police", "judge"]),
   updateEvidence,
 );
 

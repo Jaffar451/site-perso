@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { CitizenController } from "../controllers/citizen.controller";
-import { authenticate, authorize } from "../../middleware/auth.middleware";
+import { authenticate, authorize } from "../middleware/auth.middleware";
 
 const router = Router();
 const controller = new CitizenController();

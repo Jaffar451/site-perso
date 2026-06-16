@@ -9,7 +9,7 @@ import {
 } from "../controllers/note.controller";
 
 // 👇 1. Import des middlewares standards
-import { authenticate, authorize } from "../../middleware/auth.middleware";
+import { authenticate, authorize } from "../middleware/auth.middleware";
 
 const router = Router();
 
@@ -17,7 +17,7 @@ const router = Router();
 router.get(
   "/",
   authenticate,
-  authorize(["police", "clerk", "judge", "admin"]),
+  authorize(["officier_police", "greffier", "judge", "admin"]),
   listNotes,
 );
 
@@ -25,7 +25,7 @@ router.get(
 router.get(
   "/:id",
   authenticate,
-  authorize(["police", "clerk", "judge", "admin"]),
+  authorize(["officier_police", "greffier", "judge", "admin"]),
   getNote,
 );
 
@@ -33,7 +33,7 @@ router.get(
 router.post(
   "/",
   authenticate,
-  authorize(["police", "clerk", "judge", "admin"]),
+  authorize(["officier_police", "greffier", "judge", "admin"]),
   createNote,
 );
 
@@ -41,7 +41,7 @@ router.post(
 router.put(
   "/:id",
   authenticate,
-  authorize(["police", "clerk", "judge", "admin"]),
+  authorize(["officier_police", "greffier", "judge", "admin"]),
   updateNote,
 );
 

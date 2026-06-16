@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Custody } from '../../models'; // Utilisation de l'index des modèles
+import { Custody, Person, User } from '../../models'; // Utilisation de l'index des modèles
 
 // 1. Créer une nouvelle garde à vue
 export const createCustody = async (req: Request, res: Response) => {
@@ -24,10 +24,20 @@ export const getAllCustodies = async (req: Request, res: Response) => {
 // 3. Récupérer uniquement les gardes à vue "actives"
 export const getActiveCustodies = async (req: Request, res: Response) => {
   try {
-    // Supposons un champ 'status' ou 'isActive' dans votre modèle
-    const data = await Custody.findAll({ where: { status: 'active' } });
+    const data = await Custody.findAll({ 
+      where: { 
+        status: 'en_cours' // ✅ Utilise la valeur exacte de ton ENUM
+      },
+      include: [
+        { model: Person, as: 'suspect' },      // Optionnel : pour voir qui est en garde à vue
+        { model: User, as: 'orderedByUser' }   // Optionnel : pour voir quel agent a ordonné
+      ]
+    });
+    
     res.status(200).json({ success: true, data });
   } catch (error) {
+    // Affiche l'erreur en console pour le debug si ça persiste
+    console.error(error); 
     res.status(500).json({ success: false, message: 'Erreur récupération actifs', error });
   }
 };

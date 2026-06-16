@@ -9,7 +9,7 @@ import {
 } from "../controllers/attachment.controller";
 
 // 👇 2. Import des middlewares standards
-import { authenticate, authorize } from "../../middleware/auth.middleware";
+import { authenticate, authorize } from "../middleware/auth.middleware";
 
 // (Optionnel) Si tu utilises Multer pour l'upload de fichiers, tu devras l'importer ici
 // import upload from "../../middleware/upload.middleware";
@@ -21,19 +21,17 @@ const router = Router();
 router.post(
   "/",
   authenticate,
-  authorize(["police", "judge", "clerk", "admin"]),
+  authorize(["officier_police", "gendarme", "inspecteur", "commissaire", "judge", "greffier", "admin"]),
   uploadAttachment,
 );
 
-// 📌 LISTER LES PIÈCES D'UN DOSSIER
 router.get(
   "/:caseId",
   authenticate,
-  authorize(["police", "judge", "clerk", "prosecutor", "admin"]),
+  authorize(["officier_police", "gendarme", "inspecteur", "commissaire", "judge", "greffier", "prosecutor", "admin"]),
   listAttachments,
 );
 
-// 📌 SUPPRIMER UNE PIÈCE
 router.delete("/:id", authenticate, authorize(["admin"]), deleteAttachment);
 
 export default router;

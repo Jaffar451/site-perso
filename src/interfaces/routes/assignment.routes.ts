@@ -11,7 +11,7 @@ import {
 } from "../controllers/assignment.controller";
 
 // 👇 2. Import des middlewares standards
-import { authenticate, authorize } from "../../middleware/auth.middleware";
+import { authenticate, authorize } from "../middleware/auth.middleware";
 
 const router = Router();
 
@@ -19,7 +19,7 @@ const router = Router();
 router.get(
   "/",
   authenticate,
-  authorize(["admin", "police", "prosecutor", "judge", "clerk"]),
+  authorize(["admin", "officier_police", "prosecutor", "judge", "greffier"]),
   listAssignments,
 );
 
@@ -27,7 +27,7 @@ router.get(
 router.post(
   "/",
   authenticate,
-  authorize(["police", "prosecutor", "admin"]),
+  authorize(["officier_police", "prosecutor", "admin"]),
   createAssignment,
 );
 
@@ -35,7 +35,7 @@ router.post(
 router.get(
   "/:id",
   authenticate,
-  authorize(["admin", "police", "prosecutor", "judge", "clerk"]),
+  authorize(["admin", "officier_police", "prosecutor", "judge", "greffier"]),
   getAssignment,
 );
 
@@ -44,7 +44,7 @@ router.put(
   // ou patch
   "/:id",
   authenticate,
-  authorize(["police", "prosecutor", "judge", "admin"]),
+  authorize(["officier_police", "prosecutor", "judge", "admin"]),
   updateAssignment,
 );
 

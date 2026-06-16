@@ -2,7 +2,7 @@
 import { Router } from "express";
 // 👇 On importe toutes les fonctions exportées
 import * as NotificationController from "../controllers/notification.controller";
-import { authenticate } from "../../middleware/auth.middleware";
+import { authenticate } from "../middleware/auth.middleware";
 
 const router = Router();
 

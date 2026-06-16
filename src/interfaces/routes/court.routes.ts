@@ -1,7 +1,7 @@
 // PATH: backend/src/interfaces/routes/court.routes.ts
 import { Router } from "express";
 import * as courtController from "../controllers/court.controller";
-import { authenticate, authorize } from "../../middleware/auth.middleware";
+import { authenticate, authorize } from "../middleware/auth.middleware";
 
 const router = Router();
 

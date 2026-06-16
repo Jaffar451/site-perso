@@ -1,7 +1,7 @@
 import { Router } from "express";
 // ✅ Correction du chemin d'import (suppression de /http/)
 import * as sosController from "../controllers/sos.controller";
-import { authenticate, authorize } from "../../middleware/auth.middleware";
+import { authenticate, authorize } from "../middleware/auth.middleware";
 
 const router = Router();
 
@@ -18,7 +18,7 @@ router.post("/", authenticate, sosController.createSosAlert);
 router.get(
   "/station/:stationId",
   authenticate,
-  authorize(["police", "commisaire", "admin"]),
+  authorize(["officier_police", "commisaire", "admin"]),
   sosController.getStationAlerts,
 );
 

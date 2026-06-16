@@ -1,6 +1,6 @@
 import { Response, NextFunction } from "express";
-import { AuditLog } from "../models";
-import { CustomRequest } from "../types/express-request";
+import { AuditLog } from "../../models";
+import { CustomRequest } from "../../types/express-request";
 
 /**
  * 🕵️ MIDDLEWARE D'AUDIT GLOBAL

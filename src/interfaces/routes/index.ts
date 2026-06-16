@@ -26,7 +26,8 @@ import sosRoutes from "./sos.routes";
 // ==========================================
 import complaintRoutes from "./complaint.routes";
 import caseRoutes from "./case.routes";
-import workflowRoutes from "./workflow.routes";
+import workflowRoutes from "./workflow.routes"; // ✅ CORRIGÉ : Import ajouté
+import casePartyRoutes from "./caseParty.routes";
 import assignmentRoutes from "./assignment.routes";
 import decisionRoutes from "./decision.routes";
 import hearingRoutes from "./hearing.routes";
@@ -41,6 +42,9 @@ import witnessRoutes from "./witness.routes";
 import evidenceRoutes from "./evidence.routes";
 import attachmentRoutes from "./attachment.routes";
 import noteRoutes from "./note.routes";
+import interrogationRoutes from "./interrogation.routes"; // ✅ AJOUT AUDIT
+import proceduralRoutes from "./procedural.routes";       // ✅ AJOUT AUDIT
+import qualificationRoutes from "./qualification.routes"; // ✅ AJOUT AUDIT
 
 // ==========================================
 // 5. DÉTENTION, INCARCÉRATION & PEINES
@@ -52,7 +56,7 @@ import preventiveDetentionRoutes from "./preventiveDetention.routes";
 import releaseRoutes from "./release.routes";
 import sentenceRoutes from "./sentence.routes";
 import confiscationRoutes from "./confiscation.routes";
-import custodyRoutes from "./custody.routes"; // ⬅️ AJOUT : Import manquant !
+import custodyRoutes from "./custody.routes";
 
 // ==========================================
 // 6. SUITES LÉGALES, RÉPARATIONS & APPELS
@@ -99,6 +103,7 @@ router.use("/workflow", workflowRoutes);
 router.use("/assignments", assignmentRoutes);
 router.use("/decisions", decisionRoutes);
 router.use("/hearings", hearingRoutes);
+router.use("/case-parties", casePartyRoutes);
 
 // --- Actes & Procédures ---
 router.use("/summons", summonRoutes);
@@ -108,6 +113,9 @@ router.use("/witnesses", witnessRoutes);
 router.use("/evidence", evidenceRoutes);
 router.use("/attachments", attachmentRoutes);
 router.use("/notes", noteRoutes);
+router.use("/interrogations", interrogationRoutes); // ✅ AJOUT AUDIT
+router.use("/procedural", proceduralRoutes);         // ✅ AJOUT AUDIT
+router.use("/qualifications", qualificationRoutes); // ✅ AJOUT AUDIT
 
 // --- Pénitentiaire ---
 router.use("/incarcerations", incarcerationRoutes);
@@ -117,7 +125,7 @@ router.use("/preventive-detentions", preventiveDetentionRoutes);
 router.use("/releases", releaseRoutes);
 router.use("/sentences", sentenceRoutes);
 router.use("/confiscations", confiscationRoutes);
-router.use("/custodies", custodyRoutes); // ⬅️ AJOUT : Route manquante !
+router.use("/custodies", custodyRoutes);
 
 // --- Voies de Recours ---
 router.use("/reparations", reparationRoutes);
@@ -130,7 +138,7 @@ router.use("/stats", statsRoutes);
 router.use("/public", publicRoutes);
 router.use("/resources", resourceRoutes);
 
-// --- Surveillance du Système ---
+// --- Surveillance du Système (Status) ---
 router.get("/status", (_, res) => {
   res.json({
     success: true,

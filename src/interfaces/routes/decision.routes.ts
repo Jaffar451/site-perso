@@ -13,7 +13,7 @@ import {
 } from "../controllers/decision.controller";
 
 // 👇 2. Import des middlewares standards
-import { authenticate, authorize } from "../../middleware/auth.middleware";
+import { authenticate, authorize } from "../middleware/auth.middleware";
 
 const router = Router();
 
@@ -21,7 +21,7 @@ const router = Router();
 router.get(
   "/",
   authenticate,
-  authorize(["judge", "clerk", "police", "admin"]),
+  authorize(["judge", "greffier", "officier_police", "admin"]),
   listDecisions,
 );
 
@@ -29,7 +29,7 @@ router.get(
 router.get(
   "/case/:caseId",
   authenticate,
-  authorize(["judge", "clerk", "police", "admin"]),
+  authorize(["judge", "greffier", "officier_police", "admin"]),
   listDecisionsByCase,
 );
 
@@ -45,7 +45,7 @@ router.post(
 router.get(
   "/:id",
   authenticate,
-  authorize(["judge", "clerk", "police", "admin"]),
+  authorize(["judge", "greffier", "officier_police", "admin"]),
   getDecision,
 );
 

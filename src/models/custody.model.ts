@@ -14,6 +14,8 @@ import User from "./user.model";
 import Complaint from "./complaint.model";
 import Person from "./person.model";
 
+export type CustodyStatus = "en_cours" | "levée" | "prolongée" | "convertie";
+
 @Table({ tableName: "Custodies", timestamps: true, underscored: true })
 export default class Custody extends Model {
   // ─── Suspect ───────────────────────────────────────────────────
@@ -43,7 +45,7 @@ export default class Custody extends Model {
     type: DataType.ENUM("en_cours", "levée", "prolongée", "convertie"),
     defaultValue: "en_cours",
   })
-  status!: string;
+  status!: CustodyStatus;
 
   // ─── Prolongation ──────────────────────────────────────────────
 

@@ -4,44 +4,63 @@ import {
   Model,
   DataType,
   HasMany,
-  CreatedAt,
-  UpdatedAt,
+  PrimaryKey,
+  AutoIncrement,
+  AllowNull,
+  Default,
 } from "sequelize-typescript";
 import User from "./user.model";
 import CaseModel from "./case.model";
 import Hearing from "./hearing.model";
 import Decision from "./decision.model";
 
-@Table({ tableName: "courts", timestamps: true, underscored: true })
+@Table({ 
+  tableName: "Courts", 
+  timestamps: true, 
+  underscored: true  // Convertit automatiquement courtId → court_id en BDD
+})
 export default class Court extends Model {
-  @Column({ type: DataType.STRING, allowNull: false })
+  @PrimaryKey
+  @AutoIncrement
+  @Column(DataType.INTEGER)
+  id!: number;
+
+  @AllowNull(false)
+  @Column(DataType.STRING)
   name!: string;
 
-  @Column({ type: DataType.STRING, defaultValue: "Niamey" })
+  @Default("Niamey")
+  @Column(DataType.STRING)
   city!: string;
 
-  @Column({ type: DataType.STRING, allowNull: false })
+  @AllowNull(false)
+  @Column(DataType.STRING)
   jurisdiction!: string;
 
-  @Column({ type: DataType.STRING, allowNull: false })
+  @AllowNull(false)
+  @Column(DataType.STRING)
   type!: string;
 
-  @Column({ type: DataType.ENUM("active", "inactive"), defaultValue: "active" })
+  @Default("active")
+  @Column({
+    type: DataType.ENUM("active", "inactive"),
+  })
   status!: string;
 
   // --- RELATIONS ---
-  @HasMany(() => User, { as: "personnelCourt" })
+  
+  // CORRECTION : utiliser courtId (camelCase) pour matcher les propriétés TypeScript
+  // dans les modèles enfants. underscored: true gère la conversion en BDD.
+  
+  @HasMany(() => User, { foreignKey: "courtId", as: "personnelCourt" })
   personnelCourt!: User[];
 
-  @HasMany(() => CaseModel, { as: "courtCases" })
+  @HasMany(() => CaseModel, { foreignKey: "courtId", as: "courtCases" })
   courtCases!: CaseModel[];
 
-  @HasMany(() => Hearing, { as: "hearings" })
+  @HasMany(() => Hearing, { foreignKey: "courtId", as: "hearings" })
   hearings!: Hearing[];
 
-  @HasMany(() => Decision, { as: "decisions" })
+  @HasMany(() => Decision, { foreignKey: "courtId", as: "decisions" })
   decisions!: Decision[];
-
-  @CreatedAt createdAt!: Date;
-  @UpdatedAt updatedAt!: Date;
 }

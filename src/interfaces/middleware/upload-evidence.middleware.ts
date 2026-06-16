@@ -1,10 +1,12 @@
-// src/middleware/upload-evidence.middleware.ts
 import multer, { FileFilterCallback } from "multer";
 import path from "path";
 import fs from "fs";
 import { Request } from "express";
 
-const uploadDir = path.join(__dirname, "../../uploads/evidence");
+// ✅ FIX : process.cwd() pointe vers la racine du projet
+// __dirname pointait vers src/middleware/ → mauvais dossier
+const uploadDir = path.join(process.cwd(), "uploads", "evidence");
+
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
@@ -42,5 +44,5 @@ const fileFilter = (
 export const uploadEvidence = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB max
+  limits: { fileSize: 50 * 1024 * 1024 },
 }).single("file");

@@ -7,7 +7,7 @@ import {
   updateCustody,
   deleteCustody,
 } from "../controllers/custody.controller";
-import { authenticate } from "../../middleware/auth.middleware";
+import { authenticate } from "../middleware/auth.middleware";
 const router = Router();
 router.post("/", authenticate, createCustody);
 router.get("/", authenticate, getAllCustodies);

@@ -4,7 +4,7 @@ import {
   ListAuditLogs,
   getAuditLogs,
 } from "../controllers/auditLog.controller";
-import { protect, authorize } from "../../middleware/auth.middleware";
+import { protect, authorize } from "../middleware/auth.middleware";
 
 const router = Router();
 

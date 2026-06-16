@@ -1,6 +1,6 @@
 import { Router } from "express";
 import * as incarcerationController from "../controllers/incarceration.controller";
-import { authenticate, authorize } from "../../middleware/auth.middleware";
+import { authenticate, authorize } from "../middleware/auth.middleware";
 
 const router = Router();
 

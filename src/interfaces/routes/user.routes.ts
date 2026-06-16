@@ -10,7 +10,7 @@ import {
   deleteUser,
   updatePushToken,
 } from "../controllers/user.controller";
-import { authenticate, isAdmin } from "../../middleware/auth.middleware";
+import { authenticate, isAdmin } from "../middleware/auth.middleware";
 
 const router = Router();
 
