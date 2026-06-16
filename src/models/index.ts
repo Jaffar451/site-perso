@@ -76,7 +76,21 @@ try {
   // Le fichier n'existe pas, on utilisera les variables d'environnement
 }
 
-// 👉 PRIORITÉ AUX VARIABLES RENDER (DB_HOST, etc.)
+// 👉 Support DATABASE_URL (Railway) ou variables individuelles (Render/local)
+const databaseUrl = process.env.DATABASE_URL;
+
+let sequelize: Sequelize;
+
+if (databaseUrl) {
+  console.log(`📡 Connexion Sequelize via DATABASE_URL`);
+  sequelize = new Sequelize(databaseUrl, {
+    dialect: "postgres",
+    logging: false,
+    dialectOptions: {
+      ssl: { require: true, rejectUnauthorized: false },
+    },
+  });
+} else {
 const dbName = process.env.DB_NAME || config.database;
 const dbUser = process.env.DB_USER || config.username;
 const dbPassword = process.env.DB_PASSWORD || config.password;
@@ -85,7 +99,7 @@ const dbPort = process.env.DB_PORT ? Number(process.env.DB_PORT) : 5432;
 
 console.log(`📡 Connexion Sequelize vers : ${dbHost} (Base: ${dbName})`);
 
-const sequelize = new Sequelize({
+sequelize = new Sequelize({
   database: dbName,
   username: dbUser,
   password: dbPassword,
@@ -93,7 +107,6 @@ const sequelize = new Sequelize({
   port: dbPort,
   dialect: "postgres",
   logging: false,
-  // 🔐 Configuration SSL obligatoire pour Render
   dialectOptions:
     process.env.DB_SSL === "true"
       ? {
@@ -160,6 +173,7 @@ const sequelize = new Sequelize({
     LegalText,
   ],
 });
+} // fin du bloc else (variables individuelles)
 
 // 3. EXPORTS
 export {
