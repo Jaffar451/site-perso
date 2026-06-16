@@ -1,7 +1,14 @@
-import * as Print from 'expo-print';
-import * as Sharing from 'expo-sharing';
+import { Platform } from 'react-native';
 import { Complaint } from './complaint.service';
 import { ENV } from '../config/env';
+
+// Imports natifs uniquement sur mobile
+let Print: any = null;
+let Sharing: any = null;
+if (Platform.OS !== 'web') {
+  Print = require('expo-print');
+  Sharing = require('expo-sharing');
+}
 
 /**
  * ⚖️ GÉNÉRATEUR DE PROCÈS-VERBAL OFFICIEL (NIGER)
@@ -141,17 +148,25 @@ export const generateComplaintPDF = async (complaint: Complaint, signatureBase64
   `;
 
   try {
-    const { uri } = await Print.printToFileAsync({ 
-      html,
-      base64: false 
-    });
-    
-    await Sharing.shareAsync(uri, { 
-      UTI: '.pdf', 
-      mimeType: 'application/pdf',
-      dialogTitle: `PV_Justice_Niger_${complaint.id}` 
-    });
+    // Sur web : ouvrir le HTML dans un nouvel onglet et lancer l'impression
+    if (Platform.OS === 'web') {
+      const win = window.open('', '_blank');
+      if (win) {
+        win.document.write(html);
+        win.document.close();
+        win.focus();
+        setTimeout(() => win.print(), 500);
+      }
+      return 'web-print';
+    }
 
+    // Sur mobile : générer un PDF et partager
+    const { uri } = await Print.printToFileAsync({ html, base64: false });
+    await Sharing.shareAsync(uri, {
+      UTI: '.pdf',
+      mimeType: 'application/pdf',
+      dialogTitle: `PV_Justice_Niger_${complaint.id}`,
+    });
     return uri;
   } catch (error) {
     console.error("❌ Erreur PDF Service:", error);

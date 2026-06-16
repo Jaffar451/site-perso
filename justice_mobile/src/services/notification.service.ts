@@ -22,15 +22,17 @@ export interface NotificationItem {
   type?: 'status_change' | 'new_hearing' | 'new_decision' | 'admin_alert' | 'sos_alert';
 }
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+if (Platform.OS !== 'web') {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+      shouldShowBanner: true,
+      shouldShowList: true,
+    }),
+  });
+}
 
 /**
  * 📥 RÉCUPÉRATION DE L'HISTORIQUE
@@ -123,6 +125,7 @@ export const markAsRead = async (notificationId: string) => {
  * 🔔 NOTIFICATION LOCALE DE TEST
  */
 export const sendTestNotification = async () => {
+  if (Platform.OS === 'web') return;
   await Notifications.scheduleNotificationAsync({
     content: {
       title: '🔔 Test Notification',
@@ -137,6 +140,7 @@ export const sendTestNotification = async () => {
  * 🚨 NOTIFICATION SOS (URGENTE)
  */
 export const sendSOSNotification = async (sosId: string, location: string) => {
+  if (Platform.OS === 'web') return;
   await Notifications.scheduleNotificationAsync({
     content: {
       title: '🚨 ALERTE SOS',

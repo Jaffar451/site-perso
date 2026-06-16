@@ -1,7 +1,14 @@
 // PATH: src/services/download.service.ts
-import * as FileSystem from 'expo-file-system';
+import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Sharing from 'expo-sharing';
+
+// Imports natifs uniquement sur mobile
+let FileSystem: any = null;
+let Sharing: any = null;
+if (Platform.OS !== 'web') {
+  FileSystem = require('expo-file-system');
+  Sharing = require('expo-sharing');
+}
 
 const STORAGE_KEY = 'my_downloads_metadata';
 
@@ -16,29 +23,40 @@ export interface DownloadedItem {
 // 1. Sauvegarder un fichier
 export const downloadAndSave = async (url: string, title: string, id: string) => {
   try {
-    // Créer un nom de fichier unique dans le dossier DOCUMENTS (permanent)
+    // Sur web : ouvrir le fichier dans un nouvel onglet (le navigateur gère le téléchargement)
+    if (Platform.OS === 'web') {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      const newItem: DownloadedItem = {
+        id, title, localUri: url, mimeType: 'application/pdf',
+        downloadedAt: new Date().toISOString(),
+      };
+      const currentList = await getDownloads();
+      const newList = [newItem, ...currentList.filter(i => i.id !== id)];
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
+      return newItem;
+    }
+
+    // Sur mobile : téléchargement via FileSystem
     const filename = `${title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
     const fileUri = (FileSystem.Paths.document.uri ?? '') + filename;
-
-    // Télécharger
     const downloadRes = await FileSystem.downloadAsync(url, fileUri);
 
     if (downloadRes.status !== 200) throw new Error("Échec du téléchargement");
 
-    // Créer la métadonnée
     const newItem: DownloadedItem = {
-      id,
-      title,
-      localUri: downloadRes.uri,
-      mimeType: 'application/pdf',
+      id, title, localUri: downloadRes.uri, mimeType: 'application/pdf',
       downloadedAt: new Date().toISOString(),
     };
 
-    // Mettre à jour la liste dans AsyncStorage
     const currentList = await getDownloads();
-    // On évite les doublons (si déjà téléchargé, on met à jour)
     const newList = [newItem, ...currentList.filter(i => i.id !== id)];
-    
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
     return newItem;
 
@@ -63,12 +81,10 @@ export const deleteDownload = async (id: string) => {
   try {
     const list = await getDownloads();
     const item = list.find(i => i.id === id);
-
     if (item) {
-      // Supprimer le fichier physique
-      await FileSystem.deleteAsync(item.localUri, { idempotent: true });
-      
-      // Mettre à jour la liste
+      if (Platform.OS !== 'web') {
+        await FileSystem.deleteAsync(item.localUri, { idempotent: true });
+      }
       const newList = list.filter(i => i.id !== id);
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
     }
@@ -79,6 +95,10 @@ export const deleteDownload = async (id: string) => {
 
 // 4. Ouvrir un fichier
 export const openFile = async (localUri: string) => {
+  if (Platform.OS === 'web') {
+    window.open(localUri, '_blank');
+    return;
+  }
   const canShare = await Sharing.isAvailableAsync();
   if (canShare) {
     await Sharing.shareAsync(localUri);
