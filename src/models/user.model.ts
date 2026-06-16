@@ -79,6 +79,12 @@ export default class User extends Model {
   @Column({ type: DataType.STRING, allowNull: true, field: "push_token" })
   pushToken?: string;
 
+  @Column({ type: DataType.INTEGER, defaultValue: 0, field: "failed_attempts" })
+  failedAttempts!: number;
+
+  @Column({ type: DataType.DATE, allowNull: true, field: "lock_until" })
+  lockUntil?: Date | null;
+
   // ─── Relations ──────────────────────────────────────────────
 
   @HasOne(() => Person, { foreignKey: "userId" })
