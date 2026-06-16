@@ -59,10 +59,9 @@ import QualificationHistory from "./qualificationHistory.model";
 import ProceduralTemplate from "./proceduralTemplate.model";
 import ProceduralStep from "./proceduralStep.model";
 import CaseProceduralAct from "./caseProceduralAct.model";
-// 2. CONFIGURATION DB (Modifiée pour Render)
+// 2. CONFIGURATION DB
 const env = process.env.NODE_ENV || "development";
 
-// On essaie de charger le fichier json, mais on ne plante pas s'il est absent
 let config = {
   database: "",
   username: "",
@@ -76,7 +75,60 @@ try {
   // Le fichier n'existe pas, on utilisera les variables d'environnement
 }
 
-// 👉 Support DATABASE_URL (Railway) ou variables individuelles (Render/local)
+const ALL_MODELS = [
+  User,
+  PoliceStation,
+  Court,
+  Prison,
+  RefreshToken,
+  AuditLog,
+  Complaint,
+  ComplaintFile,
+  CaseModel,
+  Assignment,
+  Decision,
+  Attachment,
+  Evidence,
+  Hearing,
+  Note,
+  Indictment,
+  ProcesVerbal,
+  Archive,
+  Detainee,
+  Incarceration,
+  SosAlert,
+  Appeal,
+  ArrestWarrant,
+  Confiscation,
+  Custody,
+  CustodyExtension,
+  Detention,
+  Interrogation,
+  PreventiveDetention,
+  Prosecution,
+  Release,
+  Reparation,
+  Sentence,
+  SearchWarrant,
+  Warrant,
+  Witness,
+  Summon,
+  Person,
+  OffenseCategory,
+  Offense,
+  OffenseCircumstance,
+  ProfessionalProfile,
+  CaseParty,
+  CaseQualification,
+  QualificationHistory,
+  ProceduralTemplate,
+  ProceduralStep,
+  CaseProceduralAct,
+  Lawyer,
+  LegalText,
+];
+
+// 👉 Support DATABASE_URL (Render/Railway/Neon) ou variables individuelles (local)
 const databaseUrl = process.env.DATABASE_URL;
 
 let sequelize: Sequelize;
@@ -89,91 +141,32 @@ if (databaseUrl) {
     dialectOptions: {
       ssl: { require: true, rejectUnauthorized: false },
     },
+    models: ALL_MODELS,
   });
 } else {
-const dbName = process.env.DB_NAME || config.database;
-const dbUser = process.env.DB_USER || config.username;
-const dbPassword = process.env.DB_PASSWORD || config.password;
-const dbHost = process.env.DB_HOST || config.host || "127.0.0.1";
-const dbPort = process.env.DB_PORT ? Number(process.env.DB_PORT) : 5432;
+  const dbName = process.env.DB_NAME || config.database;
+  const dbUser = process.env.DB_USER || config.username;
+  const dbPassword = process.env.DB_PASSWORD || config.password;
+  const dbHost = process.env.DB_HOST || config.host || "127.0.0.1";
+  const dbPort = process.env.DB_PORT ? Number(process.env.DB_PORT) : 5432;
 
-console.log(`📡 Connexion Sequelize vers : ${dbHost} (Base: ${dbName})`);
+  console.log(`📡 Connexion Sequelize vers : ${dbHost} (Base: ${dbName})`);
 
-sequelize = new Sequelize({
-  database: dbName,
-  username: dbUser,
-  password: dbPassword,
-  host: dbHost,
-  port: dbPort,
-  dialect: "postgres",
-  logging: false,
-  dialectOptions:
-    process.env.DB_SSL === "true"
-      ? {
-          ssl: {
-            require: true,
-            rejectUnauthorized: false,
-          },
-        }
-      : {
-          ssl: false,
-        },
-
-  models: [
-    User,
-    PoliceStation,
-    Court,
-    Prison,
-    RefreshToken,
-    AuditLog,
-    Complaint,
-    ComplaintFile,
-    CaseModel,
-    Assignment,
-    Decision,
-    Attachment,
-    Evidence,
-    Hearing,
-    Note,
-    Indictment,
-    ProcesVerbal,
-    Archive,
-    Detainee,
-    Incarceration,
-    SosAlert,
-    Appeal,
-    ArrestWarrant,
-    Confiscation,
-    Custody,
-    CustodyExtension,
-    Detention,
-    Interrogation,
-    PreventiveDetention,
-    Prosecution,
-    Release,
-    Reparation,
-    Sentence,
-    SearchWarrant,
-    Warrant,
-    Witness,
-    Summon,
-    Person,
-    OffenseCategory,
-    Offense,
-    OffenseCircumstance,
-    ProfessionalProfile,
-    CaseParty,
-    CaseQualification,
-    QualificationHistory,
-    ProceduralTemplate,
-    ProceduralStep,
-    CaseProceduralAct,
-    // ✅ AJOUT DANS LA LISTE
-    Lawyer,
-    LegalText,
-  ],
-});
-} // fin du bloc else (variables individuelles)
+  sequelize = new Sequelize({
+    database: dbName,
+    username: dbUser,
+    password: dbPassword,
+    host: dbHost,
+    port: dbPort,
+    dialect: "postgres",
+    logging: false,
+    dialectOptions:
+      process.env.DB_SSL === "true"
+        ? { ssl: { require: true, rejectUnauthorized: false } }
+        : { ssl: false },
+    models: ALL_MODELS,
+  });
+}
 
 // 3. EXPORTS
 export {
