@@ -17,7 +17,7 @@ export const useComplaints = (mode: 'all' | 'mine' = 'mine') => {
   });
 };
 
-export const useUpdateComplaintStatus = () => {
+export const usetransitionComplaint = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, status, note }: { id: string, status: string, note?: string }) => {

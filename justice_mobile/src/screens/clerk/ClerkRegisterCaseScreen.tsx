@@ -1,105 +1,90 @@
+// PATH: src/screens/clerk/ClerkRegisterCaseScreen.tsx
 import React, { useState } from "react";
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TextInput, 
-  TouchableOpacity, 
-  ScrollView, 
-  Alert, 
-  KeyboardAvoidingView, 
-  Platform,
-  ActivityIndicator,
-  StatusBar
+import {
+  View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView,
+  Alert, KeyboardAvoidingView, Platform, ActivityIndicator, StatusBar
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import DateTimePicker from '@react-native-community/datetimepicker'; 
+import DateTimePicker from '@react-native-community/datetimepicker';
 
-// ✅ Architecture & Thème
-import { useAppTheme } from "../../theme/AppThemeProvider"; // ✅ Hook dynamique
+import { useAppTheme } from "../../theme/AppThemeProvider";
 import { ClerkScreenProps } from "../../types/navigation";
-
-// Composants
 import ScreenContainer from "../../components/layout/ScreenContainer";
 import AppHeader from "../../components/layout/AppHeader";
 import SmartFooter from "../../components/layout/SmartFooter";
-import { Toast } from "../../components/ui/ToastManager";
+import { updateComplaint, transitionComplaint } from "../../services/complaint.service";
+import { createHearing } from "../../services/hearing.service";
 
-// Services
-import { updateComplaint } from "../../services/complaint.service";
-import { createHearing } from "../../services/hearing.service"; 
+const alertMsg = (t: string, m: string) => {
+  if (Platform.OS === 'web') window.alert(`${t}\n\n${m}`);
+  else Alert.alert(t, m);
+};
 
 export default function ClerkRegisterCaseScreen({ navigation, route }: ClerkScreenProps<'ClerkRegisterCase'>) {
-  // ✅ 2. Thème Dynamique
   const { theme, isDark } = useAppTheme();
-  const primaryColor = theme.colors.primary; 
-  
-  const params = route.params as any;
+  const primaryColor = theme.colors.primary;
+
+  const params      = route.params as any;
   const complaintId = params?.complaintId;
 
-  // États du formulaire
-  const [caseNumber, setCaseNumber] = useState(""); 
-  const [chamber, setChamber] = useState("Chambre Correctionnelle I");
-  const [judgeName, setJudgeName] = useState("");
+  const [caseNumber, setCaseNumber]   = useState("");
+  const [chamber, setChamber]         = useState("Chambre Correctionnelle I");
+  const [judgeName, setJudgeName]     = useState("");
   const [hearingDate, setHearingDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [notes, setNotes] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const [notes, setNotes]             = useState("");
+  const [submitting, setSubmitting]   = useState(false);
 
-  // 🎨 PALETTE DYNAMIQUE
   const colors = {
-    bgMain: isDark ? "#0F172A" : "#F8FAFC",
-    bgCard: isDark ? "#1E293B" : "#FFFFFF",
+    bgMain:  isDark ? "#0F172A" : "#F8FAFC",
+    bgCard:  isDark ? "#1E293B" : "#FFFFFF",
     textMain: isDark ? "#FFFFFF" : "#1E293B",
-    textSub: isDark ? "#94A3B8" : "#64748B",
-    border: isDark ? "#334155" : "#E2E8F0",
-    inputBg: isDark ? "#0F172A" : "#F8FAFC",
-    infoBg: isDark ? "#0C4A6E" : "#F0F9FF",
+    textSub:  isDark ? "#94A3B8" : "#64748B",
+    border:   isDark ? "#334155" : "#E2E8F0",
+    inputBg:  isDark ? "#0F172A" : "#F8FAFC",
+    infoBg:   isDark ? "#0C4A6E" : "#F0F9FF",
   };
 
   const generateAutoNumber = () => {
-    const year = new Date().getFullYear();
+    const year   = new Date().getFullYear();
     const random = Math.floor(1000 + Math.random() * 9000);
     setCaseNumber(`RG-${year}-${random}`);
   };
 
   const handleSubmit = async () => {
     if (!caseNumber.trim() || !judgeName.trim()) {
-      const msg = "Le Numéro RG et le Juge désigné sont obligatoires.";
-      Platform.OS === 'web' ? window.alert(msg) : Alert.alert("Champs requis", msg);
+      alertMsg("Champs requis", "Le Numéro RG et le Juge désigné sont obligatoires.");
       return;
     }
 
     setSubmitting(true);
     try {
-      // 1. Immatriculation au Répertoire Général
+      // 1. Immatriculation + transition vers audience_programmée (Art. 74 CPP)
       await updateComplaint(complaintId, {
         caseNumber: caseNumber.toUpperCase(),
-        status: "figée", 
-        assignedJudge: judgeName,
-        notes: notes
+        notes,
       });
 
-      // 2. Création de l'acte d'audience (Première Comparution)
+      // 2. Transition officielle → audience_programmée
+      await transitionComplaint(Number(complaintId), "audience_programmée");
+
+      // 3. Création de l'acte d'audience (Première Comparution)
       await createHearing({
-          caseId: Number(complaintId), 
-          caseNumber: caseNumber.toUpperCase(),
-          date: hearingDate.toISOString(),
-          room: chamber,
-          type: "Première Comparution",
-          judgeName: judgeName
+        caseId:     Number(complaintId),
+        caseNumber: caseNumber.toUpperCase(),
+        date:       hearingDate.toISOString(),
+        room:       chamber,
+        type:       "Première Comparution",
+        judgeName,
       });
 
-      Toast.show({
-        type: "success",
-        title: "Dossier Enrôlé",
-        message: `L'affaire ${caseNumber} est inscrite au registre.`
-      });
-
-      navigation.popToTop(); 
-
-    } catch (error) {
-      Alert.alert("Erreur Registre", "Impossible de valider l'enrôlement.");
+      alertMsg(
+        "✅ Dossier Enrôlé",
+        `L'affaire ${caseNumber.toUpperCase()} est inscrite au rôle.\nAudience fixée le ${hearingDate.toLocaleDateString("fr-FR")}.`
+      );
+      navigation.popToTop();
+    } catch (error: any) {
+      alertMsg("Erreur Registre", error?.response?.data?.message || "Impossible de valider l'enrôlement.");
     } finally {
       setSubmitting(false);
     }
@@ -110,23 +95,23 @@ export default function ClerkRegisterCaseScreen({ navigation, route }: ClerkScre
       <StatusBar barStyle="light-content" />
       <AppHeader title="Enrôlement RG" showBack />
 
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === "ios" ? "padding" : undefined} 
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1, backgroundColor: colors.bgMain }}
       >
-        <ScrollView 
+        <ScrollView
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-
-          {/* 🏛️ BANDEAU D'INFORMATION JUDICIAIRE */}
+          {/* BANDEAU */}
           <View style={[styles.infoBox, { backgroundColor: colors.infoBg, borderColor: primaryColor }]}>
             <Ionicons name="ribbon-outline" size={24} color={primaryColor} />
             <View style={{ flex: 1 }}>
               <Text style={[styles.infoTitle, { color: primaryColor }]}>Acte d'Immatriculation</Text>
               <Text style={[styles.infoText, { color: isDark ? "#BAE6FD" : "#0369A1" }]}>
                 Attribuez un numéro de Répertoire Général (RG) pour officialiser la saisine du tribunal.
+                La plainte passera au statut "Audience programmée" (Art. 74 CPP Niger).
               </Text>
             </View>
           </View>
@@ -149,7 +134,7 @@ export default function ClerkRegisterCaseScreen({ navigation, route }: ClerkScre
             </View>
           </View>
 
-          {/* MAGISTRAT & CHAMBRE */}
+          {/* JUGE */}
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: colors.textSub }]}>JUGE DE SIÈGE DÉSIGNÉ *</Text>
             <TextInput
@@ -160,7 +145,8 @@ export default function ClerkRegisterCaseScreen({ navigation, route }: ClerkScre
               onChangeText={setJudgeName}
             />
           </View>
-          
+
+          {/* CHAMBRE */}
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: colors.textSub }]}>CHAMBRE / SALLE D'AUDIENCE</Text>
             <TextInput
@@ -172,10 +158,10 @@ export default function ClerkRegisterCaseScreen({ navigation, route }: ClerkScre
             />
           </View>
 
-          {/* CALENDRIER */}
+          {/* DATE D'AUDIENCE */}
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: colors.textSub }]}>DATE DE PREMIÈRE COMPARUTION</Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => setShowDatePicker(true)}
               style={[styles.dateBtn, { borderColor: colors.border, backgroundColor: colors.bgCard }]}
@@ -185,22 +171,18 @@ export default function ClerkRegisterCaseScreen({ navigation, route }: ClerkScre
                 {hearingDate.toLocaleDateString("fr-FR", { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
               </Text>
             </TouchableOpacity>
-            
             {showDatePicker && (
               <DateTimePicker
                 value={hearingDate}
                 mode="date"
                 display={Platform.OS === 'ios' ? 'inline' : 'default'}
-                onChange={(event, date) => {
-                    setShowDatePicker(false);
-                    if (date) setHearingDate(date);
-                }}
+                onChange={(_, date) => { setShowDatePicker(false); if (date) setHearingDate(date); }}
                 minimumDate={new Date()}
               />
             )}
           </View>
 
-          {/* OBSERVATIONS */}
+          {/* NOTES */}
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: colors.textSub }]}>NOTES DU GREFFE (FACULTATIF)</Text>
             <TextInput
@@ -215,7 +197,7 @@ export default function ClerkRegisterCaseScreen({ navigation, route }: ClerkScre
             />
           </View>
 
-          {/* BOUTON DE SOUMISSION */}
+          {/* BOUTON */}
           <TouchableOpacity
             activeOpacity={0.85}
             style={[styles.submitBtn, { backgroundColor: primaryColor }]}
@@ -223,50 +205,44 @@ export default function ClerkRegisterCaseScreen({ navigation, route }: ClerkScre
             disabled={submitting}
           >
             {submitting ? (
-               <ActivityIndicator color="#FFF" />
+              <ActivityIndicator color="#FFF" />
             ) : (
-               <>
-                 <Ionicons name="checkmark-done-circle-outline" size={24} color="#FFF" />
-                 <Text style={styles.submitText}>VALIDER L'ENRÔLEMENT</Text>
-               </>
+              <>
+                <Ionicons name="checkmark-done-circle-outline" size={24} color="#FFF" />
+                <Text style={styles.submitText}>VALIDER L'ENRÔLEMENT</Text>
+              </>
             )}
           </TouchableOpacity>
 
           <View style={{ height: 140 }} />
         </ScrollView>
       </KeyboardAvoidingView>
-
       <SmartFooter />
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  content: { padding: 20 },
-  infoBox: { flexDirection: "row", padding: 18, borderRadius: 24, borderLeftWidth: 8, marginBottom: 30, gap: 15, alignItems: "center" },
-  infoTitle: { fontWeight: "900", fontSize: 13, textTransform: 'uppercase', marginBottom: 2 },
-  infoText: { fontSize: 12, fontWeight: '600', lineHeight: 18 },
-
+  content:    { padding: 20 },
+  infoBox:    { flexDirection: "row", padding: 18, borderRadius: 24, borderLeftWidth: 8, marginBottom: 30, gap: 15, alignItems: "center" },
+  infoTitle:  { fontWeight: "900", fontSize: 13, textTransform: 'uppercase', marginBottom: 2 },
+  infoText:   { fontSize: 12, fontWeight: '600', lineHeight: 18 },
   inputGroup: { marginBottom: 25 },
-  label: { fontSize: 10, fontWeight: "900", marginBottom: 10, letterSpacing: 1, textTransform: 'uppercase' },
-  
-  rowInput: { flexDirection: 'row', gap: 12 },
-  autoBtn: { width: 58, height: 58, borderRadius: 16, justifyContent: "center", alignItems: "center", elevation: 2 },
-
-  input: { height: 58, borderRadius: 18, borderWidth: 1.5, paddingHorizontal: 18, fontSize: 16, fontWeight: "700" },
-  textArea: { minHeight: 120, borderRadius: 18, borderWidth: 1.5, padding: 18, fontSize: 15, fontWeight: '600' },
-  
-  dateBtn: { flexDirection: "row", alignItems: "center", gap: 12, height: 60, borderRadius: 18, borderWidth: 1.5, paddingHorizontal: 18 },
-  dateText: { fontSize: 15, fontWeight: "700" },
-
-  submitBtn: { 
-    flexDirection: "row", justifyContent: "center", alignItems: "center", 
+  label:      { fontSize: 10, fontWeight: "900", marginBottom: 10, letterSpacing: 1, textTransform: 'uppercase' },
+  rowInput:   { flexDirection: 'row', gap: 12 },
+  autoBtn:    { width: 58, height: 58, borderRadius: 16, justifyContent: "center", alignItems: "center", elevation: 2 },
+  input:      { height: 58, borderRadius: 18, borderWidth: 1.5, paddingHorizontal: 18, fontSize: 16, fontWeight: "700" },
+  textArea:   { minHeight: 120, borderRadius: 18, borderWidth: 1.5, padding: 18, fontSize: 15, fontWeight: '600' },
+  dateBtn:    { flexDirection: "row", alignItems: "center", gap: 12, height: 60, borderRadius: 18, borderWidth: 1.5, paddingHorizontal: 18 },
+  dateText:   { fontSize: 15, fontWeight: "700" },
+  submitBtn:  {
+    flexDirection: "row", justifyContent: "center", alignItems: "center",
     height: 64, borderRadius: 22, gap: 12, marginTop: 10,
     ...Platform.select({
-        android: { elevation: 6 },
-        ios: { shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10 },
-        web: { boxShadow: "0px 8px 24px rgba(0,0,0,0.15)" }
+      android: { elevation: 6 },
+      ios:     { shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10 },
+      web:     { boxShadow: "0px 8px 24px rgba(0,0,0,0.15)" }
     })
   },
-  submitText: { color: "#FFF", fontSize: 15, fontWeight: "900", letterSpacing: 1.5 }
+  submitText: { color: "#FFF", fontSize: 15, fontWeight: "900", letterSpacing: 1.5 },
 });

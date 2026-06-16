@@ -28,9 +28,9 @@ export type AdminStackParamList = {
   AdminHome: undefined;  // ← alias
   AdminStats: undefined;
   AdminLogs: undefined;      // ← alias
-  AdminUsers: undefined;
+  AdminUsers: { refresh?: boolean; timestamp?: number } | undefined;
   AdminCreateUser: undefined;
-  AdminEditUser: { userId: number };
+  AdminEditUser: { userId: string | number };
   AdminUserDetails: { userId: number };
   AdminUserDetail: { userId: number }; // ← alias
   AdminEditProfile: undefined;
@@ -94,6 +94,7 @@ export type ProsecutorStackParamList = {
   ProsecutorAssignJudge: { caseId: number };
   ProsecutorCaseDetail: { caseId: number };
   ProsecutorCalendar: undefined;
+  WarrantSearch: undefined;   // ← ajouté ici pour tous les stacks
 } & SharedStackParamList;
 
 export type CommissaireStackParamList = {
@@ -127,7 +128,7 @@ export type CitizenStackParamList = {
   CitizenHome: undefined;
   CitizenCreateComplaint: undefined;
   CitizenMyComplaints: undefined;
-  CitizenComplaintDetails: { complaintId?: number };
+  CitizenComplaintDetails: { complaintId?: number; id?: string | number };
   ComplaintDetail: { id: string | number }; // ← alias utilisé dans les écrans
   CitizenTracking: undefined;
   CitizenCases: undefined;

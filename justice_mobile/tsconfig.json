@@ -1,57 +1,27 @@
 {
-  // Hérite de la configuration de base Expo
   "extends": "expo/tsconfig.base",
-
   "compilerOptions": {
-    // Vérification stricte des types
     "strict": true,
-
-    // JSX pour React Native
     "jsx": "react-native",
-
-    // Type de module JavaScript
     "module": "ESNext",
-
-    // Résolution des modules adaptée aux bundlers modernes (Metro pour React Native)
     "moduleResolution": "bundler",
-
-    // Ignore les erreurs dans les librairies externes
     "skipLibCheck": true,
-
-    // Permet l'import de fichiers TypeScript avec extension explicite
     "allowImportingTsExtensions": true,
-
-    // Permet l'import direct de fichiers JSON
     "resolveJsonModule": true,
-
-    // Chaque fichier est traité comme un module isolé (nécessaire pour TS+React Native)
     "isolatedModules": true,
-
-    // Ne génère pas de fichiers compilés (TS juste pour type checking)
     "noEmit": true,
-
-    // Ignore les avertissements de dépréciation TS (ici version 5)
     "ignoreDeprecations": "5.0",
-
-    // Force la cohérence des noms de fichiers (Windows vs Linux)
     "forceConsistentCasingInFileNames": true,
-
-    // Base pour les chemins d'import relatifs
-    "baseUrl": ".",
-
-    // Alias pour imports plus propres : "@/..." → "src/..."
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     }
   },
-
-  // Inclut tous les fichiers TS et TSX du projet
   "include": [
     "**/*.ts",
     "**/*.tsx"
   ],
-
-  // Exclut node_modules et fichiers de config
   "exclude": [
     "node_modules",
     "babel.config.js",

@@ -29,15 +29,18 @@ export default function RegisterScreen() {
   const navigation = useNavigation<any>();
   const { theme, isDark } = useAppTheme();
 
+  // Ajout de confirmPassword dans l'état initial
   const [form, setForm] = useState({
     firstname: "",
     lastname: "",
     email: "",
     telephone: "", 
     password: "",
+    confirmPassword: "", 
   });
   
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const onChange = (key: keyof typeof form, value: string) => 
     setForm({ ...form, [key]: value });
@@ -70,8 +73,6 @@ export default function RegisterScreen() {
     },
     onError: (err: any) => {
       const serverMessage = err?.response?.data?.message || "";
-      console.error("Erreur inscription:", serverMessage);
-      
       let message = "Impossible de créer le compte. Vérifiez votre connexion.";
       
       if (serverMessage.toLowerCase().includes('email')) message = "Cette adresse email est déjà utilisée.";
@@ -82,27 +83,32 @@ export default function RegisterScreen() {
   });
 
   const handleRegister = async () => {
-    // 1. Validation basique
-    if (!form.firstname.trim() || !form.lastname.trim() || !form.email.trim() || !form.password) {
+    // 1. Validation de remplissage
+    if (!form.firstname.trim() || !form.lastname.trim() || !form.email.trim() || !form.password || !form.confirmPassword) {
         const msg = "Veuillez remplir tous les champs obligatoires.";
         Platform.OS === 'web' ? window.alert(msg) : Alert.alert("Champs requis", msg);
         return;
     }
 
-    if (form.password.length < 6) {
-        const msg = "Le mot de passe doit contenir au moins 6 caractères.";
-        Platform.OS === 'web' ? window.alert(msg) : Alert.alert("Sécurité", msg);
+    // 2. Validation de correspondance
+    if (form.password !== form.confirmPassword) {
+        const msg = "Les mots de passe ne sont pas identiques.";
+        Platform.OS === 'web' ? window.alert(msg) : Alert.alert("Erreur de saisie", msg);
         return;
     }
 
-    // 2. Envoi des données
-    await mutateAsync({
+    // 3. Préparation des données à envoyer
+    const dataToSend = {
         firstname: form.firstname.trim(),
         lastname: form.lastname.trim(),
         email: form.email.trim(),
-        telephone: form.telephone.trim(),
-        password: form.password
-    });
+        phone: form.telephone.trim(),
+        password: form.password,
+        role: "CITOYEN" // Assure-toi d'envoyer un rôle par défaut si ton API l'exige
+    };
+
+    // 4. Envoi au service
+    await mutateAsync(dataToSend);
   };
 
   return (
@@ -120,36 +126,23 @@ export default function RegisterScreen() {
           bounces={false}
         >
           
-          {/* HEADER */}
           <View style={[styles.headerContainer, { backgroundColor: theme.colors.primary }]}>
-              <TouchableOpacity 
-                onPress={() => navigation.goBack()} 
-                style={styles.backButton}
-              >
+              <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                 <Ionicons name="arrow-back" size={24} color="white" />
               </TouchableOpacity>
 
               <View style={styles.brandContent}>
-                <Surface style={[styles.logoSurface, { elevation: 8 }]}>
-                   <Image 
-                     source={require("../../../assets/armoirie.png")} 
-                     style={styles.logoImage}
-                     resizeMode="contain"
-                   />
+                <Surface style={styles.logoSurface}>
+                   <Image source={require("../../../assets/armoirie.png")} style={styles.logoImage} resizeMode="contain" />
                 </Surface>
                 <Title style={styles.headerTitle}>Inscription</Title>
                 <Text style={styles.headerSubtitle}>ESPACE CITOYEN SÉCURISÉ</Text>
               </View>
           </View>
 
-          {/* FORMULAIRE */}
           <View style={[
             styles.formContainer, 
-            { 
-              backgroundColor: theme.colors.background,
-              borderTopLeftRadius: 32,
-              borderTopRightRadius: 32,
-            }
+            { backgroundColor: theme.colors.background, borderTopLeftRadius: 32, borderTopRightRadius: 32 }
           ]}>
              <View style={styles.formContent}>
                 
@@ -162,7 +155,6 @@ export default function RegisterScreen() {
                       mode="outlined"
                       outlineColor="transparent"
                       activeOutlineColor={theme.colors.primary}
-                      textColor={theme.colors.text}
                       theme={{ roundness: 14 }}
                    />
                    <View style={{ width: 12 }} />
@@ -174,7 +166,6 @@ export default function RegisterScreen() {
                       mode="outlined"
                       outlineColor="transparent"
                       activeOutlineColor={theme.colors.primary}
-                      textColor={theme.colors.text}
                       theme={{ roundness: 14 }}
                    />
                 </View>
@@ -189,7 +180,6 @@ export default function RegisterScreen() {
                    keyboardType="email-address"
                    outlineColor="transparent"
                    activeOutlineColor={theme.colors.primary}
-                   textColor={theme.colors.text}
                    left={<TextInput.Icon icon="email-outline" color={theme.colors.primary} />}
                    theme={{ roundness: 14 }}
                 />
@@ -202,14 +192,13 @@ export default function RegisterScreen() {
                    mode="outlined"
                    keyboardType="phone-pad"
                    placeholder="Ex: 90000000"
-                   placeholderTextColor="#94A3B8"
                    outlineColor="transparent"
                    activeOutlineColor={theme.colors.primary}
-                   textColor={theme.colors.text}
                    left={<TextInput.Icon icon="phone-outline" color={theme.colors.primary} />}
                    theme={{ roundness: 14 }}
                 />
 
+                {/* CHAMP : Mot de passe original */}
                 <TextInput
                    label="Mot de passe"
                    value={form.password}
@@ -219,15 +208,23 @@ export default function RegisterScreen() {
                    secureTextEntry={!showPassword}
                    outlineColor="transparent"
                    activeOutlineColor={theme.colors.primary}
-                   textColor={theme.colors.text}
                    left={<TextInput.Icon icon="lock-outline" color={theme.colors.primary} />}
-                   right={
-                     <TextInput.Icon 
-                          icon={showPassword ? "eye-off" : "eye"} 
-                          onPress={() => setShowPassword(!showPassword)} 
-                          color="#64748B"
-                     />
-                   }
+                   right={<TextInput.Icon icon={showPassword ? "eye-off" : "eye"} onPress={() => setShowPassword(!showPassword)} color="#64748B" />}
+                   theme={{ roundness: 14 }}
+                />
+
+                {/* NOUVEAU CHAMP : Confirmation du mot de passe */}
+                <TextInput
+                   label="Confirmer le mot de passe"
+                   value={form.confirmPassword}
+                   onChangeText={(v) => onChange("confirmPassword", v)}
+                   style={[styles.input, { backgroundColor: isDark ? "#2C2C2C" : "#F8FAFC" }]}
+                   mode="outlined"
+                   secureTextEntry={!showConfirmPassword}
+                   outlineColor="transparent"
+                   activeOutlineColor={theme.colors.primary}
+                   left={<TextInput.Icon icon="shield-check-outline" color={theme.colors.primary} />}
+                   right={<TextInput.Icon icon={showConfirmPassword ? "eye-off" : "eye"} onPress={() => setShowConfirmPassword(!showConfirmPassword)} color="#64748B" />}
                    theme={{ roundness: 14 }}
                 />
 
@@ -244,7 +241,6 @@ export default function RegisterScreen() {
                 </Button>
 
                 <View style={styles.footerLinks}>
-                   {/* Utilisation de textSecondary ou d'un gris par défaut */}
                    <Text style={{ color: (theme.colors as any).textSecondary || '#64748B' }}>Déjà inscrit ? </Text>
                    <TouchableOpacity onPress={() => navigation.navigate("Login")}>
                       <Text style={{ color: theme.colors.primary, fontWeight: "bold" }}>Se connecter</Text>
@@ -288,11 +284,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 12,
-    ...Platform.select({
-      web: { boxShadow: '0px 8px 24px rgba(0,0,0,0.15)' },
-      android: { elevation: 8 },
-      ios: { shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 8 }
-    })
   },
   logoImage: {
     width: 50,
@@ -302,7 +293,6 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: "900",
     color: "white",
-    letterSpacing: 1,
   },
   headerSubtitle: {
     fontSize: 12,
@@ -333,10 +323,6 @@ const styles = StyleSheet.create({
   submitButton: {
     marginTop: 15,
     borderRadius: 16,
-    elevation: 4,
-    ...Platform.select({
-      web: { boxShadow: '0px 4px 12px rgba(26, 35, 126, 0.25)' }
-    })
   },
   footerLinks: {
     flexDirection: "row",

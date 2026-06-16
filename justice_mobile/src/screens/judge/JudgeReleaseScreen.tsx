@@ -25,7 +25,7 @@ import AppHeader from "../../components/layout/AppHeader";
 import SmartFooter from "../../components/layout/SmartFooter";
 
 // Services
-import { updateComplaint, updateComplaintStatus } from "../../services/complaint.service";
+import { updateComplaint, transitionComplaint } from "../../services/complaint.service";
 
 // ✅ Correction du typage de la route
 export default function JudgeReleaseScreen({ route, navigation }: JudgeScreenProps<'JudgeRelease'>) {
@@ -90,7 +90,7 @@ export default function JudgeReleaseScreen({ route, navigation }: JudgeScreenPro
         }
       } as any);
 
-      await updateComplaintStatus(caseId, newStatus);
+      await transitionComplaint(caseId, newStatus);
       
       if (Platform.OS === 'web') window.alert("✅ Ordre d'élargissement transmis.");
       

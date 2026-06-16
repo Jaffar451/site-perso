@@ -50,29 +50,38 @@ export interface UserProfile {
  * Normalise la réponse pour garantir un objet user cohérent
  */
 const normalizeAuthResponse = (data: any): AuthResponse => {
-  if (data.user && typeof data.user === 'object') {
+  if (data?.user && typeof data.user === 'object') {
     return data as AuthResponse;
   }
   
   return {
-    token: data.token,
-    refreshToken: data.refreshToken,
+    token: data?.token,
+    refreshToken: data?.refreshToken,
     user: {
-      id: data.id,
-      email: data.email,
-      matricule: data.matricule,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      role: data.role,
-      permissions: data.permissions || [],
+      id: data?.id,
+      email: data?.email,
+      matricule: data?.matricule,
+      firstName: data?.firstName || data?.firstname,
+      lastName: data?.lastName || data?.lastname,
+      role: data?.role,
+      permissions: data?.permissions || [],
       ...data
     }
   };
 };
 
-export const login = async (identifier: string, password: string): Promise<AuthResponse> => {
+// ✅ CORRECTION : Accepte deux arguments séparés pour correspondre à useAuthStore
+export const login = async (
+  identifier: string, 
+  password: string
+): Promise<AuthResponse> => {
+  // Validation
+  if (!identifier?.trim() || !password) {
+    throw new Error('Identifiants requis');
+  }
+
   const payload = { 
-    identifier: identifier, 
+    identifier: identifier.trim(), 
     password: password 
   };
 
@@ -82,10 +91,18 @@ export const login = async (identifier: string, password: string): Promise<AuthR
         'Content-Type': 'application/json'
       }
     });
-    return normalizeAuthResponse(response.data);
+    
+    // ✅ CORRECTION : Vérifie si la réponse est enveloppée dans data ou directe
+    const responseData = response.data?.data || response.data;
+    return normalizeAuthResponse(responseData);
   } catch (error: any) {
     if (error.response) {
       console.error("Détail erreur serveur :", error.response.data);
+      // Renvoie le message d'erreur du backend s'il existe
+      const backendMessage = error.response.data?.message || error.response.data?.error;
+      if (backendMessage) {
+        throw new Error(backendMessage);
+      }
     }
     throw error;
   }
@@ -93,47 +110,51 @@ export const login = async (identifier: string, password: string): Promise<AuthR
 
 export const register = async (userData: RegisterData): Promise<AuthResponse> => {
   const response = await api.post<any>('/auth/register', userData);
-  return normalizeAuthResponse(response.data);
+  return normalizeAuthResponse(response.data?.data || response.data);
 };
 
 export const getProfile = async (): Promise<UserProfile> => {
   const response = await api.get<UserProfile>('/auth/me');
-  return response.data;
+  return response.data?.data || response.data;
 };
 
 export const updateProfile = async (userData: Partial<UserProfile>): Promise<UserProfile> => {
   const response = await api.put<UserProfile>('/auth/update', userData);
-  return response.data;
+  return response.data?.data || response.data;
 };
 
 export const changePassword = async (currentPassword: string, newPassword: string): Promise<{ message: string }> => {
-  const response = await api.post<{ message: string }>('/auth/change-password', { currentPassword, newPassword });
-  return response.data;
+  const response = await api.post<any>('/auth/change-password', { currentPassword, newPassword });
+  const data = response.data?.data || response.data;
+  return { message: data?.message || 'Mot de passe changé avec succès' };
 };
 
-// CORRECTION : Accepte le token de rafraîchissement
 export const logout = async (refreshToken?: string): Promise<void> => {
   await logoutFromApi({ refresh: refreshToken || '' });
 };
 
 export const requestPasswordReset = async (email: string): Promise<{ message: string }> => {
-  const response = await api.post<{ message: string }>('/auth/forgot-password', { email });
-  return response.data;
+  const response = await api.post<any>('/auth/forgot-password', { email });
+  const data = response.data?.data || response.data;
+  return { message: data?.message || 'Email de réinitialisation envoyé' };
 };
 
 export const resetPassword = async (token: string, newPassword: string): Promise<{ message: string }> => {
-  const response = await api.post<{ message: string }>('/auth/reset-password', { token, newPassword });
-  return response.data;
+  const response = await api.post<any>('/auth/reset-password', { token, newPassword });
+  const data = response.data?.data || response.data;
+  return { message: data?.message || 'Mot de passe réinitialisé avec succès' };
 };
 
 export const verifyEmail = async (token: string): Promise<{ message: string }> => {
-  const response = await api.post<{ message: string }>('/auth/verify-email', { token });
-  return response.data;
+  const response = await api.post<any>('/auth/verify-email', { token });
+  const data = response.data?.data || response.data;
+  return { message: data?.message || 'Email vérifié avec succès' };
 };
 
 export const resendVerificationEmail = async (email: string): Promise<{ message: string }> => {
-  const response = await api.post<{ message: string }>('/auth/resend-verification', { email });
-  return response.data;
+  const response = await api.post<any>('/auth/resend-verification', { email });
+  const data = response.data?.data || response.data;
+  return { message: data?.message || 'Email de vérification renvoyé' };
 };
 
 export const isEmailFormat = (identifier: string): boolean => {
@@ -141,7 +162,6 @@ export const isEmailFormat = (identifier: string): boolean => {
   return emailRegex.test(identifier);
 };
 
-// CORRECTION : Accepte le token de rafraîchissement
 export const forceLogout = async (refreshToken?: string): Promise<void> => {
   await logoutFromApi({ refresh: refreshToken || '' });
   if (typeof window !== 'undefined' && Platform.OS === 'web') {

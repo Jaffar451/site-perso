@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { 
-  View, TextInput, StyleSheet, Text, ScrollView, TouchableOpacity, 
-  Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Image, StatusBar
+import {
+  View, TextInput, StyleSheet, Text, ScrollView, TouchableOpacity,
+  Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Image, StatusBar,
+  Modal, FlatList
 } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,15 +15,14 @@ import AppHeader from "../../components/layout/AppHeader";
 import SmartFooter from "../../components/layout/SmartFooter";
 import { useAppTheme } from '../../theme/AppThemeProvider';
 import { createUser } from '../../services/admin.service';
-import { getAllCourts } from '../../services/court.service'; 
+import { getAllCourts } from '../../services/court.service';
 import { getAllStations } from '../../services/policeStation.service';
 
 type Props = NativeStackScreenProps<AdminStackParamList, 'AdminCreateUser'>;
-
 type UserRole = "admin" | "prosecutor" | "judge" | "greffier" | "commissaire" | "officier_police" | "inspecteur" | "citizen";
 type OrganizationType = "POLICE" | "GENDARMERIE" | "JUSTICE" | "ADMIN" | "CITIZEN";
 
-const ROLES_CONFIG: { value: UserRole; label: string; icon: string; color: string }[] = [
+const ROLES_CONFIG = [
   { value: "officier_police", label: "Officier (OPJ)", icon: "shield-outline", color: "#2563EB" },
   { value: "commissaire", label: "Commissaire", icon: "ribbon-outline", color: "#1E40AF" },
   { value: "prosecutor", label: "Procureur", icon: "business-outline", color: "#8B5CF6" },
@@ -30,7 +30,78 @@ const ROLES_CONFIG: { value: UserRole; label: string; icon: string; color: strin
   { value: "greffier", label: "Greffier", icon: "book-outline", color: "#0D9488" },
   { value: "admin", label: "Admin Système", icon: "key-outline", color: "#EF4444" },
   { value: "citizen", label: "Citoyen", icon: "person-outline", color: "#64748B" },
+] as const;
+
+const NIGER_REGIONS = [
+  "Agadez", "Diffa", "Dosso", "Maradi", "Tahoua", "Tillabéri", "Zinder", "Niamey"
 ];
+
+// ✅ COMPOSANTS DÉPLACÉS À L'EXTÉRIEUR pour éviter la perte de focus
+const InputField = ({ label, value, onChange, placeholder, icon, keyboardType = "default", editable = true, colors, isDark }: any) => (
+  <View style={styles.inputGroup}>
+    <Text style={[styles.label, { color: colors.textSub }]}>{label}</Text>
+    <View style={[styles.inputWrapper, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
+      <Ionicons name={icon} size={20} color={colors.textSub} style={{ marginRight: 12 }} />
+      <TextInput 
+        style={[styles.input, { color: colors.textMain }]} 
+        value={value} 
+        onChangeText={onChange} 
+        placeholder={placeholder} 
+        placeholderTextColor={isDark ? "#475569" : "#94A3B8"} 
+        keyboardType={keyboardType} 
+        autoCapitalize="none"
+        editable={editable}
+      />
+    </View>
+  </View>
+);
+
+const SelectField = ({ label, value, onSelect, placeholder, icon, options, colors, isDark }: any) => (
+  <View style={styles.inputGroup}>
+    <Text style={[styles.label, { color: colors.textSub }]}>{label}</Text>
+    <TouchableOpacity 
+      style={[styles.inputWrapper, { backgroundColor: colors.inputBg, borderColor: colors.border }]}
+      onPress={() => onSelect(true)}
+      activeOpacity={0.7}
+    >
+      <Ionicons name={icon} size={20} color={colors.textSub} style={{ marginRight: 12 }} />
+      <Text style={[styles.input, { color: value ? colors.textMain : (isDark ? "#475569" : "#94A3B8") }]}>
+        {value || placeholder}
+      </Text>
+      <Ionicons name="chevron-down-outline" size={20} color={colors.textSub} />
+    </TouchableOpacity>
+  </View>
+);
+
+const SelectionModal = ({ visible, onClose, title, options, onSelect, selectedValue, colors, primaryColor }: any) => (
+  <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <View style={styles.modalOverlay}>
+      <View style={[styles.modalContent, { backgroundColor: colors.bgCard }]}>
+        <View style={styles.modalHeader}>
+          <Text style={[styles.modalTitle, { color: colors.textMain }]}>{title}</Text>
+          <TouchableOpacity onPress={onClose}>
+            <Ionicons name="close-outline" size={24} color={colors.textSub} />
+          </TouchableOpacity>
+        </View>
+        <FlatList
+          data={options}
+          keyExtractor={(item: string) => item}
+          renderItem={({ item }: { item: string }) => (
+            <TouchableOpacity
+              style={[styles.modalItem, { borderBottomColor: colors.border }]}
+              onPress={() => { onSelect(item); onClose(); }}
+            >
+              <Text style={[styles.modalItemText, { color: colors.textMain }, selectedValue === item && { color: primaryColor, fontWeight: '700' }]}>
+                {item}
+              </Text>
+              {selectedValue === item && <Ionicons name="checkmark-outline" size={20} color={primaryColor} />}
+            </TouchableOpacity>
+          )}
+        />
+      </View>
+    </View>
+  </Modal>
+);
 
 export default function AdminCreateUserScreen({ navigation }: Props) {
   const { theme, isDark } = useAppTheme();
@@ -39,7 +110,17 @@ export default function AdminCreateUserScreen({ navigation }: Props) {
 
   const [image, setImage] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [showRegionModal, setShowRegionModal] = useState(false);
   
+  const [form, setForm] = useState({
+    firstname: '', lastname: '', email: '', personalEmail: '', telephone: '',
+    alternativePhone: '', password: '', role: 'officier_police' as UserRole,
+    selectedStructureId: null as number | null, matricule: '',
+    address: '', city: '', 
+    dateDay: '', dateMonth: '', dateYear: '',
+    placeOfBirth: '', region: '', nationality: 'Nigérienne', cin: '',
+  });
+
   const colors = {
     bgMain: isDark ? "#0F172A" : "#F8FAFC",
     bgCard: isDark ? "#1E293B" : "#FFFFFF",
@@ -49,158 +130,107 @@ export default function AdminCreateUserScreen({ navigation }: Props) {
     inputBg: isDark ? "#0F172A" : "#FFFFFF",
   };
 
-  // ✅ NOUVEAUX CHAMPS AJOUTÉS
-  const [form, setForm] = useState({
-    firstname: '',
-    lastname: '',
-    email: '', // Email professionnel
-    personalEmail: '', // ✅ Email personnel (NOUVEAU)
-    telephone: '',
-    alternativePhone: '', // ✅ Téléphone alternatif (NOUVEAU)
-    password: '',
-    role: 'officier_police' as UserRole,
-    selectedStructureId: null as number | null,
-    matricule: '',
-    station: '',
-    address: '', // ✅ Adresse complète (NOUVEAU)
-    city: '', // ✅ Ville (NOUVEAU)
-    dateOfBirth: '', // ✅ Date de naissance (NOUVEAU)
-    placeOfBirth: '', // ✅ Lieu de naissance (NOUVEAU)
-    nationality: 'Nigérienne', // ✅ Nationalité (NOUVEAU)
-    cin: '', // ✅ CIN/PIECE IDENTITÉ (NOUVEAU)
-  });
-
-  const generateSecurePassword = () => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
-    let password = "";
-    for (let i = 0; i < 12; i++) {
-      password += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    setForm({ ...form, password });
-    setShowPassword(true);
-  };
-
-  const { data: courtsRaw } = useQuery({
-    queryKey: ['courts'],
-    queryFn: getAllCourts,
+  const { data: courtsRaw, isLoading: loadingCourts } = useQuery({
+    queryKey: ['courts'], queryFn: getAllCourts,
     enabled: ['prosecutor', 'judge', 'greffier'].includes(form.role)
   });
 
-  const { data: stationsRaw } = useQuery({
-    queryKey: ['stations'],
-    queryFn: getAllStations,
+  const { data: stationsRaw, isLoading: loadingStations } = useQuery({
+    queryKey: ['stations'], queryFn: getAllStations,
     enabled: ['officier_police', 'commissaire'].includes(form.role)
   });
 
   const courts = useMemo(() => (courtsRaw as any)?.data || (Array.isArray(courtsRaw) ? courtsRaw : []), [courtsRaw]);
   const stations = useMemo(() => (stationsRaw as any)?.data || (Array.isArray(stationsRaw) ? stationsRaw : []), [stationsRaw]);
 
+  const generateSecurePassword = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+    let password = "";
+    for (let i = 0; i < 12; i++) password += chars.charAt(Math.floor(Math.random() * chars.length));
+    setForm(prev => ({ ...prev, password }));
+    setShowPassword(true);
+  };
+
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert("Permission refusée", "L'accès à la galerie est requis pour ajouter une photo.");
-      return;
-    }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-    if (!result.canceled && result.assets[0]) {
-      setImage(result.assets[0].uri);
-    }
+    if (status !== 'granted') return Alert.alert("Permission", "Accès galerie requis.");
+    const result = await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, aspect: [1, 1], quality: 0.8 });
+    if (!result.canceled) setImage(result.assets[0].uri);
   };
 
   const mutation = useMutation({
     mutationFn: (data: any) => createUser(data),
-    onSuccess: (newUser) => {
+    onSuccess: (newUser: any) => {
+      console.log('[CREATE USER] Réponse API brute:', newUser);
+      
+      // ✅ Extraction robuste de l'ID (supporte différents formats de réponse)
+      const userId = newUser?.id 
+        || newUser?._id 
+        || newUser?.data?.id 
+        || newUser?.data?._id
+        || newUser?.user?.id
+        || newUser?.user?._id;
+
+      // Invalider le cache des utilisateurs pour rafraîchir la liste
       queryClient.invalidateQueries({ queryKey: ['users'] });
-      navigation.replace("AdminUserDetails", { 
-        userId: newUser.id || newUser._id 
-      });
-      if (Platform.OS === 'web') {
-        window.alert("L'agent a été correctement enrôlé !");
-      } else {
+      
+      // ✅ Navigation sécurisée avec fallback
+      if (userId) {
+        navigation.replace("AdminUserDetails", { userId });
         Alert.alert("Succès", "L'agent a été correctement enrôlé !");
+      } else {
+        console.warn('[CREATE USER] ID non trouvé, retour à la liste');
+        Alert.alert(
+          "Succès", 
+          "L'agent a été créé ! (Détails indisponibles)",
+          [{ text: "OK", onPress: () => navigation.goBack() }]
+        );
       }
     },
     onError: (err: any) => {
-      Alert.alert("Échec", err.response?.data?.message || "Erreur serveur.");
+      console.error('[CREATE USER] Erreur:', err);
+      Alert.alert("Échec", err.response?.data?.message || "Erreur serveur.")
     }
   });
 
-  const handleCreateUser = async () => {
-    if (!form.firstname.trim() || !form.lastname.trim() || !form.email.trim() || !form.password.trim()) {
-      return Alert.alert("Données manquantes", "Prénom, nom, email pro et mot de passe sont obligatoires.");
+  const handleCreateUser = () => {
+    if (!form.firstname.trim() || !form.email.trim() || !form.password.trim()) {
+      return Alert.alert("Erreur", "Champs obligatoires manquants.");
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(form.email.trim())) {
-      return Alert.alert("Email pro invalide", "Veuillez saisir une adresse email valide.");
+    if (!form.dateDay || !form.dateMonth || !form.dateYear) {
+      return Alert.alert("Erreur", "Date de naissance incomplète.");
     }
-    if (form.personalEmail && !emailRegex.test(form.personalEmail.trim())) {
-      return Alert.alert("Email personnel invalide", "Veuillez saisir une adresse email valide.");
+    const day = form.dateDay.padStart(2, '0');
+    const month = form.dateMonth.padStart(2, '0');
+    const year = form.dateYear;
+    if (parseInt(day) > 31 || parseInt(month) > 12 || parseInt(year) < 1900) {
+      return Alert.alert("Erreur", "Date de naissance invalide.");
     }
-    if (form.password.length < 6) {
-      return Alert.alert("Mot de passe faible", "Le mot de passe doit contenir au moins 6 caractères.");
-    }
-
-    if (['commissaire', 'officier_police', 'prosecutor', 'judge', 'greffier'].includes(form.role)) {
-      if (!form.selectedStructureId) {
-        return Alert.alert("Affectation requise", "Veuillez sélectionner une unité ou juridiction.");
-      }
-    }
+    const formattedDate = `${day}/${month}/${year}`;
 
     let organization: OrganizationType = "CITIZEN";
     if (['officier_police', 'commissaire'].includes(form.role)) organization = "POLICE";
     else if (['prosecutor', 'judge', 'greffier'].includes(form.role)) organization = "JUSTICE";
     else if (form.role === 'admin') organization = "ADMIN";
 
-    const payload = {
+    mutation.mutate({
       ...form,
-      firstname: form.firstname.trim(),
-      lastname: form.lastname.trim().toUpperCase(),
-      email: form.email.trim().toLowerCase(),
-      personalEmail: form.personalEmail ? form.personalEmail.trim().toLowerCase() : null,
-      matricule: form.matricule || `MAT-${Date.now().toString().slice(-6)}`,
+      dateOfBirth: formattedDate,
+      organization,
       courtId: organization === "JUSTICE" ? Number(form.selectedStructureId) : null,
       policeStationId: organization === "POLICE" ? Number(form.selectedStructureId) : null,
-      organization,
-      isActive: true,
       photo: image,
-    };
-
-    mutation.mutate(payload);
+    });
   };
-
-  const InputField = ({ label, value, onChange, placeholder, icon, keyboardType = "default" }: any) => (
-    <View style={styles.inputGroup}>
-      <Text style={[styles.label, { color: colors.textSub }]}>{label}</Text>
-      <View style={[styles.inputWrapper, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
-        <Ionicons name={icon} size={20} color={colors.textSub} style={{ marginRight: 12 }} />
-        <TextInput
-          style={[styles.input, { color: colors.textMain }]}
-          value={value}
-          onChangeText={onChange}
-          placeholder={placeholder}
-          placeholderTextColor={isDark ? "#475569" : "#94A3B8"}
-          keyboardType={keyboardType}
-          autoCapitalize="none"
-        />
-      </View>
-    </View>
-  );
 
   return (
     <ScreenContainer withPadding={false}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
       <AppHeader title="Enrôlement Agent" showBack={true} />
-      
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1, backgroundColor: colors.bgMain }}>
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-          
-          {/* PHOTO */}
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          {/* PHOTO UPLOAD */}
           <View style={styles.photoUploadContainer}>
             <TouchableOpacity style={[styles.photoFrame, { backgroundColor: colors.bgCard, borderColor: colors.border }]} onPress={pickImage}>
               {image ? <Image source={{ uri: image }} style={styles.fullImage} /> : (
@@ -210,139 +240,174 @@ export default function AdminCreateUserScreen({ navigation }: Props) {
                 </View>
               )}
             </TouchableOpacity>
-            <Text style={[styles.photoHint, { color: colors.textSub }]}>Photo d'identification (optionnel)</Text>
           </View>
 
-          {/* IDENTITÉ */}
-          <Text style={[styles.sectionTitle, { color: colors.textSub }]}>Identité Officielle</Text>
+          {/* SECTION IDENTITÉ */}
+          <Text style={[styles.sectionTitle, { color: colors.textMain }]}>Identité</Text>
           <View style={styles.inputRow}>
-            <View style={{ flex: 1, marginRight: 10 }}>
-              <InputField label="Prénom" value={form.firstname} onChange={(t: string) => setForm({...form, firstname: t})} placeholder="Prénom" icon="person-outline" />
+            <View style={{ flex: 1 }}>
+              <InputField label="Prénom *" value={form.firstname} onChange={(text: string) => setForm(p => ({...p, firstname: text}))} placeholder="Prénom" icon="person-outline" colors={colors} isDark={isDark} />
             </View>
             <View style={{ flex: 1 }}>
-              <InputField label="Nom" value={form.lastname} onChange={(t: string) => setForm({...form, lastname: t})} placeholder="NOM" icon="person-outline" />
+              <InputField label="Nom *" value={form.lastname} onChange={(text: string) => setForm(p => ({...p, lastname: text}))} placeholder="Nom" icon="person-outline" colors={colors} isDark={isDark} />
             </View>
           </View>
 
-          <View style={styles.inputRow}>
-            <View style={{ flex: 1, marginRight: 10 }}>
-              <InputField label="Date de naissance" value={form.dateOfBirth} onChange={(t: string) => setForm({...form, dateOfBirth: t})} placeholder="JJ/MM/AAAA" icon="calendar-outline" keyboardType="numeric" />
-            </View>
-            <View style={{ flex: 1 }}>
-              <InputField label="Lieu de naissance" value={form.placeOfBirth} onChange={(t: string) => setForm({...form, placeOfBirth: t})} placeholder="Ville, Pays" icon="location-outline" />
-            </View>
-          </View>
-
-          <InputField label="Nationalité" value={form.nationality} onChange={(t: string) => setForm({...form, nationality: t})} placeholder="Nationalité" icon="flag-outline" />
-          <InputField label="N° Pièce d'identité (CIN)" value={form.cin} onChange={(t: string) => setForm({...form, cin: t.toUpperCase()})} placeholder="Numéro de pièce" icon="card-outline" />
-
-          {/* CONTACT */}
-          <Text style={[styles.sectionTitle, { color: colors.textSub }]}>Coordonnées</Text>
-          <InputField label="Email Professionnel *" value={form.email} onChange={(t: string) => setForm({...form, email: t})} placeholder="agent@justice.ne" icon="mail-outline" keyboardType="email-address" />
-          <InputField label="Email Personnel" value={form.personalEmail} onChange={(t: string) => setForm({...form, personalEmail: t})} placeholder="email@personnel.com" icon="mail-unread-outline" keyboardType="email-address" />
-          
-          <View style={styles.inputRow}>
-            <View style={{ flex: 1, marginRight: 10 }}>
-              <InputField label="Téléphone *" value={form.telephone} onChange={(t: string) => setForm({...form, telephone: t})} placeholder="90000000" icon="call-outline" keyboardType="phone-pad" />
-            </View>
-            <View style={{ flex: 1 }}>
-              <InputField label="Téléphone Alt." value={form.alternativePhone} onChange={(t: string) => setForm({...form, alternativePhone: t})} placeholder="96000000" icon="call-outline" keyboardType="phone-pad" />
-            </View>
-          </View>
-
-          <InputField label="Adresse Complète" value={form.address} onChange={(t: string) => setForm({...form, address: t})} placeholder="Quartier, Rue, N°" icon="home-outline" />
-          <InputField label="Ville" value={form.city} onChange={(t: string) => setForm({...form, city: t})} placeholder="Ville de résidence" icon="location-outline" />
-
-          {/* SÉCURITÉ */}
-          <Text style={[styles.sectionTitle, { color: colors.textSub }]}>Sécurité</Text>
+          {/* DATE DE NAISSANCE SÉPARÉE */}
           <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: colors.textSub }]}>MOT DE PASSE *</Text>
+            <Text style={[styles.label, { color: colors.textSub }]}>Date de Naissance *</Text>
+            <View style={styles.inputRow}>
+              <View style={{ flex: 0.3 }}>
+                <InputField label="Jour" value={form.dateDay} onChange={(text: string) => setForm(p => ({...p, dateDay: text.replace(/\D/g, '')}))} placeholder="JJ" icon="calendar-outline" keyboardType="numeric" maxLength={2} colors={colors} isDark={isDark} />
+              </View>
+              <View style={{ flex: 0.3 }}>
+                <InputField label="Mois" value={form.dateMonth} onChange={(text: string) => setForm(p => ({...p, dateMonth: text.replace(/\D/g, '')}))} placeholder="MM" icon="calendar-outline" keyboardType="numeric" maxLength={2} colors={colors} isDark={isDark} />
+              </View>
+              <View style={{ flex: 0.4 }}>
+                <InputField label="Année" value={form.dateYear} onChange={(text: string) => setForm(p => ({...p, dateYear: text.replace(/\D/g, '')}))} placeholder="AAAA" icon="calendar-outline" keyboardType="numeric" maxLength={4} colors={colors} isDark={isDark} />
+              </View>
+            </View>
+          </View>
+
+          {/* Lieu de Naissance - Champ de saisie texte */}
+          <InputField
+            label="Lieu de Naissance"
+            value={form.placeOfBirth}
+            onChange={(text: string) => setForm(p => ({...p, placeOfBirth: text}))}
+            placeholder="Ville de naissance"
+            icon="location-outline"
+            colors={colors}
+            isDark={isDark}
+          />
+
+          {/* Région - Sélection avec modal */}
+          <SelectField
+            label="Région"
+            value={form.region}
+            onSelect={() => setShowRegionModal(true)}
+            placeholder="Sélectionner une région"
+            icon="map-outline"
+            options={NIGER_REGIONS}
+            colors={colors}
+            isDark={isDark}
+          />
+
+          <View style={styles.inputRow}>
+            <View style={{ flex: 1 }}>
+              <InputField label="Nationalité" value={form.nationality} onChange={(text: string) => setForm(p => ({...p, nationality: text}))} placeholder="Nigérienne" icon="flag-outline" colors={colors} isDark={isDark} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <InputField label="CIN" value={form.cin} onChange={(text: string) => setForm(p => ({...p, cin: text}))} placeholder="N° CIN" icon="card-outline" colors={colors} isDark={isDark} />
+            </View>
+          </View>
+
+          {/* SECTION CONTACT */}
+          <Text style={[styles.sectionTitle, { color: colors.textMain }]}>Contact</Text>
+          <InputField label="Email Professionnel *" value={form.email} onChange={(text: string) => setForm(p => ({...p, email: text}))} placeholder="email@justice.gov.ne" icon="mail-outline" keyboardType="email-address" colors={colors} isDark={isDark} />
+          <InputField label="Email Personnel" value={form.personalEmail} onChange={(text: string) => setForm(p => ({...p, personalEmail: text}))} placeholder="email@example.com" icon="mail-outline" keyboardType="email-address" colors={colors} isDark={isDark} />
+
+          <View style={styles.inputRow}>
+            <View style={{ flex: 1 }}>
+              <InputField label="Téléphone *" value={form.telephone} onChange={(text: string) => setForm(p => ({...p, telephone: text}))} placeholder="+227 XXXXXXXX" icon="call-outline" keyboardType="phone-pad" colors={colors} isDark={isDark} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <InputField label="Téléphone Alt." value={form.alternativePhone} onChange={(text: string) => setForm(p => ({...p, alternativePhone: text}))} placeholder="+227 XXXXXXXX" icon="call-outline" keyboardType="phone-pad" colors={colors} isDark={isDark} />
+            </View>
+          </View>
+
+          {/* SECTION ADRESSE */}
+          <Text style={[styles.sectionTitle, { color: colors.textMain }]}>Adresse</Text>
+          <InputField label="Adresse" value={form.address} onChange={(text: string) => setForm(p => ({...p, address: text}))} placeholder="Rue, numéro" icon="home-outline" colors={colors} isDark={isDark} />
+          <InputField label="Ville" value={form.city} onChange={(text: string) => setForm(p => ({...p, city: text}))} placeholder="Niamey" icon="location-outline" colors={colors} isDark={isDark} />
+
+          {/* SECTION PROFESSIONNEL */}
+          <Text style={[styles.sectionTitle, { color: colors.textMain }]}>Professionnel</Text>
+          <InputField label="Matricule" value={form.matricule} onChange={(text: string) => setForm(p => ({...p, matricule: text}))} placeholder="MAT-2026-001" icon="id-card-outline" colors={colors} isDark={isDark} />
+
+          {/* SÉLECTION RÔLE */}
+          <Text style={[styles.label, { color: colors.textSub, marginTop: 15 }]}>Rôle *</Text>
+          <View style={styles.roleGrid}>
+            {ROLES_CONFIG.map((roleOption) => (
+              <TouchableOpacity
+                key={roleOption.value}
+                style={[
+                  styles.roleCard,
+                  {
+                    backgroundColor: form.role === roleOption.value ? roleOption.color : colors.bgCard,
+                    borderColor: form.role === roleOption.value ? roleOption.color : colors.border,
+                  }
+                ]}
+                onPress={() => setForm(p => ({...p, role: roleOption.value as UserRole, selectedStructureId: null }))}
+              >
+                <Ionicons name={roleOption.icon} size={20} color={form.role === roleOption.value ? "#FFF" : roleOption.color} />
+                <Text style={[styles.roleLabel, { color: form.role === roleOption.value ? "#FFF" : colors.textMain }]}>{roleOption.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* SÉLECTION STRUCTURE (Dynamique) */}
+          {['prosecutor', 'judge', 'greffier'].includes(form.role) && (
+            <View>
+              <Text style={[styles.label, { color: colors.textSub, marginTop: 20 }]}>Tribunal *</Text>
+              {loadingCourts ? <ActivityIndicator color={primaryColor} style={{ marginVertical: 20 }} /> : (
+                <View style={styles.structureList}>
+                  {courts.map((court: any) => (
+                    <TouchableOpacity key={court.id} style={[styles.structureItem, { backgroundColor: form.selectedStructureId === court.id ? primaryColor : colors.bgCard, borderWidth: 1, borderColor: form.selectedStructureId === court.id ? primaryColor : colors.border }]} onPress={() => setForm(p => ({...p, selectedStructureId: court.id }))}>
+                      <Ionicons name="business-outline" size={20} color={form.selectedStructureId === court.id ? "#FFF" : colors.textMain} />
+                      <View style={{ flex: 1, marginLeft: 12 }}>
+                        <Text style={[{ fontWeight: '700', fontSize: 14 }, { color: form.selectedStructureId === court.id ? "#FFF" : colors.textMain }]}>{court.name}</Text>
+                        <Text style={[{ fontWeight: '500', fontSize: 12, marginTop: 2 }, { color: form.selectedStructureId === court.id ? "rgba(255,255,255,0.8)" : colors.textSub }]}>{court.region}</Text>
+                      </View>
+                      {form.selectedStructureId === court.id && <Ionicons name="checkmark-circle" size={24} color="#FFF" />}
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
+          )}
+
+          {['officier_police', 'commissaire'].includes(form.role) && (
+            <View>
+              <Text style={[styles.label, { color: colors.textSub, marginTop: 20 }]}>Poste de Police *</Text>
+              {loadingStations ? <ActivityIndicator color={primaryColor} style={{ marginVertical: 20 }} /> : (
+                <View style={styles.structureList}>
+                  {stations.map((station: any) => (
+                    <TouchableOpacity key={station.id} style={[styles.structureItem, { backgroundColor: form.selectedStructureId === station.id ? primaryColor : colors.bgCard, borderWidth: 1, borderColor: form.selectedStructureId === station.id ? primaryColor : colors.border }]} onPress={() => setForm(p => ({...p, selectedStructureId: station.id }))}>
+                      <Ionicons name="shield-outline" size={20} color={form.selectedStructureId === station.id ? "#FFF" : colors.textMain} />
+                      <View style={{ flex: 1, marginLeft: 12 }}>
+                        <Text style={[{ fontWeight: '700', fontSize: 14 }, { color: form.selectedStructureId === station.id ? "#FFF" : colors.textMain }]}>{station.name}</Text>
+                        <Text style={[{ fontWeight: '500', fontSize: 12, marginTop: 2 }, { color: form.selectedStructureId === station.id ? "rgba(255,255,255,0.8)" : colors.textSub }]}>{station.region}</Text>
+                      </View>
+                      {form.selectedStructureId === station.id && <Ionicons name="checkmark-circle" size={24} color="#FFF" />}
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
+          )}
+
+          {/* SECTION SÉCURITÉ */}
+          <Text style={[styles.sectionTitle, { color: colors.textMain }]}>Sécurité</Text>
+          <View style={[styles.inputGroup]}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <Text style={[styles.label, { color: colors.textSub }]}>Mot de passe *</Text>
+              <TouchableOpacity onPress={generateSecurePassword}><Text style={[styles.label, { color: primaryColor, fontSize: 10 }]}>GÉNÉRER</Text></TouchableOpacity>
+            </View>
             <View style={[styles.inputWrapper, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
               <Ionicons name="lock-closed-outline" size={20} color={colors.textSub} style={{ marginRight: 12 }} />
-              <TextInput
-                style={[styles.input, { color: colors.textMain }]}
-                value={form.password}
-                onChangeText={(t) => setForm({...form, password: t})}
-                placeholder="Mot de passe"
-                placeholderTextColor={isDark ? "#475569" : "#94A3B8"}
-                secureTextEntry={!showPassword}
-              />
-              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={{ padding: 8 }}>
-                <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={20} color={colors.textSub} />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={generateSecurePassword} style={{ padding: 8 }}>
-                <Ionicons name="refresh-outline" size={20} color={primaryColor} />
-              </TouchableOpacity>
+              <TextInput style={[styles.input, { color: colors.textMain }]} value={form.password} onChangeText={(text: string) => setForm(p => ({...p, password: text}))} placeholder="••••••••" placeholderTextColor={isDark ? "#475569" : "#94A3B8"} secureTextEntry={!showPassword} />
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}><Ionicons name={showPassword ? "eye-outline" : "eye-off-outline"} size={20} color={colors.textSub} /></TouchableOpacity>
             </View>
-            <Text style={{ fontSize: 10, color: colors.textSub, marginTop: 5 }}>Cliquez sur la flèche pour générer un mot de passe sécurisé</Text>
           </View>
 
-          {form.role !== 'citizen' && (
-            <InputField label="Numéro de Matricule" value={form.matricule} onChange={(t: string) => setForm({...form, matricule: t.toUpperCase()})} placeholder="MAT-000000" icon="barcode-outline" />
-          )}
-
-          {/* RÔLES */}
-          <Text style={[styles.sectionTitle, { color: colors.textSub }]}>Habilitation Système</Text>
-          <View style={styles.roleGrid}>
-            {ROLES_CONFIG.map((r) => {
-              const isSelected = form.role === r.value;
-              return (
-                <TouchableOpacity
-                  key={r.value}
-                  activeOpacity={0.8}
-                  onPress={() => setForm({...form, role: r.value as UserRole, selectedStructureId: null})}
-                  style={[styles.roleCard, { backgroundColor: isSelected ? r.color : colors.bgCard, borderColor: isSelected ? r.color : colors.border }]}
-                >
-                  <Ionicons name={r.icon as any} size={18} color={isSelected ? "#FFF" : r.color} />
-                  <Text style={[styles.roleLabel, { color: isSelected ? "#FFF" : colors.textMain }]} numberOfLines={1}>{r.label}</Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-
-          {/* AFFECTATION */}
-          {['commissaire', 'officier_police', 'prosecutor', 'judge', 'greffier'].includes(form.role) && (
-            <View style={{ marginTop: 25 }}>
-              <Text style={[styles.sectionTitle, { color: colors.textSub }]}>Unité ou Juridiction d'affectation</Text>
-              <View style={styles.structureList}>
-                {((form.role === 'officier_police' || form.role === 'commissaire') ? stations : courts).map((item: any) => (
-                  <TouchableOpacity
-                    key={item.id}
-                    onPress={() => setForm({...form, selectedStructureId: item.id})}
-                    style={[styles.structureItem, { 
-                      backgroundColor: colors.bgCard, 
-                      borderColor: form.selectedStructureId === item.id ? primaryColor : colors.border,
-                      borderWidth: form.selectedStructureId === item.id ? 2 : 1.5
-                    }]}
-                  >
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ color: colors.textMain, fontWeight: "800", fontSize: 14 }}>{item.name}</Text>
-                      <Text style={{ color: colors.textSub, fontSize: 11, marginTop: 2 }}>{item.city || item.jurisdiction}</Text>
-                    </View>
-                    {form.selectedStructureId === item.id && <Ionicons name="checkmark-circle" size={24} color={primaryColor} />}
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-          )}
-
-          {/* BOUTON */}
-          <TouchableOpacity 
-            activeOpacity={0.85}
-            style={[styles.submitBtn, { backgroundColor: primaryColor }, mutation.isPending && { opacity: 0.6 }]} 
-            onPress={handleCreateUser}
-            disabled={mutation.isPending}
-          >
-            {mutation.isPending ? <ActivityIndicator color="#FFF" /> : (
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Text style={styles.submitText}>VALIDER L'ENRÔLEMENT</Text>
-                <Ionicons name="shield-checkmark-outline" size={20} color="#FFF" style={{ marginLeft: 10 }} />
-              </View>
-            )}
+          {/* BOUTON SOUMETTRE */}
+          <TouchableOpacity style={[styles.submitBtn, { backgroundColor: primaryColor }, mutation.isPending && { opacity: 0.6 }]} onPress={handleCreateUser} disabled={mutation.isPending}>
+            {mutation.isPending ? <ActivityIndicator color="#FFF" /> : <Text style={styles.submitText}>VALIDER L'ENRÔLEMENT</Text>}
           </TouchableOpacity>
-
-          <View style={{ height: 120 }} />
         </ScrollView>
+
+        {/* Modal de sélection pour la région */}
+        <SelectionModal visible={showRegionModal} onClose={() => setShowRegionModal(false)} title="Région" options={NIGER_REGIONS} onSelect={(value: string) => setForm(p => ({...p, region: value}))} selectedValue={form.region} colors={colors} primaryColor={primaryColor} />
       </KeyboardAvoidingView>
       <SmartFooter />
     </ScreenContainer>
@@ -368,6 +433,12 @@ const styles = StyleSheet.create({
   roleLabel: { fontSize: 11, fontWeight: '800', flex: 1 },
   structureList: { gap: 10 },
   structureItem: { flexDirection: 'row', alignItems: 'center', padding: 18, borderRadius: 18 },
-  submitBtn: { height: 64, borderRadius: 22, justifyContent: 'center', alignItems: 'center', marginTop: 35, elevation: 4 },
-  submitText: { color: '#FFF', fontWeight: '900', fontSize: 15, letterSpacing: 1.5 }
+  submitBtn: { height: 64, borderRadius: 22, justifyContent: 'center', alignItems: 'center', marginTop: 35, elevation: 4, ...(Platform.OS === 'web' ? { boxShadow: '0px 4px 10px rgba(0,0,0,0.1)' } : {}) },
+  submitText: { color: '#FFF', fontWeight: '900', fontSize: 15, letterSpacing: 1.5 },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  modalContent: { width: '100%', borderRadius: 20, padding: 20, maxHeight: '80%' },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 15, borderBottomWidth: 1 },
+  modalTitle: { fontSize: 16, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1 },
+  modalItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, borderBottomWidth: 1 },
+  modalItemText: { fontSize: 14, fontWeight: '600' },
 });

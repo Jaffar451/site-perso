@@ -58,6 +58,13 @@ export type CreateUserPayload = {
 
 export type UpdateProfilePayload = Partial<Omit<User, "id" | "role" | "organization" | "email">>;
 
+// ─── Structure de l'erreur 409 retournée par le backend ──────────────────────
+export interface ApiConflictError {
+  message: string;      // Message lisible : "Cet email est déjà utilisé"
+  field?: string;       // Champ en conflit : "email"
+  value?: string;       // Valeur rejetée
+}
+
 // ─── Helper pour unwrapper les réponses API ────────────────────────────────
 const unwrap = <T>(res: any): T => res.data?.data || res.data;
 
@@ -88,9 +95,28 @@ export const createUser = async (payload: CreateUserPayload): Promise<User> => {
   return unwrap<User>(res);
 };
 
+/**
+ * Met à jour un utilisateur (admin).
+ * Gère spécifiquement l'erreur HTTP 409 Conflict pour extraire
+ * la raison métier du conflit (email, matricule, etc.)
+ */
 export const updateUser = async (id: number, payload: Partial<User>): Promise<User> => {
-  const res = await api.patch<any>(`/users/${id}`, payload);
-  return unwrap<User>(res);
+  try {
+    const res = await api.patch<any>(`/users/${id}`, payload);
+    return unwrap<User>(res);
+  } catch (error: any) {
+    // Gestion avancée du conflit (email déjà utilisé, matricule en double, etc.)
+    if (error.response?.status === 409) {
+      const conflictData: ApiConflictError = error.response?.data?.data || error.response?.data || {};
+      const fieldInfo = conflictData.field ? ` (${conflictData.field})` : '';
+      const errorMessage = conflictData.message || `Une contrainte d'unicité a été violée${fieldInfo}.`;
+      
+      // On relève une erreur avec un message utilisateur explicite
+      throw new Error(errorMessage);
+    }
+    // Autres codes d'erreur (400, 403, 500) : propagation standard
+    throw error;
+  }
 };
 
 export const deleteUser = async (id: number): Promise<void> => {

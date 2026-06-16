@@ -22,20 +22,23 @@ interface ExtendedComplaint extends Complaint {
   isOfflinePending?: boolean;
 }
 
-// ─── Config statut citoyen — garde les icônes spécifiques ──────────────────
 const getStatusStyle = (status: string, isOffline: boolean, isDark: boolean, textSub: string) => {
-  if (isOffline) return { label: "EN ATTENTE D'ENVOI", color: "#EA580C", icon: "cloud-offline", bg: isDark ? "#431407" : "#FFEDD5" };
+  if (isOffline) return { label: "EN ATTENTE D'ENVOI", color: "#EA580C", icon: "cloud-offline-outline", bg: isDark ? "#431407" : "#FFEDD5" };
   switch (status?.toLowerCase()) {
-    case "soumise":           return { label: "À SIGNER AU POSTE",  color: "#F59E0B", icon: "walk",         bg: isDark ? "#451a03" : "#FFFBEB" };
-    case "en_cours_opj":      return { label: "ENQUÊTE POLICE",     color: "#3B82F6", icon: "shield",        bg: isDark ? "#172554" : "#EFF6FF" };
-    case "transmise_parquet": return { label: "AU PARQUET",         color: "#8B5CF6", icon: "briefcase",     bg: isDark ? "#2e1065" : "#F5F3FF" };
-    case "jugée":             return { label: "VERDICT RENDU",      color: "#10B981", icon: "hammer",        bg: isDark ? "#064e3b" : "#F0FDF4" };
-    case "classée_sans_suite":return { label: "AFFAIRE CLOSE",      color: "#EF4444", icon: "close-circle",  bg: isDark ? "#450a0a" : "#FEF2F2" };
-    default:                  return { label: "EN TRAITEMENT",      color: textSub,   icon: "time",          bg: isDark ? "#0F172A" : "#F8FAFC" };
+    case "soumise":                        return { label: "À SIGNER AU POSTE",  color: "#F59E0B", icon: "walk-outline",          bg: isDark ? "#451a03" : "#FFFBEB" };
+    case "en_cours_opj":
+    case "en_cours_ojp":                   return { label: "ENQUÊTE POLICE",     color: "#3B82F6", icon: "shield-outline",         bg: isDark ? "#172554" : "#EFF6FF" };
+    case "attente_validation":             return { label: "EN VALIDATION",      color: "#F59E0B", icon: "hourglass-outline",      bg: isDark ? "#451a03" : "#FFFBEB" };
+    case "transmise_parquet":              return { label: "AU PARQUET",         color: "#8B5CF6", icon: "briefcase-outline",      bg: isDark ? "#2e1065" : "#F5F3FF" };
+    case "figée":
+    case "jugée":                          return { label: "VERDICT RENDU",      color: "#10B981", icon: "hammer-outline",         bg: isDark ? "#064e3b" : "#F0FDF4" };
+    case "classée_sans_suite_par_ojp":
+    case "classée_sans_suite_par_procureur":
+    case "classée_sans_suite":             return { label: "AFFAIRE CLOSE",      color: "#EF4444", icon: "close-circle-outline",   bg: isDark ? "#450a0a" : "#FEF2F2" };
+    default:                               return { label: "EN TRAITEMENT",      color: textSub,   icon: "time-outline",           bg: isDark ? "#0F172A" : "#F8FAFC" };
   }
 };
 
-// ─── Carte mémoïsée ────────────────────────────────────────────────────────
 const ComplaintCard = memo(({
   item, isDark, textMain, textSub, borderCol, primaryColor, onPress
 }: {
@@ -71,7 +74,7 @@ const ComplaintCard = memo(({
           {isOffline ? "EN ATTENTE" : `RÉF : #${item.trackingCode || item.id}`}
         </Text>
         <Text style={[styles.dateText, { color: textSub }]}>
-          {item.filedAt ? new Date(item.filedAt).toLocaleDateString("fr-FR") : ""}
+          {item.filedAt ? new Date(item.filedAt ?? item.createdAt ?? Date.now()).toLocaleDateString("fr-FR") : ""}
         </Text>
       </View>
 
@@ -99,7 +102,6 @@ const ComplaintCard = memo(({
   );
 });
 
-// ─── Écran principal ────────────────────────────────────────────────────────
 export default function CitizenMyComplaintsScreen({ navigation }: CitizenScreenProps<'CitizenMyComplaints'>) {
   const { theme, isDark } = useAppTheme();
   const primaryColor = theme.colors.primary;
@@ -110,7 +112,6 @@ export default function CitizenMyComplaintsScreen({ navigation }: CitizenScreenP
   const borderCol = isDark ? "#334155" : "#F1F5F9";
   const bgMain    = isDark ? "#0F172A" : "#F8FAFC";
 
-  // React Query — fusionne offline + online
   const { data: complaints = [], isLoading, refetch, isRefetching } = useQuery({
     queryKey: ['my-complaints'],
     queryFn: async () => {
@@ -182,7 +183,7 @@ export default function CitizenMyComplaintsScreen({ navigation }: CitizenScreenP
       <View style={[styles.container, { backgroundColor: bgMain }]}>
         {hasPendingValidation && (
           <View style={[styles.alertBar, { backgroundColor: "#F59E0B" }]}>
-            <Ionicons name="walk" size={24} color="#FFF" />
+            <Ionicons name="walk-outline" size={24} color="#FFF" />
             <View style={{ flex: 1, marginLeft: 12 }}>
               <Text style={styles.alertTitle}>Passage au poste nécessaire</Text>
               <Text style={styles.alertSub}>Veuillez vous présenter pour signer vos dépôts numériques.</Text>
@@ -232,33 +233,33 @@ export default function CitizenMyComplaintsScreen({ navigation }: CitizenScreenP
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  listContent: { padding: 16, paddingBottom: 160 },
-  center: { flex: 1, justifyContent: "center", alignItems: "center" },
-  alertBar: { flexDirection: 'row', margin: 16, padding: 16, borderRadius: 20, alignItems: 'center', elevation: 4 },
-  alertTitle: { color: '#FFF', fontWeight: '900', fontSize: 13, textTransform: 'uppercase' },
-  alertSub: { color: 'rgba(255,255,255,0.9)', fontSize: 11, fontWeight: '600' },
+  container:    { flex: 1 },
+  listContent:  { padding: 16, paddingBottom: 160 },
+  center:       { flex: 1, justifyContent: "center", alignItems: "center" },
+  alertBar:     { flexDirection: 'row', margin: 16, padding: 16, borderRadius: 20, alignItems: 'center', elevation: 4 },
+  alertTitle:   { color: '#FFF', fontWeight: '900', fontSize: 13, textTransform: 'uppercase' },
+  alertSub:     { color: 'rgba(255,255,255,0.9)', fontSize: 11, fontWeight: '600' },
   card: {
     padding: 18, borderRadius: 24, marginBottom: 16, borderLeftWidth: 6,
     ...Platform.select({
-      ios: { shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 10 },
+      ios:     { shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 10 },
       android: { elevation: 2 },
-      web: { boxShadow: "0px 4px 12px rgba(0,0,0,0.05)" }
+      web:     { boxShadow: "0px 4px 12px rgba(0,0,0,0.05)" }
     })
   },
-  cardHeader: { flexDirection: "row", justifyContent: "space-between", marginBottom: 12, alignItems: 'center' },
-  refText: { fontSize: 10, fontWeight: "900", letterSpacing: 1 },
-  dateText: { fontSize: 11, fontWeight: "700" },
-  titleText: { fontSize: 17, fontWeight: "900", marginBottom: 8 },
-  descText: { fontSize: 13, marginBottom: 18, lineHeight: 20, opacity: 0.8 },
-  cardFooter: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  statusBadge: { flexDirection: "row", alignItems: "center", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 },
-  statusText: { fontSize: 10, fontWeight: "900" },
-  actionPrompt: { backgroundColor: '#F59E0B', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 6 },
-  actionPromptText: { color: '#FFF', fontSize: 9, fontWeight: '900' },
-  emptyContainer: { alignItems: "center", marginTop: 100, paddingHorizontal: 60 },
-  emptyTitle: { fontSize: 18, fontWeight: "900", marginTop: 15 },
-  emptySub: { fontSize: 13, marginTop: 8, textAlign: 'center' },
+  cardHeader:      { flexDirection: "row", justifyContent: "space-between", marginBottom: 12, alignItems: 'center' },
+  refText:         { fontSize: 10, fontWeight: "900", letterSpacing: 1 },
+  dateText:        { fontSize: 11, fontWeight: "700" },
+  titleText:       { fontSize: 17, fontWeight: "900", marginBottom: 8 },
+  descText:        { fontSize: 13, marginBottom: 18, lineHeight: 20, opacity: 0.8 },
+  cardFooter:      { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  statusBadge:     { flexDirection: "row", alignItems: "center", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 },
+  statusText:      { fontSize: 10, fontWeight: "900" },
+  actionPrompt:    { backgroundColor: '#F59E0B', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 6 },
+  actionPromptText:{ color: '#FFF', fontSize: 9, fontWeight: '900' },
+  emptyContainer:  { alignItems: "center", marginTop: 100, paddingHorizontal: 60 },
+  emptyTitle:      { fontSize: 18, fontWeight: "900", marginTop: 15 },
+  emptySub:        { fontSize: 13, marginTop: 8, textAlign: 'center' },
   fab: {
     position: "absolute", bottom: 100, right: 20, width: 62, height: 62,
     borderRadius: 20, justifyContent: "center", alignItems: "center",

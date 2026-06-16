@@ -191,7 +191,7 @@ export default function LawyerCaseDetailScreen({ route, navigation }: LawyerScre
                     {doc.filename || "Pièce jointe"}
                 </Text>
                 <Text style={[styles.docDate, { color: colors.textSub }]}>
-                    Versé le : {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString("fr-FR") : "Date inconnue"}
+                    Versé le : {doc.createdAt ? new Date(doc.createdAt ?? Date.now()).toLocaleDateString("fr-FR") : "Date inconnue"}
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color={colors.textSub} />

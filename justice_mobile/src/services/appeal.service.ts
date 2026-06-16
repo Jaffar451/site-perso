@@ -1,3 +1,4 @@
+// @TODO: add try/catch around api calls
 import api from "./api";
 
 export interface CreateAppealPayload {

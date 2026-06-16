@@ -30,7 +30,7 @@ import SmartFooter from "../../components/layout/SmartFooter";
 import { registerAppeal } from "../../services/appeal.service";
 
 export default function JudgeAppealScreen({ route, navigation }: JudgeScreenProps<'JudgeAppeal'>) {
-  const { theme, isDark } = useAppTheme();
+  const { isDark } = useAppTheme();
   const { user } = useAuthStore();
   
   // Identité "Recours" Orange

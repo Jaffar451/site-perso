@@ -100,7 +100,7 @@ export default function JudgeCaseList({ navigation }: JudgeScreenProps<'JudgeCas
         type: (c.status === 'transmise_parquet' || c.status === 'attente_validation') ? 'new' : 'ongoing',
         offence: c.title || "Qualification en attente",
         suspect: c.suspectName || "X (Inconnu)",
-        dateReceived: new Date(c.createdAt).toLocaleDateString('fr-FR'),
+        dateReceived: new Date(c.createdAt ?? Date.now()).toLocaleDateString('fr-FR'),
         detentionStatus: c.detentionStatus || "Libre",
         progress: c.status === 'cloture' ? 100 : (c.status === 'instruction' ? 60 : 20)
     }));

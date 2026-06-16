@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import { 
   View, 
   Text, 
@@ -19,212 +19,224 @@ import * as Sharing from 'expo-sharing';
 
 // ✅ Architecture & Thème
 import { useAppTheme } from "../../theme/AppThemeProvider";
-import { getUserById, deleteUser, updateUser, UserData } from "../../services/user.service"; 
+import { getUserById, deleteUser, updateUser, UserData } from "../../services/user.service";
 
 // Composants
 import ScreenContainer from "../../components/layout/ScreenContainer";
 import AppHeader from "../../components/layout/AppHeader";
 import SmartFooter from "../../components/layout/SmartFooter";
 
+// ─── Sous-composant InfoRow ───────────────────────────────────────────────────
+const InfoRow = ({ icon, label, value, primaryColor, isLast, colors }: any) => (
+  <View style={[
+    styles.infoRowInternal,
+    { borderBottomWidth: isLast ? 0 : 1, borderBottomColor: colors.border }
+  ]}>
+    <View style={styles.row}>
+      <Ionicons name={icon} size={18} color={primaryColor} />
+      <Text style={[styles.infoLabel, { color: colors.textSub }]}>{label}</Text>
+    </View>
+    <Text style={[styles.infoValue, { color: colors.textMain }]}>{value || "—"}</Text>
+  </View>
+);
+
+// ─── Sous-composant SectionHeader ────────────────────────────────────────────
+const SectionHeader = ({ title, colors }: any) => (
+  <Text style={[styles.sectionTitle, { color: colors.textSub }]}>{title}</Text>
+);
+
 export default function AdminUserDetailsScreen() {
   const { theme, isDark } = useAppTheme();
   const primaryColor = theme.colors.primary;
-  
+
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const queryClient = useQueryClient();
 
-  // ✅ 1. VALIDER userId (memoized pour stabilité)
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  // ✅ Validation userId
   const userId = useMemo(() => {
     const id = route.params?.userId || route.params?.id;
-    if (!id || isNaN(Number(id))) {
-      return null;
-    }
-    return Number(id);
-  }, [route.params?.userId, route.params?.id]);
+    return (id && !isNaN(Number(id))) ? Number(id) : null;
+  }, [route.params]);
 
-  // 🔍 LOG (une seule fois au mount)
-  useEffect(() => {
-    if (userId) {
-      console.log("🔍 UserId reçu:", userId);
-    }
-  }, [userId]);
-
-  // 🎨 PALETTE DYNAMIQUE
+  // 🎨 Palette dynamique
   const colors = {
-    bgMain: isDark ? "#0F172A" : "#F8FAFC",
-    bgCard: isDark ? "#1E293B" : "#FFFFFF",
-    textMain: isDark ? "#FFFFFF" : "#1E293B",
-    textSub: isDark ? "#94A3B8" : "#64748B",
-    border: isDark ? "#334155" : "#E2E8F0",
-    dangerBg: isDark ? "#450A0A" : "#FEF2F2",
+    bgMain:       isDark ? "#0F172A" : "#F8FAFC",
+    bgCard:       isDark ? "#1E293B" : "#FFFFFF",
+    textMain:     isDark ? "#FFFFFF" : "#1E293B",
+    textSub:      isDark ? "#94A3B8" : "#64748B",
+    border:       isDark ? "#334155" : "#E2E8F0",
+    dangerBg:     isDark ? "#450A0A" : "#FEF2F2",
     dangerBorder: isDark ? "#7F1D1D" : "#EF444450",
   };
 
-  // ✅ 2. REQUÊTE USER (avec data: rawData)
-  const {  data, isLoading, error } = useQuery({
+  // ✅ Requête user
+  const { data: rawResponse, isLoading, error } = useQuery({
     queryKey: ["user", userId],
-    queryFn: () => getUserById(userId!),  // ✅ userId! car enabled vérifie
+    queryFn: () => getUserById(userId!),
     enabled: !!userId,
     retry: 1,
   });
 
-  const user: UserData | null = useMemo(() => {
-    if (!data) return null;
-    const d = data as any;
-    return d.data || d.user || d;
-  }, [data]);
+  // Extraction des données + sous-objet Person
+  const user = useMemo(() => {
+    if (!rawResponse) return null;
+    return (rawResponse as any).data || (rawResponse as any).user || rawResponse;
+  }, [rawResponse]);
 
-  // ✅ 3. DELETE MUTATION (avec userId!)
+  const person = useMemo(() => {
+    if (!user) return {};
+    return user.person || {};
+  }, [user]);
+
+  // ✅ Mutation suppression
   const deleteMutation = useMutation({
-    mutationFn: () => deleteUser(userId!),  // ✅ userId!
+    mutationFn: () => deleteUser(userId!),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-      if (Platform.OS === 'web') window.alert("Compte révoqué avec succès.");
+      queryClient.setQueryData(["users"], (oldData: any) => {
+        if (!oldData) return oldData;
+        const list = Array.isArray(oldData) ? oldData : (oldData.data || []);
+        const filtered = list.filter((u: any) => u.id !== userId);
+        return Array.isArray(oldData) ? filtered : { ...oldData, data: filtered };
+      });
+      if (Platform.OS === 'web') window.alert("Compte révoqué.");
       navigation.goBack();
     },
-    onError: (err: any) => Alert.alert("Erreur", err.response?.data?.message || "Échec de suppression.")
+    onError: () => Alert.alert("Erreur", "Échec de suppression."),
   });
 
-  // ✅ 4. STATUS MUTATION (avec userId!)
+  // ✅ Mutation statut
   const statusMutation = useMutation({
-    mutationFn: (newStatus: boolean) => updateUser(userId!, { isActive: newStatus }),  // ✅ userId!
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user", userId] }); 
-      queryClient.invalidateQueries({ queryKey: ["users"] }); 
+    mutationFn: (newStatus: boolean) => updateUser(userId!, { status: (newStatus ? 'active' : 'inactive') as any }),
+    onSuccess: (updatedResponse: any) => {
+      const updatedUser = updatedResponse?.data || updatedResponse;
+      queryClient.setQueryData(["user", userId], (old: any) => {
+        if (!old) return old;
+        return old.data ? { ...old, data: updatedUser } : updatedUser;
+      });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
     },
+    onError: () => Alert.alert("Erreur", "Le changement de statut a échoué."),
   });
+
+  const handleStatusChange = useCallback((val: boolean) => {
+    if (isUpdating || statusMutation.isPending) return;
+    setIsUpdating(true);
+    statusMutation.mutate(val, { onSettled: () => setIsUpdating(false) });
+  }, [isUpdating, statusMutation]);
 
   const generatePDF = async () => {
     if (!user) return;
-    const nomComplet = `${user.firstname} ${(user.lastname || "").toUpperCase()}`;
     const html = `
-      <html>
-        <body style="font-family: sans-serif; padding: 40px; color: #1e293b;">
-          <h1 style="text-align: center; color: #1e3a8a;">RÉPUBLIQUE DU NIGER</h1>
-          <h2 style="text-align: center;">FICHE D'HABILITATION JUSTICE</h2>
-          <hr style="border: 1px solid #e2e8f0;"/>
-          <div style="margin-top: 30px; font-size: 16px;">
-            <p><strong>Agent :</strong> ${nomComplet}</p>
-            <p><strong>Rôle :</strong> ${(user.role || "Inconnu").toUpperCase()}</p>
-            <p><strong>Matricule :</strong> ${(user as any).matricule || "N/A"}</p>
-            <p><strong>Organisation :</strong> ${user.organization || 'Non défini'}</p>
-            <p><strong>Statut :</strong> ${user.isActive ? 'ACTIF' : 'SUSPENDU'}</p>
-          </div>
-        </body>
-      </html>
+      <html><body style="font-family: sans-serif; padding: 40px;">
+        <h1 style="color: #1e3a8a; text-align: center;">RÉPUBLIQUE DU NIGER</h1>
+        <h2 style="text-align: center;">FICHE D'HABILITATION JUSTICE</h2>
+        <p><strong>Agent :</strong> ${user.firstname} ${user.lastname?.toUpperCase()}</p>
+        <p><strong>Rôle :</strong> ${user.role?.toUpperCase()}</p>
+        <p><strong>Matricule :</strong> ${user.matricule || "—"}</p>
+        <p><strong>Email :</strong> ${user.email || "—"}</p>
+        <p><strong>Téléphone :</strong> ${user.telephone || "—"}</p>
+        <p><strong>Statut :</strong> ${user.is_active || user.isActive ? 'ACTIF' : 'SUSPENDU'}</p>
+      </body></html>
     `;
     try {
       const { uri } = await Print.printToFileAsync({ html });
       await Sharing.shareAsync(uri);
-    } catch (e) { Alert.alert("Erreur", "Génération PDF échouée."); }
+    } catch { Alert.alert("Erreur PDF"); }
   };
 
   const handleDelete = () => {
-    const title = "⚠️ RÉVOCATION ACCÈS";
-    const msg = "Voulez-vous supprimer définitivement cet agent du registre national ?";
+    const action = () => deleteMutation.mutate();
     if (Platform.OS === 'web') {
-        if (window.confirm(`${title}\n\n${msg}`)) deleteMutation.mutate();
+      if (window.confirm("Révoquer définitivement cet accès ?")) action();
     } else {
-        Alert.alert(title, msg, [
-          { text: "Annuler", style: "cancel" },
-          { text: "RÉVOQUER", style: "destructive", onPress: () => deleteMutation.mutate() }
-        ]);
+      Alert.alert("⚠️ RÉVOCATION", "Supprimer définitivement cet agent ?", [
+        { text: "Annuler", style: "cancel" },
+        { text: "RÉVOQUER", style: "destructive", onPress: action },
+      ]);
     }
   };
 
-  // ✅ 5. EARLY RETURN si userId invalide
-  if (!userId) {
+  // ─── États de chargement / erreur ────────────────────────────────────────
+
+  if (!userId || error || (!isLoading && !user)) {
     return (
       <ScreenContainer withPadding={false}>
         <AppHeader title="Erreur" showBack />
         <View style={[styles.center, { backgroundColor: colors.bgMain }]}>
           <Ionicons name="alert-circle-outline" size={60} color="#EF4444" />
-          <Text style={{color: colors.textMain, marginTop: 15, fontWeight: '700'}}>ID utilisateur invalide</Text>
-          <TouchableOpacity
-            style={[styles.retryBtn, { backgroundColor: primaryColor, marginTop: 15 }]}
-            onPress={() => navigation.goBack()}
-          >
-            <Text style={{ color: "#FFF", fontWeight: '700' }}>Retour</Text>
+          <Text style={{ color: colors.textMain, fontWeight: '700', marginTop: 10 }}>Agent introuvable</Text>
+          <TouchableOpacity style={[styles.retryBtn, { backgroundColor: primaryColor }]} onPress={() => navigation.goBack()}>
+            <Text style={{ color: "#FFF" }}>Retour</Text>
           </TouchableOpacity>
         </View>
       </ScreenContainer>
     );
   }
 
-  if (isLoading) return (
-    <ScreenContainer withPadding={false}>
-      <AppHeader title="Fiche Agent" showBack />
-      <View style={[styles.center, { backgroundColor: colors.bgMain }]}>
-        <ActivityIndicator size="large" color={primaryColor} />
-        <Text style={{color: colors.textSub, marginTop: 10}}>Chargement des informations...</Text>
-      </View>
-    </ScreenContainer>
-  );
+  if (isLoading) {
+    return (
+      <ScreenContainer withPadding={false}>
+        <AppHeader title="Chargement..." showBack />
+        <View style={[styles.center, { backgroundColor: colors.bgMain }]}>
+          <ActivityIndicator size="large" color={primaryColor} />
+        </View>
+      </ScreenContainer>
+    );
+  }
 
-  if (error || !user) return (
-    <ScreenContainer withPadding={false}>
-       <AppHeader title="Erreur" showBack />
-       <View style={[styles.center, { backgroundColor: colors.bgMain }]}>
-          <Ionicons name="alert-circle-outline" size={60} color="#EF4444" />
-          <Text style={{color: colors.textMain, marginTop: 15, fontWeight: '700'}}>Agent introuvable</Text>
-          <TouchableOpacity
-            style={[styles.retryBtn, { backgroundColor: primaryColor, marginTop: 15 }]}
-            onPress={() => queryClient.invalidateQueries({ queryKey: ["user", userId] })}
-          >
-            <Text style={{ color: "#FFF", fontWeight: '700' }}>Réessayer</Text>
-          </TouchableOpacity>
-       </View>
-    </ScreenContainer>
-  );
+  const isActive = !!(user.is_active || user.isActive || user.status === 'active');
+
+  // Formatage date de naissance depuis Person (YYYY-MM-DD → DD/MM/YYYY)
+  const formatDateOfBirth = (raw: string) => {
+    if (!raw) return null;
+    const parts = raw.split('-');
+    if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    return raw;
+  };
 
   return (
     <ScreenContainer withPadding={false}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
       <AppHeader title="Fiche d'Agent" showBack={true} />
-      
+
       <View style={[styles.mainWrapper, { backgroundColor: colors.bgMain }]}>
-        <ScrollView 
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent} 
-          showsVerticalScrollIndicator={false}
-        >
-          {/* HEADER PROFIL */}
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+
+          {/* ── EN-TÊTE ── */}
           <View style={styles.headerSection}>
             <View style={[styles.avatarBox, { backgroundColor: primaryColor + "15" }]}>
-              <Ionicons name="person-circle-outline" size={120} color={primaryColor} />
+              <Ionicons name="person-circle-outline" size={100} color={primaryColor} />
             </View>
-            
             <Text style={[styles.nameText, { color: colors.textMain }]}>
-              {user.firstname} {(user.lastname || "").toUpperCase()}
+              {user.firstname} {user.lastname?.toUpperCase()}
             </Text>
-            
             <View style={[styles.roleBadge, { backgroundColor: primaryColor + "15" }]}>
-              <Text style={[styles.roleText, { color: primaryColor }]}>
-                  {(user.role || "Agent").toUpperCase()}
-              </Text>
+              <Text style={[styles.roleText, { color: primaryColor }]}>{user.role?.toUpperCase()}</Text>
             </View>
 
+            {/* Switch statut */}
             <View style={[styles.statusBox, { backgroundColor: colors.bgCard, borderColor: colors.border }]}>
-               <View style={styles.statusLabelGroup}>
-                  <View style={[styles.dot, { backgroundColor: user.isActive ? "#10B981" : "#EF4444" }]} />
-                  <Text style={[styles.statusTitle, { color: colors.textMain }]}>
-                    {user.isActive ? "ACCÈS OPÉRATIONNEL" : "ACCÈS RÉVOQUÉ"}
-                  </Text>
-               </View>
-               <Switch 
-                  value={user.isActive || false} 
-                  onValueChange={(val) => statusMutation.mutate(val)}
-                  thumbColor="#FFF"
-                  trackColor={{ false: "#CBD5E1", true: "#10B981" }}
-               />
+              <View style={styles.statusLabelGroup}>
+                <View style={[styles.dot, { backgroundColor: isActive ? "#10B981" : "#EF4444" }]} />
+                <Text style={[styles.statusTitle, { color: colors.textMain }]}>
+                  {isActive ? "OPÉRATIONNEL" : "RÉVOQUÉ"}
+                </Text>
+              </View>
+              <Switch
+                value={isActive}
+                onValueChange={handleStatusChange}
+                disabled={isUpdating}
+                trackColor={{ false: "#CBD5E1", true: "#10B981" }}
+              />
             </View>
           </View>
 
-          {/* ACTIONS RAPIDES */}
+          {/* ── ACTIONS ── */}
           <View style={styles.actionGrid}>
-            <TouchableOpacity 
-              activeOpacity={0.8}
+            <TouchableOpacity
               style={[styles.actionBtn, { backgroundColor: primaryColor }]}
               onPress={() => navigation.navigate("AdminEditUser", { userId: user.id })}
             >
@@ -232,36 +244,47 @@ export default function AdminUserDetailsScreen() {
               <Text style={styles.actionBtnText}>Éditer</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
-              activeOpacity={0.8}
+            <TouchableOpacity
               style={[styles.actionBtn, { backgroundColor: colors.textSub }]}
               onPress={generatePDF}
             >
               <Ionicons name="print-outline" size={20} color="#fff" />
-              <Text style={styles.actionBtnText}>Certifier (PDF)</Text>
+              <Text style={styles.actionBtnText}>PDF</Text>
             </TouchableOpacity>
           </View>
 
-          {/* DÉTAILS ADMINISTRATIFS */}
-          <Text style={[styles.sectionTitle, { color: colors.textSub }]}>Information de Service</Text>
+          {/* ── IDENTITÉ CIVILE ── */}
+          <SectionHeader title="Identité Civile" colors={colors} />
           <View style={[styles.infoCard, { backgroundColor: colors.bgCard, borderColor: colors.border }]}>
-            <InfoRow 
-              icon="barcode-outline" 
-              label="Matricule" 
-              value={(user as any)?.matricule || (user as any)?.registrationNumber} 
-              primaryColor={primaryColor} 
-              colors={colors}
-            />
-            <InfoRow icon="business-outline" label="Organisation" value={user.organization} primaryColor={primaryColor} colors={colors} />
-            <InfoRow icon="mail-outline" label="Email Pro" value={user.email} primaryColor={primaryColor} colors={colors} />
-            <InfoRow icon="call-outline" label="Téléphone" value={user.telephone} primaryColor={primaryColor} isLast colors={colors} />
+            <InfoRow icon="person-outline"     label="Prénom"           value={user.firstname}                              primaryColor={primaryColor} colors={colors} />
+            <InfoRow icon="person-outline"     label="Nom"              value={user.lastname?.toUpperCase()}                primaryColor={primaryColor} colors={colors} />
+            <InfoRow icon="calendar-outline"   label="Date de naissance" value={formatDateOfBirth(person.dateOfBirth)}      primaryColor={primaryColor} colors={colors} />
+            <InfoRow icon="location-outline"   label="Lieu de naissance" value={person.placeOfBirth}                       primaryColor={primaryColor} colors={colors} />
+            <InfoRow icon="flag-outline"       label="Nationalité"      value={person.nationality}                          primaryColor={primaryColor} colors={colors} />
+            <InfoRow icon="card-outline"       label="N° Pièce identité" value={person.nationalId}                         primaryColor={primaryColor} colors={colors} isLast />
           </View>
 
-          {/* ZONE DE DANGER */}
-          <Text style={[styles.sectionTitle, { color: "#EF4444", marginTop: 35 }]}>SÉCURITÉ ADMINISTRATIVE</Text>
-          <TouchableOpacity 
-            activeOpacity={0.7}
-            style={[styles.dangerCard, { backgroundColor: colors.dangerBg, borderColor: colors.dangerBorder }]} 
+          {/* ── SERVICE & CONTACT ── */}
+          <SectionHeader title="Service & Contact" colors={colors} />
+          <View style={[styles.infoCard, { backgroundColor: colors.bgCard, borderColor: colors.border }]}>
+            <InfoRow icon="barcode-outline"    label="Matricule"        value={user.matricule || user.registrationNumber}   primaryColor={primaryColor} colors={colors} />
+            <InfoRow icon="business-outline"   label="Organisation"     value={user.organization}                           primaryColor={primaryColor} colors={colors} />
+            <InfoRow icon="mail-outline"       label="Email pro."       value={user.email}                                  primaryColor={primaryColor} colors={colors} />
+            <InfoRow icon="mail-outline"       label="Email perso."     value={person.email}                                primaryColor={primaryColor} colors={colors} />
+            <InfoRow icon="call-outline"       label="Téléphone"        value={user.telephone}                              primaryColor={primaryColor} colors={colors} />
+            <InfoRow icon="call-outline"       label="Tél. alternatif"  value={person.phone}                                primaryColor={primaryColor} colors={colors} isLast />
+          </View>
+
+          {/* ── ADRESSE ── */}
+          <SectionHeader title="Adresse" colors={colors} />
+          <View style={[styles.infoCard, { backgroundColor: colors.bgCard, borderColor: colors.border }]}>
+            <InfoRow icon="home-outline"       label="Adresse"          value={person.address}                              primaryColor={primaryColor} colors={colors} />
+            <InfoRow icon="location-outline"   label="Ville"            value={person.city}                                 primaryColor={primaryColor} colors={colors} isLast />
+          </View>
+
+          {/* ── RÉVOCATION ── */}
+          <TouchableOpacity
+            style={[styles.dangerCard, { backgroundColor: colors.dangerBg, borderColor: colors.dangerBorder }]}
             onPress={handleDelete}
           >
             <View style={[styles.dangerIconBox, { backgroundColor: isDark ? "#7F1D1D" : "#EF444415" }]}>
@@ -269,12 +292,11 @@ export default function AdminUserDetailsScreen() {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.dangerTitle}>Révocation Définitive</Text>
-              <Text style={[styles.dangerSub, { color: isDark ? "#FCA5A5" : colors.textSub }]}>Retrait irréversible des droits système</Text>
+              <Text style={[styles.dangerSub, { color: colors.textSub }]}>Action irréversible</Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color="#EF4444" />
           </TouchableOpacity>
 
-          <View style={{ height: 140 }} />
+          <View style={{ height: 100 }} />
         </ScrollView>
       </View>
 
@@ -283,61 +305,35 @@ export default function AdminUserDetailsScreen() {
   );
 }
 
-const InfoRow = ({ icon, label, value, primaryColor, isLast, colors }: any) => (
-  <View style={[styles.infoRowInternal, { borderBottomWidth: isLast ? 0 : 1, borderBottomColor: colors.border }]}>
-    <View style={styles.row}>
-      <Ionicons name={icon} size={20} color={primaryColor} />
-      <Text style={[styles.infoLabel, { color: colors.textSub }]}>{label}</Text>
-    </View>
-    <Text style={[styles.infoValue, { color: colors.textMain }]}>{value || "—"}</Text>
-  </View>
-);
-
 const styles = StyleSheet.create({
-  center: { flex: 1, justifyContent: "center", alignItems: "center", gap: 16 },
-  retryBtn: { paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 },
-  mainWrapper: { flex: 1 },
-  scrollView: { flex: 1 },
-  scrollContent: { padding: 20 },
-  row: { flexDirection: 'row', alignItems: 'center' },
-  
-  headerSection: { alignItems: "center", marginBottom: 30 },
-  avatarBox: { marginBottom: 20, borderRadius: 60, padding: 5 },
-  nameText: { fontSize: 24, fontWeight: "900", textAlign: 'center', letterSpacing: -0.8 },
-  roleBadge: { paddingHorizontal: 16, paddingVertical: 6, borderRadius: 12, marginTop: 10 },
-  roleText: { fontSize: 11, fontWeight: "900", letterSpacing: 1.5 },
-  
-  statusBox: { 
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', 
-    width: '100%', marginTop: 30, padding: 20, borderRadius: 28, borderWidth: 1.5
-  },
+  center:           { flex: 1, justifyContent: "center", alignItems: "center" },
+  retryBtn:         { padding: 12, borderRadius: 8, marginTop: 10 },
+  mainWrapper:      { flex: 1 },
+  scrollContent:    { padding: 20 },
+  row:              { flexDirection: 'row', alignItems: 'center' },
+
+  headerSection:    { alignItems: "center", marginBottom: 25 },
+  avatarBox:        { marginBottom: 15, borderRadius: 50 },
+  nameText:         { fontSize: 22, fontWeight: "800" },
+  roleBadge:        { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 8, marginTop: 8 },
+  roleText:         { fontSize: 10, fontWeight: "900" },
+  statusBox:        { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginTop: 20, padding: 15, borderRadius: 20, borderWidth: 1 },
   statusLabelGroup: { flexDirection: 'row', alignItems: 'center' },
-  dot: { width: 12, height: 12, borderRadius: 6, marginRight: 12 },
-  statusTitle: { fontSize: 13, fontWeight: "900", letterSpacing: 0.5 },
-  
-  actionGrid: { flexDirection: 'row', gap: 15, marginBottom: 35 },
-  actionBtn: { 
-    flex: 1, flexDirection: 'row', height: 60, borderRadius: 20, justifyContent: 'center', 
-    alignItems: 'center', gap: 10,
-    ...Platform.select({
-      web: { boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' },
-      android: { elevation: 3 },
-      ios: { shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10 }
-    })
-  },
-  actionBtnText: { color: '#fff', fontWeight: '900', fontSize: 15 },
-  
-  sectionTitle: { fontSize: 11, fontWeight: "900", marginBottom: 15, letterSpacing: 1.5, textTransform: 'uppercase' },
-  infoCard: { borderRadius: 32, borderWidth: 1.5, overflow: "hidden" },
-  infoRowInternal: { flexDirection: "row", justifyContent: "space-between", padding: 20, alignItems: 'center' },
-  infoLabel: { marginLeft: 12, fontSize: 14, fontWeight: '700' },
-  infoValue: { fontWeight: "900", fontSize: 15 },
-  
-  dangerCard: { 
-    flexDirection: 'row', alignItems: 'center', padding: 22, borderRadius: 28, 
-    borderWidth: 2, borderStyle: 'dashed', gap: 18
-  },
-  dangerIconBox: { width: 50, height: 50, borderRadius: 15, justifyContent: 'center', alignItems: 'center' },
-  dangerTitle: { color: "#EF4444", fontWeight: "900", fontSize: 16 },
-  dangerSub: { fontSize: 12, fontWeight: '600', marginTop: 2 }
+  dot:              { width: 10, height: 10, borderRadius: 5, marginRight: 10 },
+  statusTitle:      { fontSize: 12, fontWeight: "800" },
+
+  actionGrid:       { flexDirection: 'row', gap: 10, marginBottom: 25 },
+  actionBtn:        { flex: 1, flexDirection: 'row', height: 50, borderRadius: 15, justifyContent: 'center', alignItems: 'center', gap: 8 },
+  actionBtnText:    { color: '#fff', fontWeight: '800' },
+
+  sectionTitle:     { fontSize: 10, fontWeight: "900", marginBottom: 10, marginTop: 15, textTransform: 'uppercase', letterSpacing: 1.5 },
+  infoCard:         { borderRadius: 20, borderWidth: 1, overflow: "hidden", marginBottom: 10 },
+  infoRowInternal:  { flexDirection: "row", justifyContent: "space-between", padding: 15, alignItems: 'center' },
+  infoLabel:        { marginLeft: 10, fontSize: 13, fontWeight: '600' },
+  infoValue:        { fontWeight: "700", fontSize: 14, maxWidth: '55%', textAlign: 'right' },
+
+  dangerCard:       { flexDirection: 'row', alignItems: 'center', padding: 20, borderRadius: 20, borderWidth: 1, borderStyle: 'dashed', gap: 15, marginTop: 20 },
+  dangerIconBox:    { width: 40, height: 40, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
+  dangerTitle:      { color: "#EF4444", fontWeight: "800" },
+  dangerSub:        { fontSize: 11 },
 });

@@ -105,7 +105,7 @@ export default function ComplaintListScreen({ navigation }: CitizenScreenProps<'
 
           <Text style={styles.caseTitle} numberOfLines={1}>{item.title || "Dossier Judiciaire"}</Text>
           <Text style={styles.caseDate}>
-              Signalé le {new Date(item.filedAt || item.createdAt).toLocaleDateString('fr-FR')}
+              Signalé le {new Date(item.filedAt ?? item.createdAt ?? Date.now()).toLocaleDateString('fr-FR')}
           </Text>
           
           <Divider style={styles.divider} />

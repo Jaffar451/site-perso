@@ -1,3 +1,4 @@
+// PATH: src/screens/admin/AdminHomeScreen.tsx
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { 
   View, 
@@ -6,9 +7,9 @@ import {
   ScrollView, 
   StatusBar,
   Pressable,
-  Platform, // ✅ Indispensable
+  Platform,
   RefreshControl,
-  Alert
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from 'expo-linear-gradient';
@@ -17,27 +18,20 @@ import { useFocusEffect } from "@react-navigation/native";
 import * as LocalAuthentication from 'expo-local-authentication'; 
 import * as Haptics from 'expo-haptics'; 
 
-// ✅ Architecture
+// ✅ ARCHITECTURE & STORE
 import { AdminScreenProps } from "../../types/navigation";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { useAppTheme } from "../../theme/AppThemeProvider";
-import api from "../../services/api"; 
-import { getAdminStats } from "../../services/stats.service";
 
-// Composants UI
-import ScreenContainer from "../../components/layout/ScreenContainer";
+// ✅ IMPORT DU SERVICE (Contient getAdminStats avec le mapping summary.users_total)
+import { getAdminStats } from "../../services/admin.service"; 
+
+// ✅ COMPOSANTS UI
 import AppHeader from "../../components/layout/AppHeader";
 import SmartFooter from "../../components/layout/SmartFooter";
-import AnimatedCounter from "../../components/ui/AnimatedCounter"; 
-import DashboardSkeleton from "../../components/ui/DashboardSkeleton"; 
+import ScreenContainer from "../../components/layout/ScreenContainer";
 
-// --- SERVICE API ---
-const fetchUserProfile = async () => {
-  const response = await api.get('/auth/me');
-  return response.data.data || response.data;
-};
-
-// 🕒 COMPOSANT HORLOGE ISOLÉ
+// --- COMPOSANT HORLOGE ---
 const ClockWidget = React.memo(({ isDark, systemStatus }: { isDark: boolean, systemStatus: string }) => {
   const [now, setNow] = useState(new Date());
 
@@ -74,14 +68,13 @@ const ClockWidget = React.memo(({ isDark, systemStatus }: { isDark: boolean, sys
 export default function AdminHomeScreen({ navigation }: AdminScreenProps<'AdminHome'>) {
   const { isDark, theme } = useAppTheme();
   const primaryColor = theme.colors.primary;
-  const { user: storeUser, setUser } = useAuthStore(); 
+  const auth = useAuthStore(); 
   const [isAuthenticated, setIsAuthenticated] = useState(false); 
 
-  // ✅ 1. SÉCURITÉ BIOMÉTRIQUE (Optimisée Web)
+  // ✅ 1. SÉCURITÉ BIOMÉTRIQUE (Correction TS 2367 : Platform.OS as string)
   useEffect(() => {
     const checkBiometrics = async () => {
-      // 🌍 Sur Web, on bypass la biométrie car non supportée
-      if (Platform.OS === 'web') {
+      if ((Platform.OS as string) === 'web') {
           setIsAuthenticated(true);
           return;
       }
@@ -91,47 +84,27 @@ export default function AdminHomeScreen({ navigation }: AdminScreenProps<'AdminH
 
       if (hasHardware && isEnrolled) {
         const result = await LocalAuthentication.authenticateAsync({
-          promptMessage: 'Accès Administrateur Sécurisé',
-          fallbackLabel: 'Utiliser le code PIN',
-          disableDeviceFallback: false,
+          promptMessage: 'Accès Administrateur MJ Niger',
         });
-
         if (result.success) {
           setIsAuthenticated(true);
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          if ((Platform.OS as string) !== 'web') {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          }
         } else {
-          Alert.alert("Accès Refusé", "Authentification requise.", [
-            { text: "Réessayer", onPress: checkBiometrics },
-            { text: "Quitter", onPress: () => navigation.goBack() } 
-          ]);
+          Alert.alert("Accès Refusé", "Veuillez vous authentifier pour accéder à la supervision.");
         }
       } else {
         setIsAuthenticated(true);
       }
     };
-
     checkBiometrics();
   }, []);
 
-  // ✅ 2. SYNC PROFIL
-  const { data: apiUser } = useQuery({
-    queryKey: ['me'],
-    queryFn: fetchUserProfile,
-    staleTime: 5 * 60 * 1000, 
-  });
-
-  useEffect(() => {
-    if (apiUser && apiUser.id !== storeUser?.id) {
-      setUser(apiUser);
-    }
-  }, [apiUser]);
-
-  const userData = apiUser || storeUser;
-
-  // ✅ 3. STATS
+  // ✅ 2. RÉCUPÉRATION DES STATS VIA LE SERVICE CORRIGÉ
   const { data: stats, isLoading: statsLoading, refetch } = useQuery({
     queryKey: ['admin-global-stats'],
-    queryFn: getAdminStats,
+    queryFn: getAdminStats, // Utilise la fonction de ton service avec le mapping dashboard-stats
   });
 
   useFocusEffect(
@@ -148,6 +121,7 @@ export default function AdminHomeScreen({ navigation }: AdminScreenProps<'AdminH
     border: isDark ? "#334155" : "#E2E8F0",
   };
 
+  // ✅ TOUS LES ÉLÉMENTS DU MENU RESTAURÉS
   const menuItems = [
     { title: "Comptes & Rôles", sub: "Habilitations et accès RH", icon: "people-circle-outline", route: "AdminUsers", color: "#6366F1" },
     { title: "Unités de Sécurité", sub: "Gendarmeries et Commissariats", icon: "shield-half-outline", route: "ManageStations", color: "#2563EB" },
@@ -159,13 +133,7 @@ export default function AdminHomeScreen({ navigation }: AdminScreenProps<'AdminH
     { title: "Rapports Hebdo", sub: "Statistiques d'activité", icon: "stats-chart-outline", route: "WeeklyReport", color: "#8B5CF6" },
   ];
 
-  if (!isAuthenticated) {
-    return (
-      <ScreenContainer withPadding={false}>
-         <View style={{flex:1, backgroundColor: colors.bgMain}} /> 
-      </ScreenContainer>
-    );
-  }
+  if (!isAuthenticated) return <ScreenContainer withPadding={false}><View /></ScreenContainer>;
 
   return (
     <ScreenContainer withPadding={false}>
@@ -173,56 +141,44 @@ export default function AdminHomeScreen({ navigation }: AdminScreenProps<'AdminH
       <AppHeader title="Supervision MJ Niger" showMenu={true} />
       
       <ScrollView 
-        style={{ backgroundColor: colors.bgMain }}
         contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
+        style={{ backgroundColor: colors.bgMain }}
         refreshControl={
           <RefreshControl refreshing={statsLoading} onRefresh={refetch} tintColor={primaryColor} />
         }
       >
         <View style={styles.welcomeSection}>
           <Text style={[styles.welcomeTitle, { color: colors.textMain }]}>
-            Bonjour, {(userData?.firstname || "Administrateur").toUpperCase()}
+            Bonjour, {(auth.user?.firstname || "ADMIN").toUpperCase()}
           </Text>
-          <Text style={[styles.welcomeSub, { color: colors.textSub }]}>Système Central e-Justice Niger</Text>
+          <Text style={[styles.welcomeSub, { color: colors.textSub }]}>SYSTÈME CENTRAL E-JUSTICE NIGER</Text>
         </View>
 
         <ClockWidget isDark={isDark} systemStatus={stats?.systemStatus || 'Stable'} />
 
-        <Text style={[styles.sectionTitle, { color: colors.textSub }]}>Monitoring du Réseau National</Text>
+        <Text style={[styles.sectionTitle, { color: colors.textSub }]}>Monitoring du Réseau</Text>
         
-        {statsLoading && !stats ? (
-           <DashboardSkeleton />
-        ) : (
-          <View style={styles.statsGrid}>
-            <StatMiniCard icon="people" val={stats?.usersCount || 0} label="Utilisateurs" color="#6366F1" colors={colors} />
-            <StatMiniCard icon="business" val={stats?.courtsCount || 0} label="Juridictions" color="#8B5CF6" colors={colors} />
-            <StatMiniCard icon="bar-chart" val={stats?.activityRate || "0%"} label="Flux Actif" color="#EC4899" colors={colors} />
-            <StatMiniCard icon="pulse" val={stats?.systemStatus || "Stable"} label="État Système" color="#10B981" colors={colors} />
-          </View>
-        )}
+        <View style={styles.statsGrid}>
+          {/* Correction : Affichage des valeurs récupérées depuis summary.users_total etc */}
+          <StatMiniCard icon="people" val={stats?.usersCount ?? 0} label="Utilisateurs" color="#6366F1" colors={colors} />
+          <StatMiniCard icon="business" val={stats?.courtsCount ?? 0} label="Juridictions" color="#8B5CF6" colors={colors} />
+          <StatMiniCard icon="pulse" val={stats?.activeSessions ?? 0} label="Flux Actif" color="#EC4899" colors={colors} />
+          <StatMiniCard icon="shield-checkmark" val={stats?.securityLevel || "Stable"} label="État Système" color="#10B981" colors={colors} />
+        </View>
 
-        <Text style={[styles.sectionTitle, { marginTop: 30, color: colors.textSub }]}>Gestion & Outils Techniques</Text>
+        <Text style={[styles.sectionTitle, { color: colors.textSub, marginTop: 30 }]}>Gestion & Outils Techniques</Text>
 
         <View style={styles.menuList}>
           {menuItems.map((item, i) => (
             <Pressable 
               key={i} 
               onPress={() => {
-                // ✅ CORRECTION DU CRASH WEB ICI
-                if (Platform.OS !== 'web') {
-                    Haptics.selectionAsync();
-                }
+                if ((Platform.OS as string) !== 'web') Haptics.selectionAsync();
                 navigation.navigate(item.route as any);
               }}
               style={({ pressed }) => [
                 styles.menuCard, 
-                { 
-                  opacity: pressed ? 0.7 : 1, 
-                  backgroundColor: colors.bgCard,
-                  borderColor: colors.border,
-                  transform: [{ scale: pressed ? 0.98 : 1 }]
-                }
+                { opacity: pressed ? 0.7 : 1, backgroundColor: colors.bgCard, borderColor: colors.border }
               ]}
             >
               <View style={[styles.iconCircle, { backgroundColor: item.color + "12" }]}>
@@ -237,7 +193,7 @@ export default function AdminHomeScreen({ navigation }: AdminScreenProps<'AdminH
           ))}
         </View>
 
-        <View style={styles.footerSpacing} />
+        <View style={{ height: 120 }} />
       </ScrollView>
 
       <SmartFooter />
@@ -245,56 +201,39 @@ export default function AdminHomeScreen({ navigation }: AdminScreenProps<'AdminH
   );
 }
 
-// 🔢 CARTE AVEC ANIMATION
 const StatMiniCard = ({ icon, val, label, color, colors }: any) => (
   <View style={[styles.statCard, { backgroundColor: colors.bgCard, borderColor: colors.border }]}>
     <View style={[styles.statIconBox, { backgroundColor: color + "15" }]}>
       <Ionicons name={icon} size={18} color={color} />
     </View>
     <View style={{ flex: 1 }}>
-      <AnimatedCounter 
-        value={val} 
-        style={[styles.statValue, { color: colors.textMain }]} 
-        duration={1200} 
-      />
+      <Text style={[styles.statValue, { color: colors.textMain }]}>{val}</Text>
       <Text style={[styles.statLabel, { color: colors.textSub }]}>{label}</Text>
     </View>
   </View>
 );
 
 const styles = StyleSheet.create({
-  content: { paddingHorizontal: 16, paddingTop: 20 },
-  welcomeSection: { marginBottom: 25 },
+  content: { padding: 16 },
+  welcomeSection: { marginBottom: 20 },
   welcomeTitle: { fontSize: 24, fontWeight: "900", letterSpacing: -0.5 },
-  welcomeSub: { fontSize: 13, fontWeight: "600", marginTop: 4 },
-  
-  clockWidget: {
-    padding: 24, borderRadius: 28, marginBottom: 30, alignItems: 'center',
-    ...Platform.select({
-        ios: { shadowColor: "#000", shadowOpacity: 0.25, shadowRadius: 15, shadowOffset: { width: 0, height: 8 } },
-        android: { elevation: 10 }
-    })
-  },
-  clockHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 15, backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
-  statusDot: { width: 8, height: 8, borderRadius: 4, marginRight: 8 },
-  statusText: { fontSize: 9, fontWeight: '900', letterSpacing: 1 },
-  timeText: { fontSize: 42, fontWeight: "900", color: "#FFF", fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace', letterSpacing: -1 },
-  dateText: { fontSize: 11, fontWeight: "700", color: "rgba(255,255,255,0.7)", marginTop: 8, letterSpacing: 1.5 },
-
-  sectionTitle: { fontSize: 11, fontWeight: "900", marginBottom: 15, letterSpacing: 1.2, textTransform: 'uppercase', marginLeft: 4 },
-  
+  welcomeSub: { fontSize: 12, fontWeight: "600", marginTop: 4 },
+  clockWidget: { padding: 24, borderRadius: 24, marginBottom: 25, alignItems: 'center' },
+  clockHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12, backgroundColor: 'rgba(255,255,255,0.1)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
+  statusDot: { width: 6, height: 6, borderRadius: 3, marginRight: 6 },
+  statusText: { fontSize: 8, fontWeight: '900' },
+  timeText: { fontSize: 42, fontWeight: "900", color: "#FFF" },
+  dateText: { fontSize: 10, fontWeight: "700", color: "rgba(255,255,255,0.6)", marginTop: 5 },
+  sectionTitle: { fontSize: 11, fontWeight: "900", marginBottom: 15, textTransform: 'uppercase', letterSpacing: 1 },
   statsGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-  statCard: { width: '48%', padding: 16, borderRadius: 20, borderWidth: 1, flexDirection: 'row', alignItems: 'center', marginBottom: 12, gap: 10 },
-  statIconBox: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+  statCard: { width: '48%', padding: 15, borderRadius: 18, borderWidth: 1, flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  statIconBox: { width: 38, height: 38, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginRight: 10 },
   statValue: { fontSize: 16, fontWeight: "900" },
   statLabel: { fontSize: 9, fontWeight: "800", textTransform: 'uppercase' },
-  
   menuList: { gap: 12 },
-  menuCard: { flexDirection: 'row', alignItems: 'center', padding: 20, borderRadius: 24, borderWidth: 1 },
-  iconCircle: { width: 54, height: 54, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
-  menuTextContainer: { flex: 1, marginLeft: 15 },
+  menuCard: { flexDirection: 'row', alignItems: 'center', padding: 18, borderRadius: 22, borderWidth: 1 },
+  iconCircle: { width: 50, height: 50, borderRadius: 15, justifyContent: 'center', alignItems: 'center' },
+  menuTextContainer: { flex: 1, marginLeft: 14 },
   menuTitle: { fontSize: 15, fontWeight: "800" },
-  menuSub: { fontSize: 12, marginTop: 3, fontWeight: '500' },
-  
-  footerSpacing: { height: 140 },
+  menuSub: { fontSize: 12, marginTop: 2 },
 });

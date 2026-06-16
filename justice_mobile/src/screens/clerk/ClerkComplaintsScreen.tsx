@@ -86,7 +86,7 @@ export default function ClerkComplaintsScreen({ navigation }: ClerkScreenProps<'
            <Text style={[styles.badgeText, { color: colors.badgeText }]}>VALIDÉ PARQUET</Text>
         </View>
         <Text style={[styles.date, { color: colors.textSub }]}>
-          {item.filedAt ? format(new Date(item.filedAt), "dd MMM yyyy", { locale: fr }) : "Date NC"}
+          {item.filedAt ? format(new Date(item.filedAt ?? item.createdAt ?? Date.now()), "dd MMM yyyy", { locale: fr }) : "Date NC"}
         </Text>
       </View>
 

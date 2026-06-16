@@ -16,7 +16,7 @@ export const generateComplaintPDF = async (complaint: Complaint, signatureBase64
   const qrCodeUrl = `https://chart.googleapis.com/chart?chs=180x180&cht=qr&chl=${encodeURIComponent(verificationUrl)}&choe=UTF-8`;
 
   // 3. Formatage temporel
-  const dateObj = new Date(complaint.filedAt);
+  const dateObj = new Date(complaint.filedAt ?? complaint.createdAt ?? Date.now());
   const dateFull = dateObj.toLocaleDateString('fr-FR', { 
     day: '2-digit', 
     month: 'long', 

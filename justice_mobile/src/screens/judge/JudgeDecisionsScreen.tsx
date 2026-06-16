@@ -17,7 +17,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 
 // ✅ Architecture & Theme
-import { useAuthStore } from "../../stores/useAuthStore";
 import { useAppTheme } from "../../theme/AppThemeProvider";
 import { JudgeScreenProps } from "../../types/navigation";
 
@@ -40,7 +39,7 @@ interface DecisionCase {
 }
 
 export default function JudgeDecisionsScreen({ navigation }: JudgeScreenProps<'JudgeDecisions'>) {
-  const { theme, isDark } = useAppTheme();
+  const { isDark } = useAppTheme();
   
   // ✅ Identité Cabinet d'Instruction
   const JUDGE_ACCENT = "#7C3AED"; 
@@ -76,8 +75,8 @@ export default function JudgeDecisionsScreen({ navigation }: JudgeScreenProps<'J
 
     // Tri par date décroissante (dernières décisions en haut)
     results.sort((a, b) => {
-        const dateA = new Date(a.updatedAt || a.filedAt || a.createdAt).getTime();
-        const dateB = new Date(b.updatedAt || b.filedAt || b.createdAt).getTime();
+        const dateA = new Date(a.updatedAt ?? a.filedAt ?? a.createdAt ?? Date.now()).getTime();
+        const dateB = new Date(b.updatedAt ?? b.filedAt ?? b.createdAt ?? Date.now()).getTime();
         return dateB - dateA;
     });
 
@@ -118,7 +117,7 @@ export default function JudgeDecisionsScreen({ navigation }: JudgeScreenProps<'J
         <View style={styles.cardHeader}>
           <Text style={[styles.caseId, { color: JUDGE_ACCENT }]}>MINUTE N° {item.id}/26</Text>
           <Text style={[styles.date, { color: colors.textSub }]}>
-            {new Date(item.updatedAt || item.filedAt).toLocaleDateString("fr-FR")}
+            {new Date(item.updatedAt ?? item.filedAt ?? item.createdAt ?? Date.now()).toLocaleDateString("fr-FR")}
           </Text>
         </View>
 

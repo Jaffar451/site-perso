@@ -31,7 +31,7 @@ import { createArrestWarrant } from '../../services/arrestWarrant.service';
 type UrgencyLevel = 'normal' | 'high' | 'critical';
 
 export default function IssueArrestWarrantScreen({ route, navigation }: JudgeScreenProps<'IssueArrestWarrant'>) {
-  const { theme, isDark } = useAppTheme();
+  const { isDark } = useAppTheme();
   const { user } = useAuthStore();
   
   // ✅ Identité visuelle : Violet Judiciaire

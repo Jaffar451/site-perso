@@ -39,7 +39,7 @@ interface Hearing {
 }
 
 export default function JudgeHearingScreen({ navigation }: JudgeScreenProps<'JudgeHearing'>) {
-  const { theme, isDark } = useAppTheme();
+  const { isDark } = useAppTheme();
   
   // ✅ Identité Cabinet d'Instruction
   const JUDGE_ACCENT = "#7C3AED"; 
@@ -174,7 +174,7 @@ export default function JudgeHearingScreen({ navigation }: JudgeScreenProps<'Jud
               onPress={() => setFilter("today")}
             >
               <Text style={[styles.filterText, { color: filter === "today" ? JUDGE_ACCENT : colors.textSub }]}>
-                AUJOURD'HUI
+                {"AUJOURD'HUI"}
               </Text>
             </TouchableOpacity>
             

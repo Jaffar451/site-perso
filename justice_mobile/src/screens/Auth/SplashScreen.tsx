@@ -10,27 +10,18 @@ import {
 } from "react-native";
 import { Text } from "react-native-paper";
 
-// ✅ 1. Imports Architecture
 import { useAuthStore } from "../../stores/useAuthStore";
 import { useAppTheme } from "../../theme/AppThemeProvider";
 import { AuthScreenProps } from "../../types/navigation";
 
 export default function SplashScreen({ navigation }: AuthScreenProps<'Splash'>) {
-  // ✅ 2. Thème
   const { theme } = useAppTheme();
   const primaryColor = theme.colors.primary;
-  
-  // ✅ 3. Utilisation du Store
-  // ⚠️ CRITIQUE : On ne récupère PLUS 'hydrate' ici pour ne pas relancer le processus.
-  // On observe juste si ça charge encore.
-  const isHydrating = useAuthStore((state) => state.isHydrating);
 
-  // Animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
 
   useEffect(() => {
-    // 1. Lancement de l'animation d'entrée
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -44,39 +35,15 @@ export default function SplashScreen({ navigation }: AuthScreenProps<'Splash'>) 
       }),
     ]).start();
 
-    // 2. Logique d'attente intelligente
-    const checkStatus = async () => {
-      // A. On impose un délai minimum de 2.5s pour le branding (que le chargement soit fini ou non)
-      await new Promise(resolve => setTimeout(resolve, 2500));
+    const timer = setTimeout(() => {
+      if (!useAuthStore.getState().isAuthenticated) {
+        navigation.replace("Login");
+      }
+      // Si isAuthenticated === true, AppNavigator bascule automatiquement
+    }, 2500);
 
-      // B. Fonction récursive pour attendre la fin de l'hydratation réelle
-      const waitForHydration = async () => {
-        // On vérifie l'état actuel directement dans le store
-        if (useAuthStore.getState().isHydrating) {
-           // Si ça charge encore, on réessaie dans 100ms
-           setTimeout(waitForHydration, 100); 
-        } else {
-           // C'est fini ! On décide où aller.
-           handleNavigation();
-        }
-      };
-
-      const handleNavigation = () => {
-        // Si l'utilisateur est connecté, AppNavigator (qui surveille isAuthenticated)
-        // aura DÉJÀ basculé sur le "Main" (DrawerNavigator). Ce composant va se démonter tout seul.
-        
-        // Si l'utilisateur n'est PAS connecté, on doit manuellement aller au Login.
-        if (!useAuthStore.getState().isAuthenticated) {
-           navigation.replace("Login");
-        }
-      };
-
-      // C. On lance la surveillance
-      waitForHydration();
-    };
-
-    checkStatus();
-  }, []); // ✅ Tableau de dépendances vide pour ne l'exécuter qu'une seule fois au montage
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <View style={[styles.container, { backgroundColor: primaryColor }]}>
@@ -160,7 +127,7 @@ const styles = StyleSheet.create({
   line: {
     width: 40,
     height: 3,
-    backgroundColor: "#EAB308", // Or du drapeau
+    backgroundColor: "#EAB308",
     marginVertical: 20,
     borderRadius: 2,
   },

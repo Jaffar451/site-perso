@@ -37,7 +37,7 @@ export interface ConfiscatedItem {
 }
 
 export default function JudgeConfiscationScreen({ route, navigation }: JudgeScreenProps<'JudgeConfiscation'>) {
-  const { theme, isDark } = useAppTheme();
+  const { isDark } = useAppTheme();
   
   // ✅ Identité Cabinet d'Instruction
   const JUDGE_ACCENT = "#7C3AED"; 

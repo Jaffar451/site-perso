@@ -56,31 +56,24 @@ export default function AdminUsersScreen({ navigation }: AdminScreenProps<'Admin
   };
 
   const { data, isLoading, refetch, error } = useQuery({
-    queryKey: ["users"],
-    queryFn: getAllUsers,
-  });
-
+  queryKey: ["users"],
+  queryFn: getAllUsers,
+  staleTime: 1000 * 60 * 5,
+  refetchOnMount: false,
+  refetchOnWindowFocus: false,  // ✅ Bloque le refetch au retour sur l'app
+  refetchOnReconnect: false,    // ✅ Bloque aussi sur reconnexion
+});
+  // ✅ Vide — React Query gère la fraîcheur via invalidateQueries depuis AdminUserDetailsScreen
   useFocusEffect(
-    useCallback(() => {
-      refetch();
-    }, [refetch])
+    useCallback(() => {}, [])
   );
 
-  // ✅ EXTRACTION SÉCURISÉE DES DONNÉES
   const users: UserData[] = useMemo(() => {
     if (!data) return [];
-    
-    // Log pour déboguer la structure reçue
-    console.log("Structure reçue de l'API :", JSON.stringify(data, null, 2));
-
-    // Si le backend renvoie { success: true, data: [...] }
     if (typeof data === 'object' && data !== null && 'data' in data && Array.isArray((data as any).data)) {
       return (data as any).data;
     }
-    
-    // Fallback si data est déjà un tableau
     if (Array.isArray(data)) return data;
-    
     return [];
   }, [data]);
 
@@ -124,9 +117,9 @@ export default function AdminUsersScreen({ navigation }: AdminScreenProps<'Admin
       <TouchableOpacity 
         activeOpacity={0.7}
         style={[
-            styles.card, 
-            { backgroundColor: colors.bgCard, borderColor: colors.border },
-            isSuspended && { opacity: 0.6 }
+          styles.card, 
+          { backgroundColor: colors.bgCard, borderColor: colors.border },
+          isSuspended && { opacity: 0.6 }
         ]}
         onPress={() => navigation.navigate("AdminUserDetails", { userId: item.id })}
       >
@@ -152,9 +145,9 @@ export default function AdminUsersScreen({ navigation }: AdminScreenProps<'Admin
               {item.matricule || item.registrationNumber || "SANS MATRICULE"}
             </Text>
             {isSuspended && (
-                <View style={[styles.badge, { backgroundColor: '#EF4444' }]}>
-                    <Text style={styles.badgeText}>BLOQUÉ</Text>
-                </View>
+              <View style={[styles.badge, { backgroundColor: '#EF4444' }]}>
+                <Text style={styles.badgeText}>BLOQUÉ</Text>
+              </View>
             )}
           </View>
           <Text style={[styles.email, { color: colors.textSub }]} numberOfLines={1}>
@@ -184,9 +177,9 @@ export default function AdminUsersScreen({ navigation }: AdminScreenProps<'Admin
             autoCapitalize="none"
           />
           {search !== "" && (
-              <TouchableOpacity onPress={() => setSearch("")}>
-                  <Ionicons name="close-circle" size={20} color={colors.textSub} />
-              </TouchableOpacity>
+            <TouchableOpacity onPress={() => setSearch("")}>
+              <Ionicons name="close-circle" size={20} color={colors.textSub} />
+            </TouchableOpacity>
           )}
         </View>
       </View>
@@ -194,8 +187,8 @@ export default function AdminUsersScreen({ navigation }: AdminScreenProps<'Admin
       <View style={[styles.mainWrapper, { backgroundColor: colors.bgMain }]}>
         {isLoading && !refreshing ? (
           <View style={styles.center}>
-             <ActivityIndicator size="large" color={primaryColor} />
-             <Text style={[styles.loaderText, { color: colors.textSub }]}>Accès à la base agents...</Text>
+            <ActivityIndicator size="large" color={primaryColor} />
+            <Text style={[styles.loaderText, { color: colors.textSub }]}>Accès à la base agents...</Text>
           </View>
         ) : error ? (
           <View style={styles.center}>
@@ -212,11 +205,11 @@ export default function AdminUsersScreen({ navigation }: AdminScreenProps<'Admin
             renderItem={renderItem}
             contentContainerStyle={styles.listPadding}
             refreshControl={
-                <RefreshControl 
-                    refreshing={refreshing} 
-                    onRefresh={onRefresh} 
-                    tintColor={primaryColor} 
-                />
+              <RefreshControl 
+                refreshing={refreshing} 
+                onRefresh={onRefresh} 
+                tintColor={primaryColor} 
+              />
             }
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={

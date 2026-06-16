@@ -88,7 +88,7 @@ export default function ClerkComplaintDetailsScreen({ navigation, route }: Clerk
                 <StatusBadge status={complaint.status} />
               </View>
               <Text style={[styles.dateText, { color: colors.textSub }]}>
-                Transmis le {complaint.filedAt ? format(new Date(complaint.filedAt), "dd MMM yyyy", { locale: fr }) : "--/--/----"}
+                Transmis le {complaint.filedAt ? format(new Date(complaint.filedAt ?? complaint.createdAt ?? Date.now()), "dd MMM yyyy", { locale: fr }) : "--/--/----"}
               </Text>
             </View>
             <View style={styles.instructionRow}>

@@ -56,6 +56,7 @@ export default function ProsecutorCalendarScreen({ navigation }: any) {
 
     const fetchHearings = async () => {
       setLoading(true);
+      
       try {
         // Formatage YYYY-MM-DD pour l'API
         const dateStr = selectedDate.toISOString().split('T')[0];
@@ -64,25 +65,49 @@ export default function ProsecutorCalendarScreen({ navigation }: any) {
         const response = await api.get(`/hearings`, { params: { date: dateStr } });
 
         if (isMounted) {
-          // On mappe les données brutes du backend pour l'affichage
-          const mappedData = response.data.map((h: any) => ({
-            id: h.id.toString(),
-            // Extraction de l'heure depuis la date ISO
-            time: new Date(h.hearingDate).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-            caseRef: h.complaint?.trackingCode || `Dossier #${h.complaintId}`,
+          // 🔧 CORRECTION : Extraction robuste des données API
+          let hearingsData: any[] = [];
+          
+          // Détection automatique de la structure de réponse
+          if (Array.isArray(response.data)) {
+            // Cas 1 : API retourne directement un tableau
+            hearingsData = response.data;
+          } else if (Array.isArray(response.data?.data)) {
+            // Cas 2 : API retourne { data: [...], count: X, ... }
+            hearingsData = response.data.data;
+          } else if (Array.isArray(response.data?.hearings)) {
+            // Cas 3 : API retourne { hearings: [...] }
+            hearingsData = response.data.hearings;
+          } else if (Array.isArray(response.data?.items)) {
+            // Cas 4 : API retourne { items: [...] }
+            hearingsData = response.data.items;
+          } else {
+            console.warn('[API] Format de réponse inattendu:', response.data);
+            hearingsData = [];
+          }
+
+          console.log(`[API] ${hearingsData.length} audiences reçues`);
+
+          // Mapping sécurisé avec valeurs par défaut
+          const mappedData: HearingEvent[] = hearingsData.map((h: any) => ({
+            id: h.id?.toString() || Math.random().toString(36).substr(2, 9),
+            time: h.hearingDate 
+              ? new Date(h.hearingDate).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+              : "--:--",
+            caseRef: h.complaint?.trackingCode || h.trackingCode || `Dossier #${h.complaintId || h.id || '?'}`,
             type: h.type || "Audience Générale",
-            defendant: h.complaint?.defendantName || "Inconnu",
-            room: h.location || "Palais de Justice",
-            status: h.status || 'pending', // 'pending', 'active', 'finished'
-            caseId: h.complaintId
+            defendant: h.complaint?.defendantName || h.defendantName || "Inconnu",
+            room: h.location || h.room || "Palais de Justice",
+            status: h.status || 'pending',
+            caseId: h.complaintId || h.id || 0
           }));
           
           // Tri chronologique
-          mappedData.sort((a: any, b: any) => a.time.localeCompare(b.time));
+          mappedData.sort((a: HearingEvent, b: HearingEvent) => a.time.localeCompare(b.time));
           setHearings(mappedData);
         }
-      } catch (error) {
-        console.error("Erreur chargement calendrier:", error);
+      } catch (error: any) {
+        console.error("❌ Erreur chargement calendrier:", error.message);
         // On ne bloque pas l'UI, on vide juste la liste
         if (isMounted) setHearings([]);
       } finally {
@@ -113,8 +138,7 @@ export default function ProsecutorCalendarScreen({ navigation }: any) {
         <TouchableOpacity 
           style={[styles.card, { backgroundColor: colors.card, borderColor: item.status === 'active' ? colors.primary : colors.border }]}
           activeOpacity={0.8}
-          // Navigation vers le détail pour le Procureur
-          onPress={() => navigation.navigate('ProsecutorCaseDetail', { caseId: item.caseId })} 
+          onPress={() => navigation.navigate('ProsecutorCaseDetail', { caseId: item.caseId })}
         >
           <View style={styles.cardHeader}>
             <View style={[styles.tag, { backgroundColor: colors.primary + '15' }]}>
@@ -156,7 +180,6 @@ export default function ProsecutorCalendarScreen({ navigation }: any) {
             const date = new Date();
             date.setDate(date.getDate() + dayOffset);
             
-            // Comparaison correcte des dates (jour/mois/année)
             const isSelected = 
                date.getDate() === selectedDate.getDate() && 
                date.getMonth() === selectedDate.getMonth();

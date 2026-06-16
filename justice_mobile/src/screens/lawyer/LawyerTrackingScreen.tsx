@@ -127,7 +127,7 @@ export default function LawyerTrackingScreen({ navigation }: LawyerScreenProps<'
             </Text>
           </View>
           <Text style={[styles.dateText, { color: colors.textSub }]}>
-              Màj : {new Date(item.updatedAt || item.filedAt).toLocaleDateString("fr-FR")}
+              Màj : {new Date(item.updatedAt ?? item.filedAt ?? item.createdAt ?? Date.now()).toLocaleDateString("fr-FR")}
           </Text>
         </View>
       </TouchableOpacity>

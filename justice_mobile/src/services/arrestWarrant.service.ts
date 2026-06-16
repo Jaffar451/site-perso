@@ -1,3 +1,5 @@
+// @TODO: add try/catch around api calls
+// PATH: src/services/arrestWarrant.service.ts
 import api from "./api";
 import { useAuthStore } from "../stores/useAuthStore";
 
@@ -13,8 +15,8 @@ const allow = (...allowedRoles: string[]) => {
     throw new Error("Utilisateur non identifié.");
   }
 
-  // Normalisation pour les groupes de rôles
-  const isPolice = ["officier_police", "commissaire", "inspecteur", "gendarme", "opj_gendarme"].includes(userRole);
+  // Normalisation pour les groupes de rôles (Adapté à ton système)
+  const isPolice = ["officier_police", "commissaire", "inspecteur", "gendarme", "opj_gendarme", "police"].includes(userRole);
   const isJustice = ["judge", "prosecutor", "greffier"].includes(userRole);
 
   // Vérification
@@ -29,42 +31,62 @@ const allow = (...allowedRoles: string[]) => {
   }
 };
 
-// ✅ L'interface inclut bien judgeId maintenant
+// ======================================================
+// TYPES
+// ======================================================
+
 export interface CreateArrestWarrantPayload {
   caseId: number;
   personName: string;
   reason: string;
   expiresAt?: string; 
   urgency: "normal" | "high" | "critical";
-  judgeId?: number; // Mis en optionnel (?) pour éviter les erreurs si user.id est undefined côté UI
+  judgeId?: number;
 }
 
+// ======================================================
+// SERVICES
+// ======================================================
+
 /**
- * ⚖️ Émission d'un mandat d'arrêt
- * Seul le Juge d'instruction peut ordonner l'arrestation.
+ * ⚖️ Émission d'un mandat d'arrêt (Juge uniquement)
  */
 export const createArrestWarrant = async (payload: CreateArrestWarrantPayload) => {
-  allow("judge"); // Seul le juge passe
+  allow("judge");
   const res = await api.post("/arrest-warrants", payload);
-  return res.data;
+  return res.data?.data || res.data;
 };
 
 /**
- * 👮 Consultation pour exécution
- * La Police (tous grades), le Juge et l'Admin peuvent consulter.
+ * 👮 Consultation des mandats actifs
  */
 export const getActiveWarrants = async () => {
-  // On autorise le groupe "police", le rôle "judge" et "admin"
+  // On autorise la police, le juge et l'admin
   allow("police", "judge", "admin");
   const res = await api.get("/arrest-warrants/active");
-  return res.data;
+  
+  // Défensif : On s'assure de toujours renvoyer un tableau
+  const raw = res.data;
+  if (Array.isArray(raw)) return raw;
+  if (raw?.data && Array.isArray(raw.data)) return raw.data;
+  return [];
 };
 
 /**
- * 🛑 Annulation ou clôture d'un mandat
+ * 🛑 Changement de statut (Annulation ou Exécution)
  */
 export const updateWarrantStatus = async (id: number, status: "executed" | "cancelled") => {
-  allow("judge", "admin", "commissaire"); // Le commissaire peut marquer comme exécuté
+  allow("judge", "admin", "commissaire");
   const res = await api.patch(`/arrest-warrants/${id}/status`, { status });
-  return res.data;
+  return res.data?.data || res.data;
+};
+
+/**
+ * ⛓️ Exécution d'un mandat par la Police
+ * C'est cette fonction qui manquait dans ton écran d'arrestation
+ */
+export const executeWarrant = async (warrantId: number) => {
+  allow("police", "admin"); // N'importe quel policier sur le terrain peut exécuter
+  const res = await api.post(`/arrest-warrants/${warrantId}/execute`);
+  return res.data?.data || res.data;
 };

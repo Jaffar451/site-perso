@@ -100,7 +100,7 @@ export default function ProsecutorHomeScreen({ navigation }: ProsecutorScreenPro
             <View style={{ flex: 1 }}>
               <Text style={[styles.welcomeSub, { color: colors.textSub }]}>{dateFull}</Text>
               <Text style={[styles.welcomeTitle, { color: colors.textMain }]}>
-                M. le Procureur <Text style={{ color: primaryColor }}>{user?.lastname || ""}</Text>
+                M. le Procureur <Text style={{ color: primaryColor }}>{user?.lastname || user?.lastname || ""}</Text>
               </Text>
             </View>
             <LinearGradient 

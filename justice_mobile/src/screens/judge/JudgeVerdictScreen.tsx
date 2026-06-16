@@ -29,7 +29,7 @@ import SmartFooter from '../../components/layout/SmartFooter';
 import { updateComplaint } from '../../services/complaint.service';
 
 export default function JudgeVerdictScreen({ route, navigation }: JudgeScreenProps<'JudgeVerdict'>) {
-  const { theme, isDark } = useAppTheme();
+  const { isDark } = useAppTheme();
   
   // ✅ Identité Cabinet d'Instruction
   const JUDGE_ACCENT = "#7C3AED"; 

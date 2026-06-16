@@ -6,7 +6,7 @@ import { CitizenStackParamList } from '../../types/navigation';
 import CitizenHomeScreen from '../../screens/citizen/CitizenHomeScreen';
 import CitizenCreateComplaintScreen from '../../screens/citizen/CitizenCreateComplaintScreen'; // Note: Vérifiez si vous l'avez renommé ou non
 import CitizenMyComplaintsScreen from '../../screens/citizen/CitizenMyComplaintsScreen';
-import CitizenComplaintDetailsScreen from '../../screens/shared/ComplaintDetailScreen'; // Souvent partagé
+import CitizenComplaintDetailsScreen from '../../screens/citizen/CitizenComplaintDetailsScreen'; // Souvent partagé
 import CitizenTrackingScreen from '../../screens/citizen/CitizenTrackingScreen';
 import CitizenCasesScreen from '../../screens/citizen/CitizenCasesScreen'; // Assurez-vous que ce fichier existe
 import CitizenEditComplaintScreen from '../../screens/citizen/CitizenEditComplaintScreen';

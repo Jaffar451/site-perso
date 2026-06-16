@@ -121,7 +121,7 @@ export default function LawyerCaseListScreen({ navigation }: LawyerScreenProps<'
           <View style={styles.dateInfo}>
             <Ionicons name="calendar-outline" size={12} color={colors.textSub} />
             <Text style={[styles.dateText, { color: colors.textSub }]}>
-                Saisi le {new Date(item.filedAt).toLocaleDateString("fr-FR")}
+                Saisi le {new Date(item.filedAt ?? item.createdAt ?? Date.now()).toLocaleDateString("fr-FR")}
             </Text>
           </View>
           <View style={styles.actionLink}>

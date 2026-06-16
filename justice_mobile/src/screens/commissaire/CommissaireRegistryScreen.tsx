@@ -70,7 +70,7 @@ export default function CommissaireRegistryScreen() {
         <View style={[styles.statusDot, { backgroundColor: getStatusColor(item.status) }]} />
         <Text style={[styles.idText, { color: colors.textMain }]}>#{item.trackingCode?.slice(-6) || item.id}</Text>
         <Text style={[styles.dateText, { color: colors.textSub }]}>
-          {new Date(item.createdAt).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
+          {new Date(item.createdAt ?? Date.now()).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
         </Text>
       </View>
 

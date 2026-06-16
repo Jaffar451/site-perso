@@ -74,7 +74,7 @@ export default function CommissaireVisaList() {
         <View style={styles.cardContent}>
           <View style={styles.headerRow}>
             <Text style={[styles.dossierId, { color: colors.textSub }]}>RG N° {item.trackingCode || item.id}</Text>
-            <Text style={[styles.dateText, { color: colors.textSub }]}>{new Date(item.filedAt).toLocaleDateString('fr-FR')}</Text>
+            <Text style={[styles.dateText, { color: colors.textSub }]}>{new Date(item.filedAt ?? item.createdAt ?? Date.now()).toLocaleDateString('fr-FR')}</Text>
           </View>
           
           <Text style={[styles.typeText, { color: colors.textMain }]} numberOfLines={1}>

@@ -1,10 +1,9 @@
 import StatusBadge from '../../components/ui/StatusBadge';
-import React, { useCallback, memo } from "react";
+import React, { useCallback, memo, useMemo } from "react";
 import {
   View, Text, TouchableOpacity, FlatList, StyleSheet,
   ActivityIndicator, RefreshControl, StatusBar, Alert, Platform
 } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../../stores/useAuthStore";
@@ -13,18 +12,9 @@ import { PoliceScreenProps } from "../../types/navigation";
 import ScreenContainer from "../../components/layout/ScreenContainer";
 import AppHeader from "../../components/layout/AppHeader";
 import SmartFooter from "../../components/layout/SmartFooter";
-import { getAllComplaints, updateComplaint, Complaint } from "../../services/complaint.service";
+import { getAllComplaints, updateComplaint } from "../../services/complaint.service";
 
-// ─── Composant carte mémoïsé — ne re-render que si item change ─────────────
-const ComplaintCard = memo(({
-  item, onPress, onTakeCharge, colors, primaryColor
-}: {
-  item: Complaint;
-  onPress: () => void;
-  onTakeCharge: () => void;
-  colors: any;
-  primaryColor: string;
-}) => {
+const ComplaintCard = memo(({ item, onPress, onTakeCharge, colors, primaryColor }: any) => {
   const dateStr = item.createdAt || item.filedAt || new Date().toISOString();
   const formattedDate = new Date(dateStr).toLocaleDateString("fr-FR");
 
@@ -48,9 +38,7 @@ const ComplaintCard = memo(({
       <View style={[styles.footerRow, { borderTopColor: colors.divider }]}>
         <View style={styles.dateInfo}>
           <Ionicons name="calendar-outline" size={14} color={colors.textSub} />
-          <Text style={[styles.dateText, { color: colors.textSub }]}>
-            Reçu le {formattedDate}
-          </Text>
+          <Text style={[styles.dateText, { color: colors.textSub }]}>Reçu le {formattedDate}</Text>
         </View>
 
         {item.status === "soumise" ? (
@@ -73,7 +61,6 @@ const ComplaintCard = memo(({
   );
 });
 
-// ─── Écran principal ────────────────────────────────────────────────────────
 export default function PoliceComplaintsScreen({ navigation }: PoliceScreenProps<'PoliceComplaints'>) {
   const { theme, isDark } = useAppTheme();
   const primaryColor = theme.colors.primary;
@@ -88,33 +75,36 @@ export default function PoliceComplaintsScreen({ navigation }: PoliceScreenProps
     divider: isDark ? "#334155" : "#F1F5F9",
   };
 
-  // React Query — cache + refetch automatique
-  const { data: complaints = [], isLoading, refetch } = useQuery({
-    queryKey: ['police-complaints'],
-    queryFn: async () => {
-      const data = await getAllComplaints();
-      return [...data].sort((a: any, b: any) =>
-        new Date(b.createdAt || b.filedAt).getTime() -
-        new Date(a.createdAt || a.filedAt).getTime()
-      );
-    },
-    staleTime: 30_000, // 30s avant refetch automatique
+  const { data: rawResponse, isLoading, refetch } = useQuery({
+    queryKey: ['complaints'],
+    queryFn: getAllComplaints,
+    staleTime: 10 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
-  // Refetch au focus de l'écran
-  useFocusEffect(useCallback(() => { refetch(); }, [refetch]));
+  // ✅ Extraction du wrapper { success, data }
+  const complaints = useMemo(() => {
+    if (!rawResponse) return [];
+    const list = Array.isArray(rawResponse) ? rawResponse : (rawResponse as any)?.data || [];
+    return [...list].sort((a: any, b: any) =>
+      new Date(b.createdAt ?? b.filedAt ?? 0).getTime() -
+      new Date(a.createdAt ?? a.filedAt ?? 0).getTime()
+    );
+  }, [rawResponse]);
 
   const handleTakeCharge = useCallback(async (id: number) => {
     try {
+      // ✅ Transition vers en_cours_OPJ via updateComplaint
       await updateComplaint(id, { status: "en_cours_OPJ" } as any);
-      queryClient.invalidateQueries({ queryKey: ['police-complaints'] });
+      queryClient.invalidateQueries({ queryKey: ['complaints'] });
       navigation.navigate("PoliceComplaintDetails", { complaintId: id });
     } catch {
       Alert.alert("Échec", "La prise en charge a échoué.");
     }
   }, [navigation, queryClient]);
 
-  const renderItem = useCallback(({ item }: { item: Complaint }) => (
+  const renderItem = useCallback(({ item }: { item: any }) => (
     <ComplaintCard
       item={item}
       colors={colors}
@@ -124,7 +114,7 @@ export default function PoliceComplaintsScreen({ navigation }: PoliceScreenProps
     />
   ), [colors, primaryColor, navigation, handleTakeCharge]);
 
-  const keyExtractor = useCallback((item: Complaint) => item.id.toString(), []);
+  const keyExtractor = useCallback((item: any) => item.id.toString(), []);
 
   const ListEmpty = useCallback(() => (
     <View style={styles.emptyCenter}>
@@ -146,9 +136,7 @@ export default function PoliceComplaintsScreen({ navigation }: PoliceScreenProps
         {isLoading && complaints.length === 0 ? (
           <View style={styles.center}>
             <ActivityIndicator size="large" color={primaryColor} />
-            <Text style={[styles.loadingText, { color: colors.textSub }]}>
-              Accès au registre sécurisé...
-            </Text>
+            <Text style={[styles.loadingText, { color: colors.textSub }]}>Accès au registre sécurisé...</Text>
           </View>
         ) : (
           <FlatList
@@ -157,52 +145,36 @@ export default function PoliceComplaintsScreen({ navigation }: PoliceScreenProps
             keyExtractor={keyExtractor}
             renderItem={renderItem}
             showsVerticalScrollIndicator={false}
-            // ─── Props performance critiques ───
             removeClippedSubviews={true}
             maxToRenderPerBatch={8}
             updateCellsBatchingPeriod={50}
             windowSize={5}
             initialNumToRender={10}
-            getItemLayout={(_, index) => ({
-              length: 160, offset: 160 * index, index
-            })}
-            // ──────────────────────────────────
-            refreshControl={
-              <RefreshControl
-                refreshing={isLoading}
-                onRefresh={refetch}
-                tintColor={primaryColor}
-              />
-            }
+            refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={primaryColor} />}
             ListEmptyComponent={ListEmpty}
           />
         )}
       </View>
-
       <SmartFooter />
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, justifyContent: "center", alignItems: "center" },
-  loadingText: { marginTop: 15, fontSize: 11, fontWeight: '900', letterSpacing: 1, textTransform: 'uppercase' },
-  listPadding: { paddingHorizontal: 16, paddingTop: 15, paddingBottom: 120 },
-  emptyCenter: { alignItems: "center", marginTop: 100 },
+  center:          { flex: 1, justifyContent: "center", alignItems: "center" },
+  loadingText:     { marginTop: 15, fontSize: 11, fontWeight: '900', letterSpacing: 1, textTransform: 'uppercase' },
+  listPadding:     { paddingHorizontal: 16, paddingTop: 15, paddingBottom: 120 },
+  emptyCenter:     { alignItems: "center", marginTop: 100 },
   emptyIconCircle: { width: 120, height: 120, borderRadius: 60, justifyContent: 'center', alignItems: 'center', marginBottom: 20 },
-  emptyText: { fontSize: 14, fontWeight: '700', opacity: 0.7 },
-  card: {
-    padding: 20, borderRadius: 24, marginBottom: 16, borderWidth: 1.5,
-    elevation: 3, shadowColor: "#000", shadowOpacity: 0.05,
-    shadowRadius: 10, shadowOffset: { width: 0, height: 4 }
-  },
-  cardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 },
-  title: { fontSize: 16, fontWeight: "900", flex: 1, marginRight: 10, letterSpacing: -0.4 },
-  description: { fontSize: 13, marginBottom: 18, lineHeight: 20, fontWeight: '500' },
-  footerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderTopWidth: 1, paddingTop: 15 },
-  dateInfo: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  dateText: { fontSize: 11, fontWeight: '700' },
-  actionBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12 },
-  actionBtnText: { color: "#fff", fontSize: 11, fontWeight: "900" },
-  detailsBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  emptyText:       { fontSize: 14, fontWeight: '700', opacity: 0.7 },
+  card:            { padding: 20, borderRadius: 24, marginBottom: 16, borderWidth: 1.5, elevation: 3, shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 10, shadowOffset: { width: 0, height: 4 } },
+  cardHeader:      { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 },
+  title:           { fontSize: 16, fontWeight: "900", flex: 1, marginRight: 10, letterSpacing: -0.4 },
+  description:     { fontSize: 13, marginBottom: 18, lineHeight: 20, fontWeight: '500' },
+  footerRow:       { flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderTopWidth: 1, paddingTop: 15 },
+  dateInfo:        { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  dateText:        { fontSize: 11, fontWeight: '700' },
+  actionBtn:       { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12 },
+  actionBtnText:   { color: "#fff", fontSize: 11, fontWeight: "900" },
+  detailsBtn:      { flexDirection: 'row', alignItems: 'center', gap: 4 },
 });

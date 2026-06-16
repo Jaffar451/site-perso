@@ -28,7 +28,7 @@ import AppHeader from "../../components/layout/AppHeader";
 import SmartFooter from "../../components/layout/SmartFooter";
 
 // ✅ Services
-import { updateComplaint, updateComplaintStatus } from "../../services/complaint.service";
+import { updateComplaint, transitionComplaint } from "../../services/complaint.service";
 
 // Configuration des établissements pénitentiaires (Référentiel Niger)
 const PRISONS = [
@@ -41,7 +41,7 @@ const PRISONS = [
 ];
 
 export default function JudgePreventiveDetentionScreen({ route, navigation }: JudgeScreenProps<'JudgePreventiveDetention'>) {
-  const { theme, isDark } = useAppTheme();
+  const { isDark } = useAppTheme();
   
   // ✅ Identité Cabinet d'Instruction
   const JUDGE_ACCENT = "#7C3AED"; 
@@ -107,7 +107,7 @@ export default function JudgePreventiveDetentionScreen({ route, navigation }: Ju
       } as any);
 
       // ✅ Mise à jour du statut : Passage en détention provisoire
-      await updateComplaintStatus(Number(caseId), "detention_provisoire"); 
+      await transitionComplaint(Number(caseId), "detention_provisoire"); 
 
       if (Platform.OS === 'web') window.alert("✅ Mandat de dépôt signé et transmis au Greffe.");
       else Alert.alert("Incarcération Validée", "Le mandat de dépôt a été signé numériquement. L'ordre d'écrou est transmis au Chef de l'établissement pénitentiaire.");

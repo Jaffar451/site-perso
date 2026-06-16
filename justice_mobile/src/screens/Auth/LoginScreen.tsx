@@ -30,7 +30,6 @@ export default function LoginScreen({ navigation }: AuthScreenProps<'Login'>) {
     }
     
     try {
-      // CORRECTION : Envoi de l'objet { identifier, password } pour correspondre au backend
       await login({ 
         identifier: identifier.trim(), 
         password: password 
@@ -108,7 +107,7 @@ export default function LoginScreen({ navigation }: AuthScreenProps<'Login'>) {
           {error && (
             <View style={styles.errorBox}>
               <Ionicons name="alert-circle" size={16} color={theme.colors.danger} />
-              <Text style={{ color: theme.colors.danger }}>{error}</Text>
+              <Text style={{ color: theme.colors.danger, flex: 1 }}>{error}</Text>
             </View>
           )}
 
@@ -120,6 +119,17 @@ export default function LoginScreen({ navigation }: AuthScreenProps<'Login'>) {
             {loading ? <ActivityIndicator color="#FFFFFF" /> : (
               <Text style={styles.loginBtnText}>Se connecter</Text>
             )}
+          </TouchableOpacity>
+
+          {/* AJOUT : Lien vers l'écran de création de compte */}
+          <TouchableOpacity 
+            style={styles.registerLink}
+            onPress={() => navigation.navigate('Register')}
+          >
+            <Text style={[styles.registerText, { color: theme.colors.textSecondary }]}>
+              Pas encore de compte ?{' '}
+              <Text style={{ color: PRIMARY, fontWeight: '800' }}>S'inscrire</Text>
+            </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -135,7 +145,7 @@ const styles = StyleSheet.create({
   emblemInner: { width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center' },
   appName: { color: '#FFFFFF', fontSize: 26, fontWeight: '900', marginBottom: 4 },
   appSub: { color: 'rgba(255,255,255,0.75)', fontSize: 12, textAlign: 'center' },
-  form: { margin: 20, padding: 24, borderRadius: 20 },
+  form: { margin: 20, padding: 24, borderRadius: 20, elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 8 },
   formTitle: { fontSize: 18, fontWeight: '800', marginBottom: 24, textAlign: 'center' },
   fieldGroup: { marginBottom: 16 },
   fieldLabel: { fontSize: 12, fontWeight: '700', marginBottom: 8, textTransform: 'uppercase' },
@@ -144,6 +154,8 @@ const styles = StyleSheet.create({
   input: { flex: 1, fontSize: 15 },
   eyeBtn: { paddingHorizontal: 14 },
   errorBox: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 12, borderRadius: 10, marginBottom: 16, backgroundColor: '#FEF2F2' },
-  loginBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderRadius: 14, height: 54 },
-  loginBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '800' }
+  loginBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderRadius: 14, height: 54, marginTop: 8 },
+  loginBtnText: { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
+  registerLink: { marginTop: 24, alignItems: 'center', paddingVertical: 8 },
+  registerText: { fontSize: 14 }
 });
