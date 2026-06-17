@@ -48,6 +48,30 @@ router.put(
   updateEvidence,
 );
 
+// Par dossier
+router.get(
+  "/case/:caseId",
+  authenticate,
+  authorize(["officier_police", "judge", "greffier", "prosecutor", "admin"]),
+  async (req, res) => {
+    try {
+      const { Evidence } = require("../../models");
+      const evidence = await Evidence.findAll({ where: { caseId: req.params.caseId } });
+      return res.json({ success: true, data: evidence });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: "Erreur serveur" });
+    }
+  },
+);
+
+// Upload par dossier
+router.post(
+  "/upload/:caseId",
+  authenticate,
+  authorize(["officier_police", "judge", "greffier", "admin"]),
+  createEvidence,
+);
+
 // Suppression → Admin
 router.delete("/:id", authenticate, authorize(["admin"]), deleteEvidence);
 

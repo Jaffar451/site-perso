@@ -51,6 +51,7 @@ router.get(
 
 // 🔹 Modification décision : si non signée
 router.put("/:id", authenticate, authorize(["judge"]), updateDecision);
+router.patch("/:id", authenticate, authorize(["judge"]), updateDecision);
 
 // 🔹 Signature (Scellement de la décision)
 router.patch("/:id/sign", authenticate, authorize(["judge"]), signDecision);

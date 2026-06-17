@@ -101,4 +101,22 @@ router.put(
   requireRole("commissaire", "admin"),
   validateToParquet,
 );
+
+router.delete(
+  "/:id",
+  authenticate,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const { Complaint } = require("../../models");
+      const complaint = await Complaint.findByPk(req.params.id);
+      if (!complaint) return res.status(404).json({ message: "Plainte introuvable" });
+      await complaint.destroy();
+      return res.json({ success: true, message: "Plainte supprimée" });
+    } catch (error) {
+      return res.status(500).json({ message: "Erreur serveur" });
+    }
+  },
+);
+
 export default router;

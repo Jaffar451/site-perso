@@ -5,6 +5,9 @@ import { Router } from "express";
 import {
   createArrestWarrant,
   getArrestWarrants,
+  getActiveWarrants,
+  updateWarrantStatus,
+  executeWarrant,
 } from "../controllers/arrestWarrant.controller";
 
 // 👇 2. Imports des middlewares standards
@@ -30,6 +33,27 @@ router.get(
   authenticate,
   authorize(["officier_police", "prosecutor", "judge", "greffier", "admin"]),
   getArrestWarrants,
+);
+
+router.get(
+  "/active",
+  authenticate,
+  authorize(["officier_police", "commissaire", "judge", "admin"]),
+  getActiveWarrants,
+);
+
+router.patch(
+  "/:id/status",
+  authenticate,
+  authorize(["judge", "admin", "commissaire"]),
+  updateWarrantStatus,
+);
+
+router.post(
+  "/:warrantId/execute",
+  authenticate,
+  authorize(["officier_police", "commissaire", "admin"]),
+  executeWarrant,
 );
 
 export default router;

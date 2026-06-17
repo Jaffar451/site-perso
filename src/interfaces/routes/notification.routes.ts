@@ -14,6 +14,7 @@ router.use(authenticate);
 
 // Lecture
 router.get("/", NotificationController.getNotifications);
+router.get("/my", NotificationController.getNotifications);
 router.patch("/:id/read", NotificationController.markAsRead);
 
 // Suppression

@@ -72,6 +72,7 @@ import dashboardRoutes from "./dashboard.routes";
 import statsRoutes from "./stats.routes";
 import publicRoutes from "./public.routes";
 import resourceRoutes from "./resource.routes";
+import supportRoutes from "./support.routes";
 
 const router = Router();
 
@@ -137,6 +138,7 @@ router.use("/dashboard", dashboardRoutes);
 router.use("/stats", statsRoutes);
 router.use("/public", publicRoutes);
 router.use("/resources", resourceRoutes);
+router.use("/support", supportRoutes);
 
 // --- Surveillance du Système (Status) ---
 router.get("/status", (_, res) => {

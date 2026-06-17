@@ -63,16 +63,65 @@ export const getArrestWarrants = async (req: Request, res: Response) => {
       order: [['createdAt', 'DESC']]
     });
 
-    return res.json({ 
-      success: true, 
-      data: warrants 
+    return res.json({
+      success: true,
+      data: warrants
     });
 
   } catch (error: any) {
     console.error("Erreur récupération mandats:", error);
-    return res.status(500).json({ 
-      success: false, 
-      message: "Erreur serveur lors de la récupération des mandats" 
+    return res.status(500).json({
+      success: false,
+      message: "Erreur serveur lors de la récupération des mandats"
     });
+  }
+};
+
+export const getActiveWarrants = async (_req: Request, res: Response) => {
+  try {
+    const warrants = await ArrestWarrant.findAll({
+      where: { executed: false },
+      include: [
+        { model: CaseModel, as: 'case', attributes: ['id', 'title'] },
+        { model: User, as: 'judge', attributes: ['id', 'firstname', 'lastname'] }
+      ],
+      order: [['createdAt', 'DESC']]
+    });
+    return res.json({ success: true, data: warrants });
+  } catch (error: any) {
+    console.error("Erreur getActiveWarrants:", error.message);
+    return res.status(500).json({ success: false, message: "Erreur serveur" });
+  }
+};
+
+export const updateWarrantStatus = async (req: Request, res: Response) => {
+  try {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const { status } = req.body;
+    const warrant = await ArrestWarrant.findByPk(id);
+    if (!warrant) return res.status(404).json({ success: false, message: "Mandat introuvable" });
+    if (status === "executed") (warrant as any).executed = true;
+    if (status === "cancelled") (warrant as any).executed = false;
+    await warrant.save();
+    return res.json({ success: true, data: warrant });
+  } catch (error: any) {
+    console.error("Erreur updateWarrantStatus:", error.message);
+    return res.status(500).json({ success: false, message: "Erreur serveur" });
+  }
+};
+
+export const executeWarrant = async (req: Request, res: Response) => {
+  try {
+    const rawId = req.params.warrantId || req.params.id;
+    const id = Array.isArray(rawId) ? rawId[0] : rawId;
+    const warrant = await ArrestWarrant.findByPk(id);
+    if (!warrant) return res.status(404).json({ success: false, message: "Mandat introuvable" });
+    (warrant as any).executed = true;
+    (warrant as any).executedAt = new Date();
+    await warrant.save();
+    return res.json({ success: true, data: warrant, message: "Mandat exécuté" });
+  } catch (error: any) {
+    console.error("Erreur executeWarrant:", error.message);
+    return res.status(500).json({ success: false, message: "Erreur serveur" });
   }
 };

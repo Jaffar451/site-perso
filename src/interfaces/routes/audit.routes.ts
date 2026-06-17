@@ -33,6 +33,45 @@ router.get(
   },
 );
 
+router.post(
+  "/",
+  protect,
+  authorize(["admin", "super-admin"]),
+  async (req, res) => {
+    try {
+      const { AuditLog } = require("../../models");
+      const log = await AuditLog.create({
+        action: req.body.action || "ADMIN_ACTION",
+        userId: (req as any).user?.id,
+        details: req.body.details || null,
+        ipAddress: req.ip,
+      });
+      return res.status(201).json({ success: true, data: log });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: "Erreur serveur" });
+    }
+  },
+);
+
+router.get(
+  "/actor/:userId",
+  protect,
+  authorize(["admin", "super-admin"]),
+  async (req, res) => {
+    try {
+      const { AuditLog } = require("../../models");
+      const logs = await AuditLog.findAll({
+        where: { userId: req.params.userId },
+        order: [["createdAt", "DESC"]],
+        limit: 100,
+      });
+      return res.json({ success: true, data: logs });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: "Erreur serveur" });
+    }
+  },
+);
+
 router.get(
   "/:id",
   protect,

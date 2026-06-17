@@ -223,3 +223,52 @@ export const updateProfile = async (req: Request, res: Response) => {
 export const createSuperAdmin = async (req: Request, res: Response) => {
   return res.status(501).json({ message: "Non implémenté" });
 };
+
+export const changePassword = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id;
+    if (!userId) return res.status(401).json({ message: "Non authentifié" });
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword || newPassword.length < 6) {
+      return res.status(400).json({ message: "Mot de passe invalide (min 6 caractères)" });
+    }
+    const user = await User.findByPk(userId);
+    if (!user) return res.status(404).json({ message: "Utilisateur introuvable" });
+    const ok = await bcrypt.compare(currentPassword, user.password);
+    if (!ok) return res.status(401).json({ message: "Mot de passe actuel incorrect" });
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+    return res.json({ success: true, message: "Mot de passe modifié avec succès" });
+  } catch (error) {
+    return res.status(500).json({ message: "Erreur serveur" });
+  }
+};
+
+export const forgotPassword = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: "Email requis" });
+    const user = await User.findOne({ where: { email: email.toLowerCase() } });
+    return res.json({ success: true, message: "Si cet email existe, un lien de réinitialisation a été envoyé." });
+  } catch (error) {
+    return res.status(500).json({ message: "Erreur serveur" });
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword) return res.status(400).json({ message: "Token et nouveau mot de passe requis" });
+    return res.status(501).json({ message: "Réinitialisation par email non encore configurée" });
+  } catch (error) {
+    return res.status(500).json({ message: "Erreur serveur" });
+  }
+};
+
+export const verifyEmail = async (req: Request, res: Response) => {
+  return res.json({ success: true, message: "Vérification email non requise pour le moment" });
+};
+
+export const resendVerification = async (req: Request, res: Response) => {
+  return res.json({ success: true, message: "Email de vérification renvoyé" });
+};
