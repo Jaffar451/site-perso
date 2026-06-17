@@ -1,4 +1,3 @@
-import StatusBadge from '../../components/ui/StatusBadge';
 import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { 
   View, 
@@ -152,7 +151,10 @@ export default function CommissaireGAVSupervisionScreen({ navigation }: PoliceSc
           </Text>
           <TouchableOpacity
             activeOpacity={0.7}
-            onPress={() => Alert.alert("Action Requise", `Traiter la prolongation pour le dossier #${item.id} ?`)}
+            onPress={() => {
+              if (Platform.OS === 'web') window.alert(`Action Requise\n\nTraiter la prolongation pour le dossier #${item.id} ?`);
+              else Alert.alert("Action Requise", `Traiter la prolongation pour le dossier #${item.id} ?`);
+            }}
             style={[styles.extendBtn, { borderColor: primaryColor }]}
           >
             <Text style={[styles.extendText, { color: primaryColor }]}>VISER PROLONGATION</Text>

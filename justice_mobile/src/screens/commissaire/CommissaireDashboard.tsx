@@ -184,13 +184,23 @@ export default function CommissaireDashboard({ navigation }: CommissaireScreenPr
         {/* 📈 BARRE PERFORMANCE */}
         <View style={[styles.performanceCard, { backgroundColor: colors.bgCard, borderColor: colors.border }]}>
           <Text style={[styles.perfTitle, { color: colors.textMain }]}>Taux d'Élucidation Mensuel</Text>
-          <View style={styles.perfRow}>
-            <View style={[styles.progressBarBg, { backgroundColor: isDark ? "#334155" : "#F1F5F9" }]}>
-              <View style={[styles.progressBarFill, { width: '78%', backgroundColor: "#10B981" }]} />
-            </View>
-            <Text style={[styles.perfValue, { color: "#10B981" }]}>78%</Text>
-          </View>
-          <Text style={[styles.perfSub, { color: colors.textSub }]}>Objectif Direction Générale : 75%</Text>
+          {(() => {
+            const total = (stats as any)?.complaintsTotal || (stats as any)?.total || 1;
+            const resolved = (stats as any)?.complaintsResolved || (stats as any)?.resolved || 0;
+            const rate = Math.min(100, Math.round((resolved / Math.max(total, 1)) * 100));
+            const rateColor = rate >= 75 ? "#10B981" : rate >= 50 ? "#F59E0B" : "#EF4444";
+            return (
+              <>
+                <View style={styles.perfRow}>
+                  <View style={[styles.progressBarBg, { backgroundColor: isDark ? "#334155" : "#F1F5F9" }]}>
+                    <View style={[styles.progressBarFill, { width: `${rate}%`, backgroundColor: rateColor }]} />
+                  </View>
+                  <Text style={[styles.perfValue, { color: rateColor }]}>{rate}%</Text>
+                </View>
+                <Text style={[styles.perfSub, { color: colors.textSub }]}>Objectif Direction Générale : 75%</Text>
+              </>
+            );
+          })()}
         </View>
 
         <View style={{ height: 140 }} />

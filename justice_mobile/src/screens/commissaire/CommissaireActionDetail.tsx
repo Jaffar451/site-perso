@@ -319,6 +319,7 @@ export default function CommissaireActionDetail() {
         <ActivityIndicator size="large" color={primaryColor} />
         <Text style={{ marginTop: 10, color: colors.textSub }}>Récupération du dossier...</Text>
       </View>
+      <SmartFooter />
     </ScreenContainer>
   );
 
@@ -332,6 +333,7 @@ export default function CommissaireActionDetail() {
           <Text style={{ color: primaryColor, fontWeight: 'bold' }}>Retour</Text>
         </TouchableOpacity>
       </View>
+      <SmartFooter />
     </ScreenContainer>
   );
 

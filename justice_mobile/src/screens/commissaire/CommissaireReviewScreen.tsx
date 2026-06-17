@@ -353,6 +353,7 @@ export default function CommissaireReviewScreen({ navigation, route }: PoliceScr
         <ActivityIndicator size="large" color={primaryColor} />
         <Text style={[styles.loaderText, { color: colors.textSub }]}>Récupération des pièces...</Text>
       </View>
+      <SmartFooter />
     </ScreenContainer>
   );
 
@@ -366,6 +367,7 @@ export default function CommissaireReviewScreen({ navigation, route }: PoliceScr
           <Text style={{ color: primaryColor, fontWeight: "bold" }}>Retour au bureau</Text>
         </TouchableOpacity>
       </View>
+      <SmartFooter />
     </ScreenContainer>
   );
 

@@ -80,7 +80,9 @@ export default function CommissaireCommandCenter() {
     complaints.forEach(c => {
       const d = new Date(c.createdAt);
       const isCurrentMonth = d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-      const isPrevMonth    = d.getMonth() === (currentMonth - 1) && d.getFullYear() === currentYear;
+      const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+      const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+      const isPrevMonth    = d.getMonth() === prevMonth && d.getFullYear() === prevYear;
       const cat = (c.category || "").toLowerCase();
 
       if (cat.includes("vol") || cat.includes("cambriolage")) {
@@ -133,6 +135,7 @@ export default function CommissaireCommandCenter() {
           <ActivityIndicator size="large" color={primaryColor} />
           <Text style={{ marginTop: 10, color: colors.textSub }}>Synchronisation tactique...</Text>
         </View>
+        <SmartFooter />
       </ScreenContainer>
     );
   }
