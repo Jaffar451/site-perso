@@ -22,6 +22,115 @@ type Props = NativeStackScreenProps<AdminStackParamList, 'AdminCreateUser'>;
 type UserRole = "admin" | "prosecutor" | "judge" | "greffier" | "commissaire" | "officier_police" | "inspecteur" | "citizen";
 type OrganizationType = "POLICE" | "GENDARMERIE" | "JUSTICE" | "ADMIN" | "CITIZEN";
 
+const DatePickerField = ({ label, value, onChange, colors, isDark }: any) => {
+  const [showPicker, setShowPicker] = useState(false);
+  const displayValue = value ? value.split('-').reverse().join('/') : '';
+
+  if (Platform.OS === 'web') {
+    return (
+      <View style={styles.inputGroup}>
+        <Text style={[styles.label, { color: colors.textSub }]}>{label}</Text>
+        <View style={[styles.inputWrapper, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
+          <Ionicons name="calendar-outline" size={20} color={colors.textSub} style={{ marginRight: 12 }} />
+          <input
+            type="date"
+            title={label}
+            aria-label={label}
+            value={value || ''}
+            onChange={(e: any) => onChange(e.target.value || '')}
+            max={new Date().toISOString().split('T')[0]}
+            min="1940-01-01"
+            style={{
+              flex: 1, fontSize: 15, border: 'none', outline: 'none', padding: '12px 0',
+              backgroundColor: 'transparent', color: isDark ? '#FFFFFF' : '#1E293B',
+              fontFamily: 'inherit',
+            } as any}
+          />
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.inputGroup}>
+      <Text style={[styles.label, { color: colors.textSub }]}>{label}</Text>
+      <TouchableOpacity
+        style={[styles.inputWrapper, { backgroundColor: colors.inputBg, borderColor: colors.border }]}
+        onPress={() => setShowPicker(true)}
+        activeOpacity={0.7}
+      >
+        <Ionicons name="calendar-outline" size={20} color={colors.textSub} style={{ marginRight: 12 }} />
+        <Text style={[styles.input, { color: displayValue ? colors.textMain : (isDark ? '#475569' : '#94A3B8'), paddingVertical: 14 }]}>
+          {displayValue || 'JJ/MM/AAAA'}
+        </Text>
+      </TouchableOpacity>
+      <Modal visible={showPicker} transparent animationType="fade" onRequestClose={() => setShowPicker(false)}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <View style={[{ backgroundColor: colors.bgCard, borderRadius: 20, padding: 24, width: '85%', maxWidth: 360 }]}>
+            <Text style={[{ fontSize: 16, fontWeight: '800', marginBottom: 20, textAlign: 'center', color: colors.textMain }]}>Date de naissance</Text>
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <View style={{ flex: 0.3 }}>
+                <Text style={[styles.label, { color: colors.textSub }]}>Jour</Text>
+                <TextInput
+                  style={[styles.inputWrapper, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.textMain, textAlign: 'center', fontSize: 18, fontWeight: '700', paddingVertical: 14 }]}
+                  value={value ? value.split('-')[2] : ''}
+                  onChangeText={(t) => {
+                    const d = t.replace(/\D/g, '').slice(0, 2);
+                    const parts = (value || '--').split('-');
+                    onChange(`${parts[0] || '2000'}-${parts[1] || '01'}-${d}`);
+                  }}
+                  placeholder="JJ"
+                  placeholderTextColor={isDark ? '#475569' : '#94A3B8'}
+                  keyboardType="numeric"
+                  maxLength={2}
+                />
+              </View>
+              <View style={{ flex: 0.3 }}>
+                <Text style={[styles.label, { color: colors.textSub }]}>Mois</Text>
+                <TextInput
+                  style={[styles.inputWrapper, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.textMain, textAlign: 'center', fontSize: 18, fontWeight: '700', paddingVertical: 14 }]}
+                  value={value ? value.split('-')[1] : ''}
+                  onChangeText={(t) => {
+                    const m = t.replace(/\D/g, '').slice(0, 2);
+                    const parts = (value || '--').split('-');
+                    onChange(`${parts[0] || '2000'}-${m}-${parts[2] || '01'}`);
+                  }}
+                  placeholder="MM"
+                  placeholderTextColor={isDark ? '#475569' : '#94A3B8'}
+                  keyboardType="numeric"
+                  maxLength={2}
+                />
+              </View>
+              <View style={{ flex: 0.4 }}>
+                <Text style={[styles.label, { color: colors.textSub }]}>Année</Text>
+                <TextInput
+                  style={[styles.inputWrapper, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.textMain, textAlign: 'center', fontSize: 18, fontWeight: '700', paddingVertical: 14 }]}
+                  value={value ? value.split('-')[0] : ''}
+                  onChangeText={(t) => {
+                    const y = t.replace(/\D/g, '').slice(0, 4);
+                    const parts = (value || '--').split('-');
+                    onChange(`${y}-${parts[1] || '01'}-${parts[2] || '01'}`);
+                  }}
+                  placeholder="AAAA"
+                  placeholderTextColor={isDark ? '#475569' : '#94A3B8'}
+                  keyboardType="numeric"
+                  maxLength={4}
+                />
+              </View>
+            </View>
+            <TouchableOpacity
+              style={[{ marginTop: 20, paddingVertical: 14, borderRadius: 12, alignItems: 'center', backgroundColor: '#1E3A5F' }]}
+              onPress={() => setShowPicker(false)}
+            >
+              <Text style={{ color: '#FFF', fontWeight: '800', fontSize: 15 }}>Confirmer</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </View>
+  );
+};
+
 const ROLES_CONFIG = [
   { value: "officier_police", label: "Officier (OPJ)", icon: "shield-outline", color: "#2563EB" },
   { value: "commissaire", label: "Commissaire", icon: "ribbon-outline", color: "#1E40AF" },
@@ -253,21 +362,21 @@ export default function AdminCreateUserScreen({ navigation }: Props) {
             </View>
           </View>
 
-          {/* DATE DE NAISSANCE SÉPARÉE */}
-          <View style={styles.inputGroup}>
-            <Text style={[styles.label, { color: colors.textSub }]}>Date de Naissance *</Text>
-            <View style={styles.inputRow}>
-              <View style={{ flex: 0.3 }}>
-                <InputField label="Jour" value={form.dateDay} onChange={(text: string) => setForm(p => ({...p, dateDay: text.replace(/\D/g, '')}))} placeholder="JJ" icon="calendar-outline" keyboardType="numeric" maxLength={2} colors={colors} isDark={isDark} />
-              </View>
-              <View style={{ flex: 0.3 }}>
-                <InputField label="Mois" value={form.dateMonth} onChange={(text: string) => setForm(p => ({...p, dateMonth: text.replace(/\D/g, '')}))} placeholder="MM" icon="calendar-outline" keyboardType="numeric" maxLength={2} colors={colors} isDark={isDark} />
-              </View>
-              <View style={{ flex: 0.4 }}>
-                <InputField label="Année" value={form.dateYear} onChange={(text: string) => setForm(p => ({...p, dateYear: text.replace(/\D/g, '')}))} placeholder="AAAA" icon="calendar-outline" keyboardType="numeric" maxLength={4} colors={colors} isDark={isDark} />
-              </View>
-            </View>
-          </View>
+          {/* DATE DE NAISSANCE */}
+          <DatePickerField
+            label="Date de Naissance *"
+            value={form.dateYear && form.dateMonth && form.dateDay ? `${form.dateYear}-${form.dateMonth.padStart(2,'0')}-${form.dateDay.padStart(2,'0')}` : ''}
+            onChange={(dateStr: string) => {
+              if (dateStr) {
+                const [y, m, d] = dateStr.split('-');
+                setForm(p => ({...p, dateYear: y, dateMonth: m, dateDay: d}));
+              } else {
+                setForm(p => ({...p, dateYear: '', dateMonth: '', dateDay: ''}));
+              }
+            }}
+            colors={colors}
+            isDark={isDark}
+          />
 
           {/* Lieu de Naissance - Champ de saisie texte */}
           <InputField

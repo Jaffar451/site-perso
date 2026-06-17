@@ -5,7 +5,7 @@ import {
   Button, Card, Text, FAB, IconButton, Portal, Modal, 
   TextInput, Avatar, ActivityIndicator, Chip, Searchbar
 } from "react-native-paper";
-import { Picker } from "@react-native-picker/picker"; 
+import { TouchableOpacity } from "react-native";
 import * as Location from 'expo-location';
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -28,6 +28,41 @@ import {
 } from "../../services/policeStation.service";
 
 const NIGER_DISTRICTS = ["Niamey", "Agadez", "Diffa", "Dosso", "Maradi", "Tahoua", "Tillabéri", "Zinder"];
+
+const DistrictSelector = ({ value, onSelect, colors, primaryColor }: any) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <View style={{ flex: 1, marginBottom: 12 }}>
+      <TouchableOpacity
+        style={[styles.pickerContainer, { borderColor: colors.border, backgroundColor: colors.inputBg, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14 }]}
+        onPress={() => setOpen(true)}
+        activeOpacity={0.7}
+      >
+        <Ionicons name="map-outline" size={18} color={colors.textSub} style={{ marginRight: 10 }} />
+        <Text style={{ flex: 1, color: colors.textMain, fontSize: 15, fontWeight: '600' }}>{value || 'Région'}</Text>
+        <Ionicons name="chevron-down" size={18} color={colors.textSub} />
+      </TouchableOpacity>
+      <Portal>
+        <Modal visible={open} onDismiss={() => setOpen(false)} contentContainerStyle={[styles.modal, { backgroundColor: colors.bgCard, maxHeight: 400 }]}>
+          <Text style={[styles.modalTitle, { color: colors.textMain }]}>SÉLECTIONNER UNE RÉGION</Text>
+          <FlatList
+            data={NIGER_DISTRICTS}
+            keyExtractor={(item) => item}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 14, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: colors.border, backgroundColor: value === item ? `${primaryColor}15` : 'transparent' }}
+                onPress={() => { onSelect(item); setOpen(false); }}
+              >
+                <Text style={{ fontSize: 15, fontWeight: value === item ? '800' : '500', color: value === item ? primaryColor : colors.textMain }}>{item}</Text>
+                {value === item && <Ionicons name="checkmark-circle" size={20} color={primaryColor} />}
+              </TouchableOpacity>
+            )}
+          />
+        </Modal>
+      </Portal>
+    </View>
+  );
+};
 
 export default function ManageStationsScreen({ navigation }: AdminScreenProps<'ManageStations'>) {
   const { theme, isDark } = useAppTheme();
@@ -269,15 +304,12 @@ export default function ManageStationsScreen({ navigation }: AdminScreenProps<'M
                     textColor={colors.textMain}
                     outlineColor={colors.border}
                 />
-                <View style={[styles.pickerContainer, { flex: 1, borderColor: colors.border, backgroundColor: colors.inputBg }]}>
-                    <Picker
-                        selectedValue={formData.district}
-                        onValueChange={(val) => setFormData(prev => ({...prev, district: val}))}
-                        style={{ color: colors.textMain }}
-                    >
-                        {NIGER_DISTRICTS.map(d => <Picker.Item key={d} label={d} value={d} color={isDark ? "#FFF" : "#000"} />)}
-                    </Picker>
-                </View>
+                <DistrictSelector
+                    value={formData.district}
+                    onSelect={(val: string) => setFormData(prev => ({...prev, district: val}))}
+                    colors={colors}
+                    primaryColor={primaryColor}
+                />
             </View>
 
             <TextInput label="Contact" mode="outlined" value={formData.phone} onChangeText={t => setFormData(prev => ({...prev, phone: t}))} style={[styles.input, { backgroundColor: colors.inputBg }]} textColor={colors.textMain} outlineColor={colors.border} keyboardType="phone-pad" />
