@@ -101,19 +101,18 @@ export default function JudgeReparationScreen({ route, navigation }: JudgeScreen
         updatedAt: new Date().toISOString()
       };
 
-      // Enregistrement via le service de décision
       if (decisionId) {
-          // await updateDecision(decisionId, payload as any);
+        await updateDecision(decisionId, payload as any);
       }
-      
+
       const successMsg = "L'ordonnance sur intérêts civils a été scellée et transmise au Greffe.";
-      
       if (Platform.OS === 'web') window.alert(`✅ ${successMsg}`);
       else Alert.alert("Réparation Validée", successMsg);
-      
+
       navigation.goBack();
     } catch (error) {
-      Alert.alert("Erreur Technique", "Impossible d'enregistrer l'ordonnance civile.");
+      if (Platform.OS === 'web') window.alert("Erreur Technique\n\nImpossible d'enregistrer l'ordonnance civile.");
+      else Alert.alert("Erreur Technique", "Impossible d'enregistrer l'ordonnance civile.");
     } finally {
       setLoading(false);
     }

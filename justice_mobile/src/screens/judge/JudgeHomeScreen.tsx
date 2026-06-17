@@ -12,6 +12,7 @@ import { useAuthStore } from "../../stores/useAuthStore";
 import { useAppTheme } from "../../theme/AppThemeProvider";
 import { JudgeScreenProps } from "../../types/navigation";
 import { getProsecutorStats } from "../../services/stats.service";
+import { getAllHearings } from "../../services/hearing.service";
 
 import ScreenContainer from "../../components/layout/ScreenContainer";
 import AppHeader from "../../components/layout/AppHeader";
@@ -41,6 +42,12 @@ export default function JudgeHomeScreen({ navigation }: JudgeScreenProps<'JudgeH
     queryKey: ["judge-stats"],
     queryFn: getProsecutorStats,
   });
+
+  const { data: hearingsData } = useQuery({
+    queryKey: ["judge-hearings-count"],
+    queryFn: getAllHearings,
+  });
+  const hearingsCount = Array.isArray(hearingsData) ? hearingsData.length : 0;
 
   useFocusEffect(useCallback(() => { refetch(); }, [refetch]));
 
@@ -104,7 +111,7 @@ export default function JudgeHomeScreen({ navigation }: JudgeScreenProps<'JudgeH
         {/* INDICATEURS */}
         <View style={styles.statsContainer}>
           <StatCard icon="folder-open" value={isLoading ? "..." : stats?.enCours?.toString() || "0"} label="En Instruction" color={JUDGE_ACCENT} bgColor={isDark ? "#4C1D95" : "#F5F3FF"} onPress={() => navigation.navigate("JudgeCases" as any)} colors={colors} />
-          <StatCard icon="calendar"    value="3"                                                      label="Audiences"      color="#10B981"   bgColor={isDark ? "#064E3B" : "#F0FDF4"} onPress={() => navigation.navigate("JudgeHearing" as any)} colors={colors} />
+          <StatCard icon="calendar"    value={isLoading ? "..." : String(hearingsCount)}                label="Audiences"      color="#10B981"   bgColor={isDark ? "#064E3B" : "#F0FDF4"} onPress={() => navigation.navigate("JudgeHearing" as any)} colors={colors} />
           <StatCard icon="alert-circle" value={isLoading ? "..." : stats?.urgences?.toString() || "0"} label="Urgences"     color="#EF4444"   bgColor={isDark ? "#7F1D1D" : "#FFF5F5"} onPress={() => navigation.navigate("JudgeCases" as any)} colors={colors} />
         </View>
 
@@ -173,7 +180,8 @@ export default function JudgeHomeScreen({ navigation }: JudgeScreenProps<'JudgeH
               onPress={() => {
                 setShowCodePenal(false);
                 // Navigation vers l'écran dédié si disponible
-                try { navigation.navigate("PenalCodeScreen" as any); } catch { /* pas encore créé */ }
+                if (Platform.OS === 'web') window.alert("Le module Code Pénal sera disponible prochainement.");
+                else Alert.alert("Information", "Le module Code Pénal sera disponible prochainement.");
               }}
             >
               <Ionicons name="open-outline" size={18} color="#FFF" />

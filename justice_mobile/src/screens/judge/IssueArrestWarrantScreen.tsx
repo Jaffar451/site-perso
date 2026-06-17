@@ -100,7 +100,8 @@ export default function IssueArrestWarrantScreen({ route, navigation }: JudgeScr
       
       navigation.goBack();
     } catch (error: any) {
-      Alert.alert("Erreur de Transmission", "Le serveur de la DGSN est momentanément indisponible.");
+      if (Platform.OS === 'web') window.alert("Erreur de Transmission\n\nLe serveur de la DGSN est momentanément indisponible.");
+      else Alert.alert("Erreur de Transmission", "Le serveur de la DGSN est momentanément indisponible.");
     } finally {
       setIsLoading(false);
     }

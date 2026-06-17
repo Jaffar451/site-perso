@@ -93,11 +93,12 @@ export default function JudgeProsecutionScreen({ route, navigation }: JudgeScree
       
       const successMsg = "Dossier Transmis au rôle pour jugement.";
       if (Platform.OS === 'web') window.alert(`✅ ${successMsg}`);
-      
-      // Retour au tableau de bord
+      else Alert.alert("Dossier Transmis ✅", successMsg);
+
       navigation.navigate("JudgeHome");
     } catch (error) {
-      Alert.alert("Erreur", "L'acte n'a pas pu être enregistré.");
+      if (Platform.OS === 'web') window.alert("Erreur\n\nL'acte n'a pas pu être enregistré.");
+      else Alert.alert("Erreur", "L'acte n'a pas pu être enregistré.");
     } finally {
       setLoading(false);
     }

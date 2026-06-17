@@ -99,7 +99,8 @@ export default function JudgeAppealScreen({ route, navigation }: JudgeScreenProp
       
       navigation.goBack();
     } catch (error: any) {
-      Alert.alert("Erreur de Liaison", "Impossible de joindre le serveur du Greffe Central.");
+      if (Platform.OS === 'web') window.alert("Erreur de Liaison\n\nImpossible de joindre le serveur du Greffe Central.");
+      else Alert.alert("Erreur de Liaison", "Impossible de joindre le serveur du Greffe Central.");
     } finally {
       setLoading(false);
     }

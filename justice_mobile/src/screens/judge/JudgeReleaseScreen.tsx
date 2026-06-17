@@ -93,11 +93,12 @@ export default function JudgeReleaseScreen({ route, navigation }: JudgeScreenPro
       await transitionComplaint(caseId, newStatus);
       
       if (Platform.OS === 'web') window.alert("✅ Ordre d'élargissement transmis.");
-      
-      // Retour au dashboard
+      else Alert.alert("Ordre Transmis ✅", "Ordre d'élargissement transmis au Greffe.");
+
       navigation.navigate("JudgeHome");
     } catch (error) {
-      Alert.alert("Erreur de Transmission", "L'acte n'a pas pu être signé numériquement.");
+      if (Platform.OS === 'web') window.alert("Erreur\n\nL'acte n'a pas pu être signé numériquement.");
+      else Alert.alert("Erreur de Transmission", "L'acte n'a pas pu être signé numériquement.");
     } finally {
       setLoading(false);
     }

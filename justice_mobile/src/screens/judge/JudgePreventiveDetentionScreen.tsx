@@ -114,7 +114,8 @@ export default function JudgePreventiveDetentionScreen({ route, navigation }: Ju
       
       navigation.navigate("JudgeHome"); 
     } catch (error) {
-      Alert.alert("Erreur Système", "Impossible de sceller le mandat numérique.");
+      if (Platform.OS === 'web') window.alert("Erreur Système\n\nImpossible de sceller le mandat numérique.");
+      else Alert.alert("Erreur Système", "Impossible de sceller le mandat numérique.");
     } finally {
       setLoading(false);
     }

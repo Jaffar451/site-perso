@@ -67,7 +67,9 @@ export default function JudgeConfiscationScreen({ route, navigation }: JudgeScre
    */
   const handleAddItem = () => {
     if (!itemDesc.trim()) {
-      return Alert.alert("Désignation requise", "Veuillez décrire précisément le bien scellé.");
+      if (Platform.OS === 'web') window.alert("Désignation requise\n\nVeuillez décrire précisément le bien scellé.");
+      else Alert.alert("Désignation requise", "Veuillez décrire précisément le bien scellé.");
+      return;
     }
     const newItem: ConfiscatedItem = {
       id: Date.now().toString(),
@@ -88,7 +90,9 @@ export default function JudgeConfiscationScreen({ route, navigation }: JudgeScre
    */
   const handleFinalizeConfiscation = async () => {
     if (items.length === 0) {
-      return Alert.alert("Ordonnance vide", "Veuillez lister au moins un scellé pour signer cet acte.");
+      if (Platform.OS === 'web') window.alert("Ordonnance vide\n\nVeuillez lister au moins un scellé pour signer cet acte.");
+      else Alert.alert("Ordonnance vide", "Veuillez lister au moins un scellé pour signer cet acte.");
+      return;
     }
 
     const title = "Signer l'Ordonnance ⚖️";
@@ -114,12 +118,14 @@ export default function JudgeConfiscationScreen({ route, navigation }: JudgeScre
         judgeSignature: `SIG-J-${user?.id}-${caseId}`,
       };
       
-      // await updateDecision(caseId, payload); 
-      
-      Alert.alert("Acte Scellé ✅", "L'ordonnance sur le sort des scellés a été transmise au service des domaines et au Greffe.");
+      await updateDecision(caseId, payload as any);
+
+      if (Platform.OS === 'web') window.alert("Acte Scellé ✅\n\nL'ordonnance sur le sort des scellés a été transmise au service des domaines et au Greffe.");
+      else Alert.alert("Acte Scellé ✅", "L'ordonnance sur le sort des scellés a été transmise au service des domaines et au Greffe.");
       navigation.goBack();
     } catch (error: any) {
-      Alert.alert("Erreur", "L'enregistrement de l'ordonnance a échoué.");
+      if (Platform.OS === 'web') window.alert("Erreur\n\nL'enregistrement de l'ordonnance a échoué.");
+      else Alert.alert("Erreur", "L'enregistrement de l'ordonnance a échoué.");
     } finally {
       setLoading(false);
     }

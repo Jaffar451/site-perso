@@ -105,7 +105,8 @@ export default function JudgeVerdictScreen({ route, navigation }: JudgeScreenPro
       
       navigation.popToTop();
     } catch (error) {
-      Alert.alert("Erreur Technique", "Le scellage de la décision a échoué.");
+      if (Platform.OS === 'web') window.alert("Erreur Technique\n\nLe scellage de la décision a échoué.");
+      else Alert.alert("Erreur Technique", "Le scellage de la décision a échoué.");
     } finally {
       setLoading(false);
     }

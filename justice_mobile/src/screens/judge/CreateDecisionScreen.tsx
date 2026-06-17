@@ -102,7 +102,8 @@ export default function CreateDecisionScreen({ route, navigation }: JudgeScreenP
       
       navigation.popToTop(); 
     } catch (error) {
-      Alert.alert("Erreur de Scellage", "Impossible d'enregistrer l'acte sur la blockchain judiciaire.");
+      if (Platform.OS === 'web') window.alert("Erreur de Scellage\n\nImpossible d'enregistrer l'acte sur la blockchain judiciaire.");
+      else Alert.alert("Erreur de Scellage", "Impossible d'enregistrer l'acte sur la blockchain judiciaire.");
     } finally {
       setIsLoading(false);
     }

@@ -68,7 +68,8 @@ export default function JudgeSentenceScreen({ route, navigation }: JudgeScreenPr
     }
 
     if (verdict === "condamnation" && !sentenceLength.trim()) {
-      Alert.alert("Précision requise", "Veuillez spécifier la durée de la peine d'emprisonnement.");
+      if (Platform.OS === 'web') window.alert("Précision requise\n\nVeuillez spécifier la durée de la peine d'emprisonnement.");
+      else Alert.alert("Précision requise", "Veuillez spécifier la durée de la peine d'emprisonnement.");
       return;
     }
 
@@ -111,7 +112,8 @@ export default function JudgeSentenceScreen({ route, navigation }: JudgeScreenPr
       
       navigation.popToTop(); 
     } catch (error) {
-      Alert.alert("Erreur de Scellage", "Impossible d'enregistrer la décision sur le serveur.");
+      if (Platform.OS === 'web') window.alert("Erreur de Scellage\n\nImpossible d'enregistrer la décision sur le serveur.");
+      else Alert.alert("Erreur de Scellage", "Impossible d'enregistrer la décision sur le serveur.");
     } finally {
       setLoading(false);
     }
