@@ -32,7 +32,10 @@ export const listUsers = async (req: Request, res: Response) => {
   try {
     const users = await User.findAll({
       attributes: PUBLIC_FIELDS.attributes,
-      include: [{ model: PoliceStation, as: "station" }],
+      include: [
+        { model: PoliceStation, as: "station" },
+        { model: Person, as: "personProfile" },
+      ],
     });
     return res.json({ success: true, data: users });
   } catch (error) {
@@ -79,8 +82,12 @@ export const updateMe = async (req: Request, res: Response) => {
 };
 
 export const createUser = async (req: Request, res: Response) => {
+  const transaction = await sequelize.transaction();
   try {
-    const { firstname, lastname, email, password, role, matricule, poste, policeStationId } = req.body;
+    const {
+      firstname, lastname, email, password, role, matricule, poste, policeStationId,
+      dateOfBirth, placeOfBirth, nationality, cin, personalEmail, alternativePhone, address, city,
+    } = req.body;
     if (!firstname || !lastname || !email || !password) {
       return res.status(400).json({ message: "Champs requis manquants" });
     }
@@ -93,10 +100,28 @@ export const createUser = async (req: Request, res: Response) => {
       matricule: matricule || null,
       organization: poste || null,
       policeStationId: policeStationId || null,
-    });
+    }, { transaction });
+
+    const hasPersonData = dateOfBirth || placeOfBirth || nationality || cin || address || city;
+    if (hasPersonData) {
+      await Person.create({
+        userId: user.id,
+        dateOfBirth: toISODate(dateOfBirth) || null,
+        placeOfBirth: placeOfBirth || null,
+        nationality: nationality || null,
+        nationalId: cin || null,
+        personalEmail: personalEmail || null,
+        alternativePhone: alternativePhone || null,
+        address: address || null,
+        city: city || null,
+      } as any, { transaction });
+    }
+
+    await transaction.commit();
     const out = await User.findByPk(user.id, PUBLIC_FIELDS);
     return res.status(201).json({ success: true, data: out });
   } catch (error) {
+    await transaction.rollback();
     console.error("Error in createUser:", error);
     return res.status(500).json({ message: "Erreur serveur" });
   }

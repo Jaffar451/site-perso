@@ -88,7 +88,7 @@ export default function AdminUserDetailsScreen() {
 
   const person = useMemo(() => {
     if (!user) return {};
-    return user.person || {};
+    return user.personProfile || user.person || {};
   }, [user]);
 
   // ✅ Mutation suppression

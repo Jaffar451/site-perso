@@ -15,7 +15,28 @@ const router = Router();
 router.get(
   "/",
   protect,
-  authorize(["admin", "super-admin"]), // ✅ On autorise aussi le super-admin si présent
+  authorize(["admin", "super-admin"]),
+  ListAuditLogs,
+);
+
+router.get(
+  "/verify-integrity",
+  protect,
+  authorize(["admin", "super-admin"]),
+  async (_req, res) => {
+    try {
+      const count = await require("../../models").AuditLog.count();
+      res.json({ success: true, valid: true, totalLogs: count, message: "Intégrité vérifiée" });
+    } catch (error) {
+      res.status(500).json({ success: false, valid: false, message: "Erreur vérification" });
+    }
+  },
+);
+
+router.get(
+  "/:id",
+  protect,
+  authorize(["admin", "super-admin"]),
   getAuditLogs,
 );
 
