@@ -7,7 +7,7 @@ router.get("/verify/:token", async (req, res) => {
   try {
     const complaint = await Complaint.findOne({
       where: { verification_token: req.params.token },
-      attributes: ["id", "status", "filedAt", "provisionalOffence", "location"],
+      attributes: ["id", "status", "filedAt", "category", "location", "title"],
     });
 
     if (!complaint) return res.status(404).send("Document Invalide");
