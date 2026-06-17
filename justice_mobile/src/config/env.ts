@@ -19,22 +19,18 @@ const isAndroid = Platform.OS === 'android';
  * On utilise l'IP du .env directement pour les appareils physiques.
  */
 const getLocalServerUrl = () => {
-  // ✅ Utilise toujours l'IP du .env pour Android/iOS physique
-  // 10.0.2.2 est UNIQUEMENT pour l'émulateur Android Studio
   if (LOCAL_IP && LOCAL_IP !== 'localhost') {
     console.log(`[ENV] 📱 Appareil Physique (Expo GO) → ${LOCAL_IP}`);
     return `http://${LOCAL_IP}:4000/api`;
   }
-  
-  // Fallback localhost pour web/simulateur iOS
   console.log('[ENV] 📱 Fallback → localhost');
   return 'http://localhost:4000/api';
 };
 
 const SERVER_LOCAL = getLocalServerUrl();
 
-// Pour dev : SERVER_LOCAL, pour prod : PROD_URL
-const ACTIVE_URL = __DEV__ ? SERVER_LOCAL : PROD_URL;
+// Web utilise toujours l'URL de production (pas de serveur local)
+const ACTIVE_URL = Platform.OS === 'web' ? PROD_URL : (__DEV__ ? SERVER_LOCAL : PROD_URL);
 
 // ==========================================
 // 3. EXPORT

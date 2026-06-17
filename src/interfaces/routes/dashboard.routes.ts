@@ -3,6 +3,7 @@ import { Router } from "express";
 import {
   getPrisonStats,
   getPoliceStats,
+  getWeeklyReportStats,
 } from "../controllers/dashboard.controller";
 // import { protect, restrictTo } from "../../middlewares/auth.middleware"; // À activer plus tard pour la sécurité
 
@@ -21,5 +22,7 @@ router.get("/prisons", getPrisonStats);
  * @access  Privé (Admin/Ministère)
  */
 router.get("/police", getPoliceStats);
+
+router.get("/weekly-stats", getWeeklyReportStats);
 
 export default router;

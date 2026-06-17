@@ -13,11 +13,17 @@ import AppHeader from '../../components/layout/AppHeader';
 import SmartFooter from '../../components/layout/SmartFooter';
 import { useAppTheme } from '../../theme/AppThemeProvider';
 import { useAuthStore } from '../../stores/useAuthStore';
+import api from '../../services/api';
 
 const fetchUnitStats = async () => {
-  return new Promise<{ processedCases: number; pendingCases: number; incidents: number }>((resolve) => {
-    setTimeout(() => resolve({ processedCases: 14, pendingCases: 6, incidents: 2 }), 800);
-  });
+  const res = await api.get('/dashboard/weekly-stats');
+  const d = res.data;
+  return {
+    processedCases: d.processedCases || 0,
+    pendingCases: d.pendingCases || 0,
+    incidents: d.incidents || 0,
+    totalWeek: d.totalWeek || 0,
+  };
 };
 
 const alertMsg = (t: string, m: string) => {

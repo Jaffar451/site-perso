@@ -10,6 +10,7 @@ import { AdminScreenProps } from "../../types/navigation";
 import { useAppTheme } from "../../theme/AppThemeProvider";
 import ScreenContainer from "../../components/layout/ScreenContainer";
 import AppHeader from "../../components/layout/AppHeader";
+import SmartFooter from "../../components/layout/SmartFooter";
 
 // ✅ Service Correct
 import { getAuditLogs } from "../../services/admin.service";
@@ -136,6 +137,7 @@ export default function AdminAuditScreen({ navigation }: AdminScreenProps<'Admin
           />
         )}
       </View>
+      <SmartFooter />
     </ScreenContainer>
   );
 }
