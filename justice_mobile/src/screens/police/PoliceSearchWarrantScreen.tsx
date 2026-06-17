@@ -1,4 +1,3 @@
-import StatusBadge from '../../components/ui/StatusBadge';
 // PATH: src/screens/police/PoliceSearchWarrantScreen.tsx
 import React, { useState, useCallback } from "react";
 import {
@@ -7,28 +6,28 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-import { useAuthStore } from "../../stores/useAuthStore";
 import { useAppTheme } from "../../theme/AppThemeProvider";
 import { PoliceScreenProps } from "../../types/navigation";
 import ScreenContainer from "../../components/layout/ScreenContainer";
 import AppHeader from "../../components/layout/AppHeader";
 import SmartFooter from "../../components/layout/SmartFooter";
+import { getActiveWarrants } from "../../services/arrestWarrant.service";
 
 const performCIDSearch = async (query: string) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const data = [
-        { id: 1, target: "Boureima Salou",              type: "MANDAT D'ARRÊT",        status: "VALIDE",   date: "2025-12-10", ref: "RG-442/25", origin: "Parquet Niamey" },
-        { id: 2, target: "Quartier Plateau, Rue PL-42", type: "PERQUISITION",           status: "VALIDE",   date: "2025-12-22", ref: "CR-102/25", origin: "Tribunal C.O" },
-        { id: 3, target: "Hamidou Moussa",              type: "MANDAT D'AMENER",        status: "EXÉCUTÉ",  date: "2025-12-05", ref: "RG-009/25", origin: "Juge d'Instruction" },
-        { id: 4, target: "Abdoulaye Garba",             type: "INTERDICTION DE SORTIE", status: "VALIDE",   date: "2026-01-02", ref: "IS-004/26", origin: "DGSN" },
-      ];
-      resolve(data.filter(i =>
-        i.target.toLowerCase().includes(query.toLowerCase()) ||
-        i.ref.toLowerCase().includes(query.toLowerCase())
-      ));
-    }, 1000);
-  });
+  try {
+    const warrants = await getActiveWarrants();
+    const list = Array.isArray(warrants) ? warrants : [];
+    if (!query.trim()) return list;
+    const q = query.toLowerCase();
+    return list.filter((w: any) =>
+      (w.targetName || '').toLowerCase().includes(q) ||
+      (w.caseNumber || '').toLowerCase().includes(q) ||
+      (w.reason || '').toLowerCase().includes(q)
+    );
+  } catch (error) {
+    console.error("Erreur recherche mandats:", error);
+    return [];
+  }
 };
 
 export default function PoliceSearchWarrantScreen({ navigation }: PoliceScreenProps<'PoliceSearchWarrant'>) {

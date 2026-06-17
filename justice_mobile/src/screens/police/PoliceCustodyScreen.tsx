@@ -70,26 +70,28 @@ export default function PoliceCustodyScreen({ route, navigation }: PoliceScreenP
   /**
    * ⚖️ DÉMARRAGE OFFICIEL DE LA G.A.V
    */
+  const alertMsg = (t: string, m: string) => {
+    if (Platform.OS === 'web') window.alert(`${t}\n\n${m}`);
+    else Alert.alert(t, m);
+  };
+
+  const confirmAction = (title: string, msg: string, onConfirm: () => void) => {
+    if (Platform.OS === 'web') {
+      if (window.confirm(`${title}\n\n${msg}`)) onConfirm();
+    } else {
+      Alert.alert(title, msg, [{ text: "Annuler", style: "cancel" }, { text: "Confirmer", onPress: onConfirm, style: "destructive" }]);
+    }
+  };
+
   const handleStartCustody = () => {
     if (!rightsNotified) {
-      Alert.alert(
-        "Procédure Incomplète", 
-        "La loi exige la notification des droits avant le placement en cellule."
-      );
+      alertMsg("Procédure Incomplète", "La loi exige la notification des droits avant le placement en cellule.");
       return;
     }
-    
-    Alert.alert(
+    confirmAction(
       "Démarrage de la G.A.V",
       `Confirmez-vous le placement en garde à vue de ${suspectName} à cet instant précis ?`,
-      [
-        { text: "Annuler", style: "cancel" },
-        { 
-          text: "Confirmer", 
-          onPress: () => setStartTime(new Date()),
-          style: "destructive" 
-        }
-      ]
+      () => setStartTime(new Date())
     );
   };
 
@@ -98,28 +100,25 @@ export default function PoliceCustodyScreen({ route, navigation }: PoliceScreenP
    */
   const handleSaveAndExit = async () => {
     if (!startTime) {
-      return Alert.alert("Action Requise", "Vous devez débuter le délai avant de sceller le registre.");
+      return alertMsg("Action Requise", "Vous devez débuter le délai avant de sceller le registre.");
     }
 
     try {
       setIsSubmitting(true);
-      
-      // Mise à jour de la plainte vers le statut G.A.V
       await updateComplaint(Number(complaintId), {
         status: "garde_a_vue",
-        // @ts-ignore - On étend l'objet pour le backend
         custodyData: {
           startTime: startTime.toISOString(),
           rightsNotified,
           medicalExamRequested,
           officerId: useAuthStore.getState().user?.id
         }
-      });
+      } as any);
 
-      Alert.alert("Registre Scellé ✅", "La procédure de Garde à Vue a été officiellement enregistrée.");
-      navigation.popToTop(); // Retour au registre des enquêtes
+      alertMsg("Registre Scellé ✅", "La procédure de Garde à Vue a été officiellement enregistrée.");
+      navigation.popToTop();
     } catch (error) {
-      Alert.alert("Erreur CID", "Impossible de synchroniser le registre avec le serveur central.");
+      alertMsg("Erreur CID", "Impossible de synchroniser le registre avec le serveur central.");
     } finally {
       setIsSubmitting(false);
     }

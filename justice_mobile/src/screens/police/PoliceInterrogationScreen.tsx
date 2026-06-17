@@ -56,51 +56,46 @@ export default function PoliceInterrogationScreen({ route, navigation }: PoliceS
   /**
    * ⚖️ ENREGISTREMENT ET SCELLAGE DU PV D'AUDITION
    */
+  const alertMsg = (t: string, m: string, onOk?: () => void) => {
+    if (Platform.OS === 'web') { window.alert(`${t}\n\n${m}`); onOk?.(); }
+    else Alert.alert(t, m, onOk ? [{ text: "OK", onPress: onOk }] : undefined);
+  };
+
   const handleSaveStatement = async () => {
     if (!complaintId) {
-       return Alert.alert("Erreur Dossier", "L'identifiant du dossier est manquant.");
+      return alertMsg("Erreur Dossier", "L'identifiant du dossier est manquant.");
     }
 
     if (statement.trim().length < 50 || statement === interrogationTemplate) {
-      const msg = "Le contenu de l'audition est trop succinct ou non modifié.";
-      Alert.alert("Saisie insuffisante", msg);
-      return;
+      return alertMsg("Saisie insuffisante", "Le contenu de l'audition est trop succinct ou non modifié.");
     }
 
-    Alert.alert(
-      "Clôture de l'Audition ⚖️",
-      "Une fois scellé, ce procès-verbal d'audition ne pourra plus être modifié. Confirmer ?",
-      [
-        { text: "Réviser", style: "cancel" },
-        { 
-          text: "Signer & Sceller", 
-          onPress: async () => {
-            try {
-              setIsSubmitting(true);
-              
-              // ✅ Mise à jour sécurisée du dossier
-              await updateComplaint(Number(complaintId), {
-                interrogationContent: statement.trim(),
-                lawyerPresence: lawyerPresent,
-                interrogationDate: new Date().toISOString(),
-                status: "en_cours_OPJ",
-                signingOfficer: `${user?.firstname} ${user?.lastname}`
-              } as any);
+    const doSeal = async () => {
+      try {
+        setIsSubmitting(true);
+        await updateComplaint(Number(complaintId), {
+          interrogationContent: statement.trim(),
+          lawyerPresence: lawyerPresent,
+          interrogationDate: new Date().toISOString(),
+          status: "en_cours_OPJ",
+          signingOfficer: `${user?.firstname} ${user?.lastname}`
+        } as any);
+        alertMsg("Acte Certifié ✅", "Le procès-verbal d'audition a été scellé et versé au dossier RG.", () => navigation.goBack());
+      } catch (error) {
+        alertMsg("Erreur", "L'enregistrement sécurisé a échoué. Vérifiez votre connexion.");
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
 
-              Alert.alert(
-                "Acte Certifié ✅", 
-                "Le procès-verbal d'audition a été scellé et versé au dossier RG.",
-                [{ text: "Terminer", onPress: () => navigation.goBack() }]
-              );
-            } catch (error) {
-              Alert.alert("Erreur", "L'enregistrement sécurisé a échoué. Vérifiez votre connexion.");
-            } finally {
-              setIsSubmitting(false);
-            }
-          }
-        }
-      ]
-    );
+    if (Platform.OS === 'web') {
+      if (window.confirm("Clôture de l'Audition\n\nUne fois scellé, ce procès-verbal ne pourra plus être modifié. Confirmer ?")) doSeal();
+    } else {
+      Alert.alert("Clôture de l'Audition ⚖️", "Une fois scellé, ce procès-verbal d'audition ne pourra plus être modifié. Confirmer ?", [
+        { text: "Réviser", style: "cancel" },
+        { text: "Signer & Sceller", onPress: doSeal }
+      ]);
+    }
   };
 
   return (

@@ -15,17 +15,7 @@ import { getComplaintById } from '../../services/complaint.service';
 import { useAppTheme } from "../../theme/AppThemeProvider";
 import { PoliceScreenProps } from "../../types/navigation";
 
-// ✅ Style datetime-local externalisé (évite no-inline-styles)
-const datetimeInputStyle: React.CSSProperties = {
-  padding: 12,
-  borderRadius: 8,
-  border: '1px solid #E2E8F0',
-  fontSize: 15,
-  width: '100%',
-  marginBottom: 15,
-  outline: 'none',
-  boxSizing: 'border-box',
-};
+import { Modal } from 'react-native';
 
 const alertMsg = (t: string, m: string) => {
   if (Platform.OS === 'web') window.alert(`${t}\n\n${m}`);
@@ -181,21 +171,57 @@ export default function CreateSummonScreen({ route, navigation }: PoliceScreenPr
             />
 
             <Text style={[styles.label, { color: colors.textSub }]}>DATE ET HEURE</Text>
-            {/* ✅ TextInput natif sur toutes plateformes — élimine les warnings no-inline-styles */}
-            <TouchableOpacity
-              onPress={() => setShowDatePicker(true)}
-              style={[styles.datePickerBtn, { borderColor: colors.border, backgroundColor: colors.inputBg }]}
-              accessibilityLabel="Date et heure de la convocation"
-              accessibilityRole="button"
-            >
-              <Ionicons name="calendar-outline" size={20} color={primaryColor} />
-              <Text style={[styles.datePickerText, { color: colors.textMain }]}>
-                {form.scheduledAt.toLocaleString('fr-FR', {
-                  day: '2-digit', month: '2-digit', year: 'numeric',
-                  hour: '2-digit', minute: '2-digit'
-                })}
-              </Text>
-            </TouchableOpacity>
+            {Platform.OS === 'web' ? (
+              <View style={[styles.datePickerBtn, { borderColor: colors.border, backgroundColor: colors.inputBg }]}>
+                <Ionicons name="calendar-outline" size={20} color={primaryColor} />
+                <input
+                  type="datetime-local"
+                  title="Date et heure"
+                  aria-label="Date et heure de la convocation"
+                  value={form.scheduledAt.toISOString().slice(0, 16)}
+                  onChange={(e: any) => {
+                    if (e.target.value) setForm(f => ({ ...f, scheduledAt: new Date(e.target.value) }));
+                  }}
+                  style={{
+                    flex: 1, fontSize: 15, fontWeight: '600', border: 'none', outline: 'none',
+                    backgroundColor: 'transparent', color: isDark ? '#FFFFFF' : '#1E293B',
+                    fontFamily: 'inherit', padding: '4px 0',
+                  } as any}
+                />
+              </View>
+            ) : (
+              <>
+                <TouchableOpacity
+                  onPress={() => setShowDatePicker(true)}
+                  style={[styles.datePickerBtn, { borderColor: colors.border, backgroundColor: colors.inputBg }]}
+                >
+                  <Ionicons name="calendar-outline" size={20} color={primaryColor} />
+                  <Text style={[styles.datePickerText, { color: colors.textMain }]}>
+                    {form.scheduledAt.toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  </Text>
+                </TouchableOpacity>
+                <Modal visible={showDatePicker} transparent animationType="fade" onRequestClose={() => setShowDatePicker(false)}>
+                  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                    <View style={{ backgroundColor: colors.bgCard, borderRadius: 20, padding: 24, width: '85%', maxWidth: 360 }}>
+                      <Text style={{ fontSize: 14, fontWeight: '800', marginBottom: 16, textAlign: 'center', color: colors.textMain }}>Date et heure</Text>
+                      <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
+                        <TextInput style={[styles.input, { flex: 1, borderColor: colors.border, color: colors.textMain, backgroundColor: colors.inputBg, textAlign: 'center' }]} value={String(form.scheduledAt.getDate()).padStart(2,'0')} placeholder="JJ" keyboardType="numeric" maxLength={2} onChangeText={t => { const d = new Date(form.scheduledAt); d.setDate(parseInt(t) || 1); setForm(f => ({...f, scheduledAt: d})); }} placeholderTextColor={colors.textSub} />
+                        <TextInput style={[styles.input, { flex: 1, borderColor: colors.border, color: colors.textMain, backgroundColor: colors.inputBg, textAlign: 'center' }]} value={String(form.scheduledAt.getMonth() + 1).padStart(2,'0')} placeholder="MM" keyboardType="numeric" maxLength={2} onChangeText={t => { const d = new Date(form.scheduledAt); d.setMonth((parseInt(t) || 1) - 1); setForm(f => ({...f, scheduledAt: d})); }} placeholderTextColor={colors.textSub} />
+                        <TextInput style={[styles.input, { flex: 1.3, borderColor: colors.border, color: colors.textMain, backgroundColor: colors.inputBg, textAlign: 'center' }]} value={String(form.scheduledAt.getFullYear())} placeholder="AAAA" keyboardType="numeric" maxLength={4} onChangeText={t => { const d = new Date(form.scheduledAt); d.setFullYear(parseInt(t) || 2026); setForm(f => ({...f, scheduledAt: d})); }} placeholderTextColor={colors.textSub} />
+                      </View>
+                      <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
+                        <TextInput style={[styles.input, { flex: 1, borderColor: colors.border, color: colors.textMain, backgroundColor: colors.inputBg, textAlign: 'center' }]} value={String(form.scheduledAt.getHours()).padStart(2,'0')} placeholder="HH" keyboardType="numeric" maxLength={2} onChangeText={t => { const d = new Date(form.scheduledAt); d.setHours(parseInt(t) || 0); setForm(f => ({...f, scheduledAt: d})); }} placeholderTextColor={colors.textSub} />
+                        <Text style={{ color: colors.textMain, fontSize: 20, fontWeight: '800', alignSelf: 'center' }}>:</Text>
+                        <TextInput style={[styles.input, { flex: 1, borderColor: colors.border, color: colors.textMain, backgroundColor: colors.inputBg, textAlign: 'center' }]} value={String(form.scheduledAt.getMinutes()).padStart(2,'0')} placeholder="MM" keyboardType="numeric" maxLength={2} onChangeText={t => { const d = new Date(form.scheduledAt); d.setMinutes(parseInt(t) || 0); setForm(f => ({...f, scheduledAt: d})); }} placeholderTextColor={colors.textSub} />
+                      </View>
+                      <TouchableOpacity style={{ backgroundColor: primaryColor, paddingVertical: 14, borderRadius: 12, alignItems: 'center' }} onPress={() => setShowDatePicker(false)}>
+                        <Text style={{ color: '#FFF', fontWeight: '800', fontSize: 15 }}>Confirmer</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </Modal>
+              </>
+            )}
 
             <Text style={[styles.label, { color: colors.textSub }]}>MOTIF OFFICIEL</Text>
             <TextInput

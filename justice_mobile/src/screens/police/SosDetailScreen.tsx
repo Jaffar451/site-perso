@@ -9,6 +9,7 @@ import { useAppTheme } from '../../theme/AppThemeProvider';
 import { PoliceScreenProps } from '../../types/navigation';
 import ScreenContainer from '../../components/layout/ScreenContainer';
 import SmartFooter from '../../components/layout/SmartFooter';
+import api from '../../services/api';
 
 // ✅ Import conditionnel Maps (Sécurité Web/Simulateurs)
 let MapView: any = View;
@@ -82,25 +83,32 @@ export default function SosDetailScreen({ route, navigation }: PoliceScreenProps
    * ✅ CLÔTURER L'INTERVENTION
    */
   const handleResolve = () => {
-    Alert.alert(
-      "Clôturer l'Intervention",
-      "Le citoyen a-t-il été secouru ? Cette action archivera l'alerte SOS.",
-      [
-        { text: "Annuler", style: "cancel" },
-        {
-          text: "Confirmer la clôture",
-          onPress: () => {
-            setIsResolving(true);
-            // Simulation d'appel API pour mettre à jour le statut du SOS
-            setTimeout(() => {
-              setIsResolving(false);
-              Alert.alert("Mission Terminée", "L'intervention a été enregistrée au rapport journalier.");
-              navigation.goBack();
-            }, 1200);
-          }
+    const doResolve = async () => {
+      setIsResolving(true);
+      try {
+        await api.patch(`/sos/${alert.id}/resolve`);
+        if (Platform.OS === 'web') {
+          window.alert("Mission Terminée\n\nL'intervention a été enregistrée au rapport journalier.");
+        } else {
+          Alert.alert("Mission Terminée", "L'intervention a été enregistrée au rapport journalier.");
         }
-      ]
-    );
+        navigation.goBack();
+      } catch (error) {
+        if (Platform.OS === 'web') window.alert("Erreur\n\nImpossible de clôturer l'alerte.");
+        else Alert.alert("Erreur", "Impossible de clôturer l'alerte.");
+      } finally {
+        setIsResolving(false);
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm("Clôturer l'Intervention\n\nLe citoyen a-t-il été secouru ?")) doResolve();
+    } else {
+      Alert.alert("Clôturer l'Intervention", "Le citoyen a-t-il été secouru ? Cette action archivera l'alerte SOS.", [
+        { text: "Annuler", style: "cancel" },
+        { text: "Confirmer la clôture", onPress: doResolve }
+      ]);
+    }
   };
 
   return (

@@ -45,53 +45,47 @@ export default function PoliceCustodyExtensionScreen({ route, navigation }: Poli
   /**
    * ⚖️ TRANSMISSION DE LA REQUÊTE AU PROCUREUR
    */
+  const alertMsg = (t: string, m: string, onOk?: () => void) => {
+    if (Platform.OS === 'web') { window.alert(`${t}\n\n${m}`); onOk?.(); }
+    else Alert.alert(t, m, onOk ? [{ text: "OK", onPress: onOk }] : undefined);
+  };
+
   const handleRequestExtension = async () => {
     if (!complaintId) {
-      return Alert.alert("Erreur Dossier", "L'identifiant du dossier est manquant.");
+      return alertMsg("Erreur Dossier", "L'identifiant du dossier est manquant.");
     }
 
     if (reason.trim().length < 15) {
-      return Alert.alert(
-        "Motivation insuffisante", 
-        "Veuillez détailler davantage les raisons de la prolongation (minimum 15 caractères)."
-      );
+      return alertMsg("Motivation insuffisante", "Veuillez détailler davantage les raisons de la prolongation (minimum 15 caractères).");
     }
 
-    Alert.alert(
-      "Saisine du Parquet 🏛️",
-      `Transmettre cette demande de prolongation de ${duration}h pour ${suspectName} ?`,
-      [
-        { text: "Réviser", style: "cancel" },
-        { 
-          text: "Confirmer l'envoi", 
-          onPress: async () => {
-            try {
-              setIsSubmitting(true);
-              
-              // ✅ Mise à jour du dossier avec les flags de prolongation
-              await updateComplaint(Number(complaintId), {
-                status: "attente_validation", // Le dossier passe en attente de visa judiciaire
-                custodyExtensionRequested: true,
-                extensionReason: reason,
-                requestedDuration: duration,
-                extensionStatus: "pending_prosecutor",
-                requestingOfficer: `${user?.firstname} ${user?.lastname}`
-              } as any);
+    const doSubmit = async () => {
+      try {
+        setIsSubmitting(true);
+        await updateComplaint(Number(complaintId), {
+          status: "attente_validation",
+          custodyExtensionRequested: true,
+          extensionReason: reason,
+          requestedDuration: duration,
+          extensionStatus: "pending_prosecutor",
+          requestingOfficer: `${user?.firstname} ${user?.lastname}`
+        } as any);
+        alertMsg("Requête Transmise ✅", "Le Procureur de la République a été saisi numériquement de votre demande.", () => navigation.pop(2));
+      } catch (error) {
+        alertMsg("Échec Système", "Impossible de joindre les services du Parquet.");
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
 
-              Alert.alert(
-                "Requête Transmise ✅", 
-                "Le Procureur de la République a été saisi numériquement de votre demande.",
-                [{ text: "Retour au poste", onPress: () => navigation.pop(2) }] // Retourne à l'accueil ou liste
-              );
-            } catch (error) {
-              Alert.alert("Échec Système", "Impossible de joindre les services du Parquet.");
-            } finally {
-              setIsSubmitting(false);
-            }
-          }
-        }
-      ]
-    );
+    if (Platform.OS === 'web') {
+      if (window.confirm(`Saisine du Parquet\n\nTransmettre cette demande de prolongation de ${duration}h pour ${suspectName} ?`)) doSubmit();
+    } else {
+      Alert.alert("Saisine du Parquet 🏛️", `Transmettre cette demande de prolongation de ${duration}h pour ${suspectName} ?`, [
+        { text: "Réviser", style: "cancel" },
+        { text: "Confirmer l'envoi", onPress: doSubmit }
+      ]);
+    }
   };
 
   return (

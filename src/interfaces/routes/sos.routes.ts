@@ -18,8 +18,15 @@ router.post("/", authenticate, sosController.createSosAlert);
 router.get(
   "/station/:stationId",
   authenticate,
-  authorize(["officier_police", "commisaire", "admin"]),
+  authorize(["officier_police", "commissaire", "admin"]),
   sosController.getStationAlerts,
+);
+
+router.patch(
+  "/:id/resolve",
+  authenticate,
+  authorize(["officier_police", "commissaire", "admin"]),
+  sosController.resolveSosAlert,
 );
 
 export default router;
