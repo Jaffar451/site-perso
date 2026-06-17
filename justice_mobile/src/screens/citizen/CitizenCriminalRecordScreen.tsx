@@ -68,17 +68,20 @@ export default function CitizenCriminalRecordScreen() {
         setDocs(prev => ({ ...prev, [type]: result.assets[0] }));
       }
     } catch (err) {
-      Alert.alert("Erreur", "Accès aux fichiers refusé.");
+      if (Platform.OS === 'web') window.alert("Erreur\n\nAccès aux fichiers refusé.");
+      else Alert.alert("Erreur", "Accès aux fichiers refusé.");
     }
   };
 
   const handleSubmit = async () => {
     if (!formData.birthPlace || !formData.fatherName || !formData.motherName || !formData.idCardNumber) {
-      Alert.alert("Formulaire incomplet", "Veuillez remplir toutes les informations d'identification.");
+      if (Platform.OS === 'web') window.alert("Formulaire incomplet\n\nVeuillez remplir toutes les informations d'identification.");
+      else Alert.alert("Formulaire incomplet", "Veuillez remplir toutes les informations d'identification.");
       return;
     }
     if (!docs.birthCert || !docs.nationalityCert) {
-      Alert.alert("Documents requis", "Veuillez joindre les scans de votre acte de naissance et certificat de nationalité.");
+      if (Platform.OS === 'web') window.alert("Documents requis\n\nVeuillez joindre les scans de votre acte de naissance et certificat de nationalité.");
+      else Alert.alert("Documents requis", "Veuillez joindre les scans de votre acte de naissance et certificat de nationalité.");
       return;
     }
 
@@ -86,11 +89,16 @@ export default function CitizenCriminalRecordScreen() {
     // Simulation d'envoi vers le Greffe
     setTimeout(() => {
       setLoading(false);
-      Alert.alert(
-        "Demande Transmise", 
-        "Votre dossier a été envoyé au service du Casier Judiciaire. Un SMS de confirmation vous sera envoyé dès traitement.",
-        [{ text: "OK", onPress: () => navigation.goBack() }]
-      );
+      if (Platform.OS === 'web') {
+        window.alert("Demande Transmise\n\nVotre dossier a été envoyé au service du Casier Judiciaire. Un SMS de confirmation vous sera envoyé dès traitement.");
+        navigation.goBack();
+      } else {
+        Alert.alert(
+          "Demande Transmise",
+          "Votre dossier a été envoyé au service du Casier Judiciaire. Un SMS de confirmation vous sera envoyé dès traitement.",
+          [{ text: "OK", onPress: () => navigation.goBack() }]
+        );
+      }
     }, 2000);
   };
 

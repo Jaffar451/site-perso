@@ -1,4 +1,3 @@
-import StatusBadge from '../../components/ui/StatusBadge';
 import React, { useState, useCallback } from "react";
 import { 
   View, 
@@ -49,7 +48,7 @@ export default function CitizenCasesScreen({ navigation }: CitizenScreenProps<'C
       const enhancedData = (data as any[]).map(c => ({
         ...c,
         court_name: c.court_name || "Tribunal de Grande Instance",
-        is_served: c.status === "jugée" || Math.random() > 0.5 
+        is_served: c.status === "jugée" || false
       }));
       setCases(enhancedData);
     } catch (e) {

@@ -1,4 +1,3 @@
-import StatusBadge from '../../components/ui/StatusBadge';
 // PATH: src/screens/citizen/StationMapScreen.web.tsx
 import React, { useEffect, useState, useMemo } from 'react';
 import { StyleSheet, View, Platform, Linking } from 'react-native';
@@ -121,7 +120,7 @@ export default function StationMapScreen({ navigation }: CitizenScreenProps<'Sta
                <Text style={{color: isDark ? '#FFF' : '#000'}}>{selectedStation.address || "Adresse non spécifiée"}</Text>
             </Card.Content>
             <Card.Actions>
-              <Button mode="contained" onPress={() => window.open(`https://www.google.com/maps/search/?api=1&query=$${selectedStation.latitude || 0},${selectedStation.longitude || 0}`)}>
+              <Button mode="contained" onPress={() => window.open(`https://www.google.com/maps/search/?api=1&query=${selectedStation.latitude || 0},${selectedStation.longitude || 0}`)}>
                 Voir sur Google Maps
               </Button>
             </Card.Actions>

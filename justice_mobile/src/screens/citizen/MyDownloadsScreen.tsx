@@ -1,11 +1,12 @@
 // PATH: src/screens/citizen/MyDownloadsScreen.tsx
 import React, { useState, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Alert, StyleSheet } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Alert, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAppTheme } from '../../theme/AppThemeProvider'; 
-import ScreenContainer from '../../components/layout/ScreenContainer'; 
+import ScreenContainer from '../../components/layout/ScreenContainer';
 import AppHeader from '../../components/layout/AppHeader';
+import SmartFooter from '../../components/layout/SmartFooter';
 
 import { getDownloads, deleteDownload, openFile, DownloadedItem } from '../../services/download.service';
 
@@ -25,13 +26,19 @@ export default function MyDownloadsScreen() {
   };
 
   const handleDelete = (item: DownloadedItem) => {
-    Alert.alert("Supprimer", `Effacer "${item.title}" ?`, [
-      { text: "Annuler", style: "cancel" },
-      { text: "Supprimer", style: "destructive", onPress: async () => {
-          await deleteDownload(item.id);
-          loadFiles();
-      }}
-    ]);
+    if (Platform.OS === 'web') {
+      if (window.confirm(`Supprimer\n\nEffacer "${item.title}" ?`)) {
+        deleteDownload(item.id).then(() => loadFiles());
+      }
+    } else {
+      Alert.alert("Supprimer", `Effacer "${item.title}" ?`, [
+        { text: "Annuler", style: "cancel" },
+        { text: "Supprimer", style: "destructive", onPress: async () => {
+            await deleteDownload(item.id);
+            loadFiles();
+        }}
+      ]);
+    }
   };
 
   return (
@@ -69,6 +76,7 @@ export default function MyDownloadsScreen() {
           </TouchableOpacity>
         )}
       />
+      <SmartFooter />
     </ScreenContainer>
   );
 }

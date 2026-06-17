@@ -19,7 +19,8 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { useAppTheme } from "../../theme/AppThemeProvider";
 import { LawyerScreenProps } from "../../types/navigation";
-import { getProsecutorStats } from "../../services/stats.service"; // On réutilise la logique de comptage
+import { getProsecutorStats } from "../../services/stats.service";
+import { getAllHearings } from "../../services/hearing.service";
 
 // Composants
 import ScreenContainer from "../../components/layout/ScreenContainer";
@@ -51,6 +52,12 @@ export default function LawyerHomeScreen({ navigation }: LawyerScreenProps<'Lawy
     queryKey: ["lawyer-stats"],
     queryFn: getProsecutorStats,
   });
+
+  const { data: hearingsData } = useQuery({
+    queryKey: ["lawyer-hearings-count"],
+    queryFn: getAllHearings,
+  });
+  const hearingsCount = Array.isArray(hearingsData) ? hearingsData.length : 0;
 
   useFocusEffect(
     useCallback(() => {
@@ -130,7 +137,7 @@ export default function LawyerHomeScreen({ navigation }: LawyerScreenProps<'Lawy
                     </View>
                     <View style={styles.statDivider} />
                     <View style={styles.statItem}>
-                      <Text style={[styles.statVal, { color: accentColor }]}>04</Text>
+                      <Text style={[styles.statVal, { color: accentColor }]}>{isLoading ? "..." : String(hearingsCount)}</Text>
                       <Text style={styles.statLbl}>AUDIENCES</Text>
                     </View>
                     <View style={styles.statDivider} />

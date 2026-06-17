@@ -91,13 +91,15 @@ export default function LawyerCaseDetailScreen({ route, navigation }: LawyerScre
       // Simulation
       setTimeout(() => {
         setUploading(false);
-        Alert.alert("Succès", "Vos conclusions ont été transmises au greffe et versées au dossier numérique.");
+        if (Platform.OS === 'web') window.alert("Succès\n\nVos conclusions ont été transmises au greffe et versées au dossier numérique.");
+        else Alert.alert("Succès", "Vos conclusions ont été transmises au greffe et versées au dossier numérique.");
         refetch(); // Rafraîchir la liste des pièces
       }, 1500);
 
     } catch (error) {
       setUploading(false);
-      Alert.alert("Échec", "Erreur lors de l'envoi du document PDF.");
+      if (Platform.OS === 'web') window.alert("Échec\n\nErreur lors de l'envoi du document PDF.");
+      else Alert.alert("Échec", "Erreur lors de l'envoi du document PDF.");
     }
   };
 

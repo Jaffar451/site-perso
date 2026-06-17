@@ -1,4 +1,3 @@
-import StatusBadge from '../../components/ui/StatusBadge';
 import React, { useState, useEffect, useMemo } from "react";
 import { 
   View, 
@@ -19,12 +18,13 @@ import * as Location from "expo-location";
 import { Ionicons } from "@expo/vector-icons";
 
 // ✅ Imports Architecture
-import { getAppTheme } from "../../theme";
+import { useAppTheme } from "../../theme/AppThemeProvider";
 import { BailiffScreenProps } from "../../types/navigation";
 
 // Composants
 import ScreenContainer from "../../components/layout/ScreenContainer";
 import AppHeader from "../../components/layout/AppHeader";
+import SmartFooter from "../../components/layout/SmartFooter";
 
 // Interface Métier
 interface BailiffMission {
@@ -81,8 +81,8 @@ const MOCK_MISSIONS: BailiffMission[] = [
 ];
 
 export default function BailiffMissionsScreen({ navigation }: BailiffScreenProps<'BailiffMissions'>) {
-  // ✅ Thème via Helper
-  const theme = getAppTheme();
+  // ✅ Thème via Hook
+  const { theme } = useAppTheme();
   const primaryColor = "#EA580C"; // Orange brûlé pour les Huissiers (Distinctif)
   
   const [loading, setLoading] = useState(true);
@@ -101,7 +101,8 @@ export default function BailiffMissionsScreen({ navigation }: BailiffScreenProps
       setMissions(MOCK_MISSIONS);
     } catch (e) {
       console.error("Erreur missions huissier:", e);
-      Alert.alert("Mode Hors Ligne", "Impossible de contacter le serveur. Affichage des données locales.");
+      if (Platform.OS === 'web') window.alert("Mode Hors Ligne\n\nImpossible de contacter le serveur. Affichage des données locales.");
+      else Alert.alert("Mode Hors Ligne", "Impossible de contacter le serveur. Affichage des données locales.");
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -131,7 +132,10 @@ export default function BailiffMissionsScreen({ navigation }: BailiffScreenProps
 
   // 3. Actions Utilitaires
   const openDocument = (url: string) => {
-    Linking.openURL(url).catch(() => Alert.alert("Erreur", "Lien document invalide."));
+    Linking.openURL(url).catch(() => {
+      if (Platform.OS === 'web') window.alert("Erreur\n\nLien document invalide.");
+      else Alert.alert("Erreur", "Lien document invalide.");
+    });
   };
 
   const openGPS = (address: string, lat?: number, lng?: number) => {
@@ -141,24 +145,33 @@ export default function BailiffMissionsScreen({ navigation }: BailiffScreenProps
       android: `geo:0,0?q=${query}`,
       web: `https://www.google.com/maps/search/?api=1&query=${query}`
     });
-    if (url) Linking.openURL(url).catch(() => Alert.alert("Erreur", "Impossible d'ouvrir l'application de cartes."));
+    if (url) Linking.openURL(url).catch(() => {
+      if (Platform.OS === 'web') window.alert("Erreur\n\nImpossible d'ouvrir l'application de cartes.");
+      else Alert.alert("Erreur", "Impossible d'ouvrir l'application de cartes.");
+    });
   };
 
   // 4. Validation avec Géolocalisation
   const handleSignify = async (missionId: number) => {
-    Alert.alert(
-      "Confirmation",
-      "Confirmez-vous avoir remis l'acte en main propre ou à domicile ? Votre position GPS sera enregistrée comme preuve.",
-      [
-        { text: "Annuler", style: "cancel" },
-        { 
-          text: "Valider la signification", 
-          onPress: async () => {
-            await executeSignification(missionId);
-          } 
-        }
-      ]
-    );
+    if (Platform.OS === 'web') {
+      if (window.confirm("Confirmation\n\nConfirmez-vous avoir remis l'acte en main propre ou à domicile ? Votre position GPS sera enregistrée comme preuve.")) {
+        await executeSignification(missionId);
+      }
+    } else {
+      Alert.alert(
+        "Confirmation",
+        "Confirmez-vous avoir remis l'acte en main propre ou à domicile ? Votre position GPS sera enregistrée comme preuve.",
+        [
+          { text: "Annuler", style: "cancel" },
+          {
+            text: "Valider la signification",
+            onPress: async () => {
+              await executeSignification(missionId);
+            }
+          }
+        ]
+      );
+    }
   };
 
   const executeSignification = async (missionId: number) => {
@@ -166,7 +179,8 @@ export default function BailiffMissionsScreen({ navigation }: BailiffScreenProps
     try {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert("Permission refusée", "La géolocalisation est obligatoire pour certifier l'acte.");
+        if (Platform.OS === 'web') window.alert("Permission refusée\n\nLa géolocalisation est obligatoire pour certifier l'acte.");
+        else Alert.alert("Permission refusée", "La géolocalisation est obligatoire pour certifier l'acte.");
         setValidating(null);
         return;
       }
@@ -182,9 +196,11 @@ export default function BailiffMissionsScreen({ navigation }: BailiffScreenProps
         m.id === missionId ? { ...m, status: 'completed' } : m
       ));
 
-      Alert.alert("✅ Acte Signifié", "La preuve de passage a été transmise au Greffe.");
+      if (Platform.OS === 'web') window.alert("Acte Signifié\n\nLa preuve de passage a été transmise au Greffe.");
+      else Alert.alert("✅ Acte Signifié", "La preuve de passage a été transmise au Greffe.");
     } catch (e) {
-      Alert.alert("Erreur", "Échec de la validation GPS.");
+      if (Platform.OS === 'web') window.alert("Erreur\n\nÉchec de la validation GPS.");
+      else Alert.alert("Erreur", "Échec de la validation GPS.");
     } finally {
       setValidating(null);
     }
@@ -331,6 +347,7 @@ export default function BailiffMissionsScreen({ navigation }: BailiffScreenProps
           }
         />
       )}
+      <SmartFooter />
     </ScreenContainer>
   );
 }

@@ -17,6 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 // ✅ Architecture
 import ScreenContainer from '../../components/layout/ScreenContainer';
 import AppHeader from '../../components/layout/AppHeader';
+import SmartFooter from '../../components/layout/SmartFooter';
 import { useAppTheme } from '../../theme/AppThemeProvider';
 
 // ✅ Données
@@ -199,6 +200,7 @@ export default function CitizenLegalGuideScreen({ navigation }: any) {
         </View>
       </Modal>
 
+      <SmartFooter />
     </ScreenContainer>
   );
 }

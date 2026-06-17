@@ -1,4 +1,3 @@
-import StatusBadge from '../../components/ui/StatusBadge';
 import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { StyleSheet, View, Alert, Linking, Platform, StatusBar } from 'react-native';
 import { Text, Button, Card, IconButton, Searchbar } from 'react-native-paper';

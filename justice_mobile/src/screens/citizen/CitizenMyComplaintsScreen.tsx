@@ -1,4 +1,3 @@
-import StatusBadge from '../../components/ui/StatusBadge';
 import React, { useCallback, memo } from "react";
 import {
   View, Text, TouchableOpacity, FlatList, StyleSheet,

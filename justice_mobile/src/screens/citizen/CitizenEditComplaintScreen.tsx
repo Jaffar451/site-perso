@@ -58,7 +58,8 @@ export default function CitizenEditComplaintScreen({ navigation, route }: Citize
   // ── Enregistrement du texte ──────────────────────────────────
   const handleUpdate = async () => {
     if (!description.trim()) {
-      Alert.alert("Champs requis", "Le récit des faits est obligatoire.");
+      if (Platform.OS === 'web') window.alert("Champs requis\n\nLe récit des faits est obligatoire.");
+      else Alert.alert("Champs requis", "Le récit des faits est obligatoire.");
       return;
     }
 
@@ -81,7 +82,8 @@ export default function CitizenEditComplaintScreen({ navigation, route }: Citize
       }
     } catch (error) {
       const msg = error instanceof Error ? error.message : "Erreur inconnue";
-      Alert.alert("Erreur", "Échec de l'enregistrement : " + msg);
+      if (Platform.OS === 'web') window.alert("Erreur\n\nÉchec de l'enregistrement : " + msg);
+      else Alert.alert("Erreur", "Échec de l'enregistrement : " + msg);
     } finally {
       setSaving(false);
     }
@@ -99,7 +101,8 @@ export default function CitizenEditComplaintScreen({ navigation, route }: Citize
         const file = result.assets[0];
 
         if (file.size && file.size > 50 * 1024 * 1024) {
-          Alert.alert("Fichier trop lourd", "La taille limite est de 50 Mo.");
+          if (Platform.OS === 'web') window.alert("Fichier trop lourd\n\nLa taille limite est de 50 Mo.");
+          else Alert.alert("Fichier trop lourd", "La taille limite est de 50 Mo.");
           return;
         }
 
@@ -118,7 +121,8 @@ export default function CitizenEditComplaintScreen({ navigation, route }: Citize
           else Alert.alert("Document ajouté", "Pièce jointe enregistrée.");
         } catch (err) {
           console.error("Upload error:", err);
-          Alert.alert("Erreur Upload", "Impossible d'envoyer le fichier.");
+          if (Platform.OS === 'web') window.alert("Erreur Upload\n\nImpossible d'envoyer le fichier.");
+          else Alert.alert("Erreur Upload", "Impossible d'envoyer le fichier.");
         } finally {
           setUploading(false);
         }

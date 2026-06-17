@@ -27,6 +27,144 @@ import { Toast } from "../../components/ui/ToastManager";
 
 import { createComplaint, uploadAttachment } from "../../services/complaint.service";
 
+const LEGAL_REFERENCES: Record<string, { article: string; peine: string; description: string }> = {
+  "Vol": {
+    article: "Art. 320-321 du Code Pénal du Niger",
+    peine: "1 à 5 ans d'emprisonnement et amende",
+    description: "Quiconque soustrait frauduleusement une chose appartenant à autrui est coupable de vol.",
+  },
+  "Cambriolage": {
+    article: "Art. 322-324 du Code Pénal du Niger",
+    peine: "5 à 10 ans d'emprisonnement",
+    description: "Le vol commis avec effraction, escalade ou usage de fausses clés dans un lieu d'habitation constitue un cambriolage, circonstance aggravante du vol.",
+  },
+  "Agression": {
+    article: "Art. 222-225 du Code Pénal du Niger",
+    peine: "2 à 10 ans selon la gravité",
+    description: "Les violences ayant entraîné une incapacité de travail ou des blessures. Peine aggravée si commises avec préméditation ou en réunion.",
+  },
+  "Coups et blessures": {
+    article: "Art. 222-223 du Code Pénal du Niger",
+    peine: "2 mois à 5 ans selon l'ITT",
+    description: "Coups et blessures volontaires ayant entraîné une incapacité temporaire de travail. La peine varie selon la durée de l'ITT constatée.",
+  },
+  "Menaces": {
+    article: "Art. 230-232 du Code Pénal du Niger",
+    peine: "6 mois à 3 ans d'emprisonnement",
+    description: "Toute menace de mort ou de violence faite par écrit, verbalement ou par geste, avec ou sans condition, est punie d'emprisonnement.",
+  },
+  "Harcèlement": {
+    article: "Art. 281 du Code Pénal du Niger",
+    peine: "1 à 3 ans d'emprisonnement et amende",
+    description: "Le fait de harceler autrui par des propos ou comportements répétés ayant pour objet ou effet de porter atteinte à sa dignité ou de créer un environnement hostile.",
+  },
+  "Escroquerie": {
+    article: "Art. 335-337 du Code Pénal du Niger",
+    peine: "1 à 5 ans d'emprisonnement et amende",
+    description: "Quiconque, en employant des manœuvres frauduleuses, se fait remettre des fonds, valeurs ou biens quelconques.",
+  },
+  "Abus de confiance": {
+    article: "Art. 338-340 du Code Pénal du Niger",
+    peine: "1 à 5 ans d'emprisonnement et amende",
+    description: "Le détournement de fonds, effets ou marchandises remis à titre de mandat, dépôt, location ou prêt constitue un abus de confiance.",
+  },
+  "Faux et usage de faux": {
+    article: "Art. 149-156 du Code Pénal du Niger",
+    peine: "5 à 10 ans d'emprisonnement",
+    description: "Toute altération frauduleuse de la vérité dans un écrit ou document pouvant causer un préjudice, et l'usage de ce document.",
+  },
+  "Corruption": {
+    article: "Loi n°2003-025 et Art. 128-133 du Code Pénal",
+    peine: "2 à 10 ans d'emprisonnement et amende",
+    description: "Le fait de solliciter ou d'accepter des dons, promesses ou avantages pour accomplir ou s'abstenir d'un acte relevant de sa fonction.",
+  },
+  "Destruction de biens": {
+    article: "Art. 345-348 du Code Pénal du Niger",
+    peine: "2 à 5 ans d'emprisonnement et amende",
+    description: "La destruction, dégradation ou détérioration volontaire d'un bien appartenant à autrui est punie d'emprisonnement.",
+  },
+  "Cybercriminalité": {
+    article: "Loi n°2019-33 sur la Cybercriminalité au Niger",
+    peine: "1 à 10 ans selon l'infraction",
+    description: "Atteinte aux systèmes informatiques, fraude en ligne, usurpation d'identité numérique ou diffusion de contenus illicites.",
+  },
+  "Violences conjugales": {
+    article: "Art. 222-228 et Loi n°2020-31 du Niger",
+    peine: "1 à 20 ans selon la gravité",
+    description: "Toute violence physique, psychologique ou économique exercée par un conjoint ou partenaire. Circonstance aggravante reconnue par la loi nigérienne.",
+  },
+  "Enlèvement": {
+    article: "Art. 270-274 du Code Pénal du Niger",
+    peine: "5 à 20 ans de réclusion criminelle",
+    description: "Le fait d'enlever, détenir ou séquestrer une personne sans ordre légitime. La peine est aggravée si la victime est mineure.",
+  },
+  "Homicide": {
+    article: "Art. 208-218 du Code Pénal du Niger",
+    peine: "Réclusion criminelle à perpétuité",
+    description: "Le fait de donner volontairement la mort à autrui constitue un meurtre. L'assassinat est un meurtre commis avec préméditation.",
+  },
+  "Trafic de stupéfiants": {
+    article: "Loi n°2007-08 relative au trafic de drogues",
+    peine: "5 à 20 ans d'emprisonnement et amende",
+    description: "La production, fabrication, transport, importation, exportation, détention ou cession de substances stupéfiantes.",
+  },
+  "Abus de pouvoir": {
+    article: "Art. 134-138 du Code Pénal du Niger",
+    peine: "2 à 10 ans d'emprisonnement",
+    description: "Tout acte arbitraire ou attentatoire aux libertés commis par un dépositaire de l'autorité publique dans l'exercice de ses fonctions.",
+  },
+  "Recel": {
+    article: "Art. 341-343 du Code Pénal du Niger",
+    peine: "1 à 5 ans d'emprisonnement",
+    description: "Le fait de dissimuler, détenir ou transmettre une chose en sachant qu'elle provient d'un crime ou d'un délit.",
+  },
+  "Atteinte à l'ordre public": {
+    article: "Art. 102-110 du Code Pénal du Niger",
+    peine: "1 à 5 ans d'emprisonnement",
+    description: "Tout acte de nature à troubler gravement la paix publique, incluant attroupements, manifestations illégales ou incitation à la révolte.",
+  },
+  "Autre": {
+    article: "Code Pénal du Niger",
+    peine: "Variable selon la qualification",
+    description: "Toute infraction sera qualifiée par l'Officier de Police Judiciaire (OPJ) compétent après examen des faits déclarés.",
+  },
+};
+
+const LegalInfoBox = ({ type, colors, primaryColor, isDark }: any) => {
+  const info = LEGAL_REFERENCES[type] || LEGAL_REFERENCES["Autre"];
+  return (
+    <View style={{
+      backgroundColor: isDark ? "#1a1a2e" : "#EFF6FF",
+      borderColor: isDark ? "#1E40AF" : "#BFDBFE",
+      borderWidth: 1,
+      borderRadius: 16,
+      padding: 16,
+      marginBottom: 20,
+      borderLeftWidth: 4,
+      borderLeftColor: primaryColor,
+    }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+        <Ionicons name="book-outline" size={18} color={primaryColor} />
+        <Text style={{ fontSize: 12, fontWeight: '900', color: primaryColor, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+          Référence juridique
+        </Text>
+      </View>
+      <Text style={{ fontSize: 13, fontWeight: '800', color: isDark ? '#93C5FD' : '#1E40AF', marginBottom: 4 }}>
+        {info.article}
+      </Text>
+      <Text style={{ fontSize: 12, fontWeight: '600', color: isDark ? '#CBD5E1' : '#475569', lineHeight: 18, marginBottom: 8 }}>
+        {info.description}
+      </Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: isDark ? '#172554' : '#DBEAFE', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, alignSelf: 'flex-start' }}>
+        <Ionicons name="warning-outline" size={14} color={isDark ? '#FCD34D' : '#B45309'} />
+        <Text style={{ fontSize: 11, fontWeight: '700', color: isDark ? '#FCD34D' : '#92400E' }}>
+          Peine encourue : {info.peine}
+        </Text>
+      </View>
+    </View>
+  );
+};
+
 export default function CitizenCreateComplaintScreen({ navigation }: CitizenScreenProps<'CitizenCreateComplaint'>) {
   const { theme, isDark } = useAppTheme();
   const primaryColor = theme.colors.primary;
@@ -41,7 +179,13 @@ export default function CitizenCreateComplaintScreen({ navigation }: CitizenScre
   const [attachments, setAttachments] = useState<DocumentPicker.DocumentPickerAsset[]>([]);
   const [isUploadingFiles, setIsUploadingFiles] = useState(false);
 
-  const types = ["Vol", "Agression", "Escroquerie", "Cybercriminalité", "Violences", "Autre"];
+  const types = [
+    "Vol", "Cambriolage", "Agression", "Coups et blessures", "Menaces", "Harcèlement",
+    "Escroquerie", "Abus de confiance", "Faux et usage de faux", "Corruption",
+    "Destruction de biens", "Cybercriminalité", "Violences conjugales",
+    "Enlèvement", "Homicide", "Trafic de stupéfiants", "Abus de pouvoir",
+    "Recel", "Atteinte à l'ordre public", "Autre",
+  ];
 
   const bgMain = isDark ? "#0F172A" : "#F8FAFC";
   const bgCard = isDark ? "#1E293B" : "#FFFFFF";
@@ -69,7 +213,8 @@ export default function CitizenCreateComplaintScreen({ navigation }: CitizenScre
         setAttachments(prev => [...prev, ...validFiles]);
       }
     } catch (err) {
-      Alert.alert("Erreur", "Accès aux fichiers impossible.");
+      if (Platform.OS === 'web') window.alert("Erreur\n\nAccès aux fichiers impossible.");
+      else Alert.alert("Erreur", "Accès aux fichiers impossible.");
     }
   };
 
@@ -108,13 +253,15 @@ export default function CitizenCreateComplaintScreen({ navigation }: CitizenScre
       }
     },
     onError: () => {
-        Alert.alert("Erreur", "Impossible de transmettre la plainte.");
+        if (Platform.OS === 'web') window.alert("Erreur\n\nImpossible de transmettre la plainte.");
+        else Alert.alert("Erreur", "Impossible de transmettre la plainte.");
     }
   });
 
   const handleSubmit = () => {
     if (!description.trim() || !location.trim()) {
-      Alert.alert("Incomplet", "Veuillez préciser le lieu et la description.");
+      if (Platform.OS === 'web') window.alert("Incomplet\n\nVeuillez préciser le lieu et la description.");
+      else Alert.alert("Incomplet", "Veuillez préciser le lieu et la description.");
       return;
     }
     const payload = { 
@@ -189,17 +336,21 @@ export default function CitizenCreateComplaintScreen({ navigation }: CitizenScre
             </View>
           </View>
 
+          {/* RÉFÉRENCE JURIDIQUE */}
+          <LegalInfoBox type={provisionalOffence} colors={{ bgCard, textMain, textSub, borderCol }} primaryColor={primaryColor} isDark={isDark} />
+
           {/* LIEU */}
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: textMain }]}>Lieu des faits</Text>
             <View style={[styles.inputWrapper, { backgroundColor: inputBg, borderColor: borderCol }]}>
-              <Ionicons name="location" size={18} color={primaryColor} />
+              <Ionicons name="location-outline" size={20} color={textSub} style={{ marginRight: 4 }} />
               <TextInput
-                style={[styles.textInput, { color: textMain }]}
-                placeholder="Ex: Niamey, Quartier Poudrière"
-                placeholderTextColor={isDark ? "#64748B" : "#94A3B8"}
+                style={[styles.textInput, { color: textMain, paddingVertical: Platform.OS === 'web' ? 14 : 0 }]}
+                placeholder="Ville, quartier, rue..."
+                placeholderTextColor={isDark ? "#475569" : "#94A3B8"}
                 value={location}
                 onChangeText={setLocation}
+                autoCapitalize="words"
               />
             </View>
           </View>

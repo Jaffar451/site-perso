@@ -59,24 +59,36 @@ export default function LawyerSubmitBriefScreen({ route, navigation }: LawyerScr
         setSelectedFile(result.assets[0]);
       }
     } catch (err) {
-      Alert.alert("Erreur", "Impossible de sélectionner le fichier.");
+      if (Platform.OS === 'web') window.alert("Erreur\n\nImpossible de sélectionner le fichier.");
+      else Alert.alert("Erreur", "Impossible de sélectionner le fichier.");
     }
   };
 
   const handleSubmit = () => {
-    if (!title.trim()) return Alert.alert("Information manquante", "Veuillez donner un titre à vos conclusions.");
-    if (!selectedFile) return Alert.alert("Fichier manquant", "Veuillez joindre le fichier PDF de vos conclusions.");
-    
+    if (!title.trim()) {
+      if (Platform.OS === 'web') return window.alert("Information manquante\n\nVeuillez donner un titre à vos conclusions.");
+      else return Alert.alert("Information manquante", "Veuillez donner un titre à vos conclusions.");
+    }
+    if (!selectedFile) {
+      if (Platform.OS === 'web') return window.alert("Fichier manquant\n\nVeuillez joindre le fichier PDF de vos conclusions.");
+      else return Alert.alert("Fichier manquant", "Veuillez joindre le fichier PDF de vos conclusions.");
+    }
+
     setLoading(true);
-    
+
     // Simulation d'envoi
     setTimeout(() => {
       setLoading(false);
-      Alert.alert(
-        "Dépôt Effectué", 
-        "Vos conclusions ont été horodatées et transmises au greffe ainsi qu'aux parties concernées.", 
-        [{ text: "Retour au dossier", onPress: () => navigation.goBack() }]
-      );
+      if (Platform.OS === 'web') {
+        window.alert("Dépôt Effectué\n\nVos conclusions ont été horodatées et transmises au greffe ainsi qu'aux parties concernées.");
+        navigation.goBack();
+      } else {
+        Alert.alert(
+          "Dépôt Effectué",
+          "Vos conclusions ont été horodatées et transmises au greffe ainsi qu'aux parties concernées.",
+          [{ text: "Retour au dossier", onPress: () => navigation.goBack() }]
+        );
+      }
     }, 2000);
   };
 
