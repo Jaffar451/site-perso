@@ -19,8 +19,7 @@ export const generateComplaintPDF = async (complaint: Complaint, signatureBase64
   const token = complaint.verification_token || complaint.trackingCode || complaint.id.toString();
   const verificationUrl = `${ENV.API_URL}/public/verify/${token}`;
   
-  // 2. QR Code (API Google Charts pour une génération fiable sans dépendance lourde)
-  const qrCodeUrl = `https://chart.googleapis.com/chart?chs=180x180&cht=qr&chl=${encodeURIComponent(verificationUrl)}&choe=UTF-8`;
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(verificationUrl)}`;
 
   // 3. Formatage temporel
   const dateObj = new Date(complaint.filedAt ?? complaint.createdAt ?? Date.now());

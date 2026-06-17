@@ -9,6 +9,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import * as Print from "expo-print";
 
+import { ENV } from "../../config/env";
 import { useAppTheme } from "../../theme/AppThemeProvider";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { PoliceScreenProps } from "../../types/navigation";
@@ -129,6 +130,10 @@ export default function PolicePVScreen({ route, navigation }: PoliceScreenProps<
           </tr>`).join("")
       : `<tr><td colspan="4" class="center">Aucun scellé constitué</td></tr>`;
 
+    const verifyToken = complaint?.verification_token || complaint?.trackingCode || complaintId;
+    const verifyUrl = `${ENV.API_URL}/public/verify/${verifyToken}`;
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(verifyUrl)}`;
+
     const sectionTitle: Record<PVType, string> = {
       AUDITION:       "Audition et Dépositions",
       CONSTAT:        "État des Lieux et Constatations",
@@ -244,6 +249,15 @@ export default function PolicePVScreen({ route, navigation }: PoliceScreenProps<
 
   <div style="margin-top:25px;text-align:center;font-size:11pt;">
     Fait et clos à Niamey, le ${date}
+  </div>
+
+  <div style="margin-top:30px;text-align:center;border-top:1px solid #ccc;padding-top:15px;">
+    <img src="${qrUrl}" width="100" height="100" style="border:1px solid #eee;padding:4px;" />
+    <div style="font-size:8pt;color:#666;margin-top:8px;">
+      <strong>VÉRIFICATION D'AUTHENTICITÉ</strong><br/>
+      Scannez ce QR Code pour vérifier l'authenticité de cet acte officiel.<br/>
+      Système National E-JUSTICE — République du Niger
+    </div>
   </div>
 
   <div class="footer">
