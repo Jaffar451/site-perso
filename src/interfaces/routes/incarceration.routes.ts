@@ -9,7 +9,7 @@ const router = Router();
  * Toutes les routes ci-dessous nécessitent une authentification
  * et sont réservées aux admins et au personnel pénitentiaire.
  */
-const prisonAccess = [authenticate, authorize(["admin", "prison_officer"])];
+const prisonAccess = [authenticate, authorize(["admin", "prison_guard", "prison_director"])];
 
 // POST /api/incarcerations/entry -> Enregistrer une nouvelle mise sous écrou
 router.post("/entry", prisonAccess, incarcerationController.registerEntry);

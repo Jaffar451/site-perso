@@ -23,6 +23,7 @@ import ClerkStack from "./stacks/ClerkStack";
 import CitizenStack from "./stacks/CitizenStack"; 
 import LawyerStack from "./stacks/LawyerStack";
 import BailiffStack from "./stacks/BailiffStack";
+import PrisonStack from "./stacks/PrisonStack";
 
 // Écrans Communs
 import ProfileScreen from "../screens/Profile/ProfileScreen";
@@ -51,6 +52,12 @@ const CustomDrawerContent = (props: DrawerContentComponentProps) => {
     
     if (role.includes("gendarme"))
         return { bg: "#065F46", label: "GENDARMERIE NATIONALE", icon: "ribbon-outline" };
+
+    if (["prison_guard", "prison_director"].includes(role))
+        return { bg: "#4C1D95", label: "ADMINISTRATION PÉNITENTIAIRE", icon: "lock-closed" };
+
+    if (role === "lawyer")
+        return { bg: "#1E40AF", label: "ESPACE AVOCAT", icon: "briefcase-outline" };
 
     return { bg: "#166534", label: "ESPACE CITOYEN", icon: "person-outline" };
   }, [user?.role]);
@@ -164,6 +171,13 @@ export default function DrawerNavigator() {
         <Drawer.Screen name="BailiffRoot" component={BailiffStack} options={{
           drawerLabel: "Étude d'Huissier",
           drawerIcon: ({ color }) => <Ionicons name="mail-outline" size={22} color={color} />
+        }} />
+      )}
+
+      {["prison_guard", "prison_director"].includes(role) && (
+        <Drawer.Screen name="PrisonRoot" component={PrisonStack} options={{
+          drawerLabel: "Espace Pénitentiaire",
+          drawerIcon: ({ color }) => <Ionicons name="lock-closed-outline" size={22} color={color} />
         }} />
       )}
 
