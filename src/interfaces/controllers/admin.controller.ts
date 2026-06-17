@@ -8,8 +8,7 @@ export const getDashboardStats = async (_req: Request, res: Response) => {
     const [usersCount, activeCases, pendingComplaints, recentLogs] = await Promise.all([
       User.count().catch(() => 0),
 
-      // ✅ CORRECTION : "active" → "en_cours" (valeur réelle de l'enum CaseModel)
-      CaseModel.count({ where: { status: "en_cours" } }).catch(err => {
+      CaseModel.count({ where: { status: { [Op.in]: ["pending", "active"] } } }).catch(err => {
         console.warn("[DASHBOARD] Erreur CaseModel Status:", err.message);
         return 0;
       }),
