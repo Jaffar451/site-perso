@@ -102,20 +102,19 @@ export const createUser = async (req: Request, res: Response) => {
       policeStationId: policeStationId || null,
     }, { transaction });
 
-    const hasPersonData = dateOfBirth || placeOfBirth || nationality || cin || address || city;
-    if (hasPersonData) {
-      await Person.create({
+    await Person.create({
         userId: user.id,
+        firstName: firstname,
+        lastName: lastname,
         dateOfBirth: toISODate(dateOfBirth) || null,
         placeOfBirth: placeOfBirth || null,
-        nationality: nationality || null,
+        nationality: nationality || "Nigérienne",
         nationalId: cin || null,
-        personalEmail: personalEmail || null,
-        alternativePhone: alternativePhone || null,
+        email: personalEmail || null,
+        phone: alternativePhone || null,
         address: address || null,
         city: city || null,
       } as any, { transaction });
-    }
 
     await transaction.commit();
     const out = await User.findByPk(user.id, PUBLIC_FIELDS);
