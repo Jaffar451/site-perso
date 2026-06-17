@@ -138,11 +138,24 @@ export default function ManageStationsScreen({ navigation }: AdminScreenProps<'M
     }
     try {
       let location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      const { latitude, longitude } = location.coords;
       setFormData(prev => ({
         ...prev,
-        latitude: location.coords.latitude.toString(),
-        longitude: location.coords.longitude.toString()
+        latitude: latitude.toString(),
+        longitude: longitude.toString(),
       }));
+      try {
+        const [geo] = await Location.reverseGeocodeAsync({ latitude, longitude });
+        if (geo) {
+          const addr = [geo.streetNumber, geo.street, geo.name].filter(Boolean).join(' ') || geo.name || '';
+          setFormData(prev => ({
+            ...prev,
+            address: addr || prev.address,
+            city: geo.city || geo.subregion || prev.city,
+            district: geo.region || prev.district,
+          }));
+        }
+      } catch (_) {}
     } catch (err) {
       Alert.alert("Erreur GPS", "Position introuvable.");
     } finally {
@@ -311,6 +324,8 @@ export default function ManageStationsScreen({ navigation }: AdminScreenProps<'M
                     primaryColor={primaryColor}
                 />
             </View>
+
+            <TextInput label="Adresse" mode="outlined" value={formData.address} onChangeText={t => setFormData(prev => ({...prev, address: t}))} style={[styles.input, { backgroundColor: colors.inputBg }]} textColor={colors.textMain} outlineColor={colors.border} placeholder="Rue, quartier..." />
 
             <TextInput label="Contact" mode="outlined" value={formData.phone} onChangeText={t => setFormData(prev => ({...prev, phone: t}))} style={[styles.input, { backgroundColor: colors.inputBg }]} textColor={colors.textMain} outlineColor={colors.border} keyboardType="phone-pad" />
             

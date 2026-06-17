@@ -85,7 +85,7 @@ export const createUser = async (req: Request, res: Response) => {
   const transaction = await sequelize.transaction();
   try {
     const {
-      firstname, lastname, email, password, role, matricule, poste, policeStationId,
+      firstname, lastname, email, password, role, matricule, poste, organization, policeStationId,
       dateOfBirth, placeOfBirth, nationality, cin, personalEmail, alternativePhone, address, city,
     } = req.body;
     if (!firstname || !lastname || !email || !password) {
@@ -98,7 +98,7 @@ export const createUser = async (req: Request, res: Response) => {
       firstname, lastname, email, password: hash,
       role: role?.toLowerCase() || "citizen",
       matricule: matricule || null,
-      organization: poste || null,
+      organization: organization || poste || null,
       policeStationId: policeStationId || null,
     }, { transaction });
 
@@ -149,7 +149,7 @@ export const updateUser = async (req: Request, res: Response) => {
 
     const {
       firstname, lastname, email, matricule, telephone, role,
-      policeStationId, courtId, password, status,
+      policeStationId, courtId, password, status, organization,
       dateOfBirth, placeOfBirth, nationality, cin,
       personalEmail, alternativePhone, address, city,
     } = req.body;
@@ -204,6 +204,7 @@ export const updateUser = async (req: Request, res: Response) => {
     if (role !== undefined)            userUpdates.role            = role.toLowerCase();
     if (policeStationId !== undefined) userUpdates.policeStationId = policeStationId;
     if (courtId !== undefined)         userUpdates.courtId         = courtId;
+    if (organization !== undefined)    userUpdates.organization    = organization;
     if (password)                      userUpdates.password        = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
     if (Object.keys(userUpdates).length > 0) {

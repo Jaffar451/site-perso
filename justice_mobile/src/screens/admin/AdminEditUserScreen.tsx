@@ -131,6 +131,7 @@ export default function AdminEditUserScreen({ navigation, route }: AdminScreenPr
     telephone: "",
     alternativePhone: "",
     registrationNumber: "",
+    organization: "",
     role: "citizen",
     selectedStructureId: null as number | null,
     isActive: true,
@@ -182,10 +183,12 @@ export default function AdminEditUserScreen({ navigation, route }: AdminScreenPr
 
   const parseDate = (dateStr: string) => {
     if (!dateStr) return { day: "", month: "", year: "" };
-    const parts = dateStr.split('/');
-    if (parts.length === 3) {
-      return { day: parts[0], month: parts[1], year: parts[2] };
+    if (dateStr.includes('-')) {
+      const parts = dateStr.split('-');
+      if (parts.length === 3) return { day: parts[2], month: parts[1], year: parts[0] };
     }
+    const parts = dateStr.split('/');
+    if (parts.length === 3) return { day: parts[0], month: parts[1], year: parts[2] };
     return { day: "", month: "", year: "" };
   };
 
@@ -197,8 +200,7 @@ export default function AdminEditUserScreen({ navigation, route }: AdminScreenPr
   useEffect(() => {
     if (!user) return;
     const u = (user as any).data || user;
-    // ✅ Récupération des champs Person (sous-objet retourné par le backend)
-    const person = u.person || {};
+    const person = u.personProfile || u.person || {};
     const { day, month, year } = parseDate(
       person.dateOfBirth || u.dateOfBirth || ""
     );
@@ -212,6 +214,7 @@ export default function AdminEditUserScreen({ navigation, route }: AdminScreenPr
       telephone:        u.telephone         || "",
       alternativePhone: person.phone        || u.alternativePhone || "",
       registrationNumber: u.matricule       || u.registrationNumber || "",
+      organization: u.organization || "",
       role: u.role || "citizen",
       selectedStructureId: u.courtId || u.policeStationId || u.Court?.id || u.PoliceStation?.id || null,
       isActive: u.status === 'active' || u.isActive === true,
@@ -323,6 +326,7 @@ export default function AdminEditUserScreen({ navigation, route }: AdminScreenPr
       telephone: form.telephone?.trim() || null,
       alternativePhone: form.alternativePhone?.trim() || null,
       matricule: form.registrationNumber?.trim() || null,
+      organization: form.organization?.trim() || null,
       role: form.role,
       status: form.isActive ? 'active' : 'inactive',
       courtId: isJusticeRole && form.selectedStructureId ? Number(form.selectedStructureId) : null,
@@ -466,6 +470,8 @@ export default function AdminEditUserScreen({ navigation, route }: AdminScreenPr
               <InputField label="Matricule" value={form.registrationNumber} onChange={(t: string) => setForm(f => ({ ...f, registrationNumber: t }))} placeholder="MAT-XXX" icon="id-card-outline" colors={colors} isDark={isDark} />
             </View>
           </View>
+
+          <InputField label="Organisation" value={form.organization} onChange={(t: string) => setForm(f => ({ ...f, organization: t }))} placeholder="POLICE, JUSTICE, ADMIN..." icon="business-outline" colors={colors} isDark={isDark} />
 
           <Text style={[styles.sectionTitle, { color: colors.textSub }]}>Sécurité</Text>
           <View style={styles.passwordContainer}>
