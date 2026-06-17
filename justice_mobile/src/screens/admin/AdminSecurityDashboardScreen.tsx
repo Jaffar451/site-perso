@@ -99,6 +99,7 @@ export default function AdminSecurityDashboardScreen({ navigation }: AdminScreen
         />
 
       </ScrollView>
+      <SmartFooter />
     </ScreenContainer>
   );
 }

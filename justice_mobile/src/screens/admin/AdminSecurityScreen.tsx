@@ -6,6 +6,7 @@ import { useQuery, useMutation } from '@tanstack/react-query'; // ✅ VRAI SYST�
 
 import ScreenContainer from '../../components/layout/ScreenContainer';
 import AppHeader from '../../components/layout/AppHeader';
+import SmartFooter from '../../components/layout/SmartFooter';
 import { useAppTheme } from '../../theme/AppThemeProvider';
 import { getSecurityOverview, triggerSecurityScan } from '../../services/admin.service'; // ✅ IMPORT API
 
@@ -107,8 +108,9 @@ export default function AdminSecurityScreen({ navigation }: any) {
             )}
         </Surface>
 
-        <View style={{ height: 40 }} />
+        <View style={{ height: 100 }} />
       </ScrollView>
+      <SmartFooter />
     </ScreenContainer>
   );
 }
