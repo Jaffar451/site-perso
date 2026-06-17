@@ -1,4 +1,3 @@
-import StatusBadge from '../../components/ui/StatusBadge';
 // PATH: src/screens/prosecutor/ProsecutorCalendarScreen.tsx
 import React, { useState, useEffect } from 'react';
 import { 
@@ -9,8 +8,7 @@ import {
   TouchableOpacity, 
   StatusBar, 
   ScrollView, 
-  ActivityIndicator, 
-  Alert 
+  ActivityIndicator
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -18,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../../theme/AppThemeProvider';
 import ScreenContainer from '../../components/layout/ScreenContainer';
 import AppHeader from '../../components/layout/AppHeader';
+import SmartFooter from '../../components/layout/SmartFooter';
 import api from '../../services/api'; // Import API réel
 
 // Interface locale pour les données d'audience
@@ -232,6 +231,7 @@ export default function ProsecutorCalendarScreen({ navigation }: any) {
             />
         )}
       </View>
+      <SmartFooter />
     </ScreenContainer>
   );
 }

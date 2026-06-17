@@ -1,4 +1,3 @@
-import StatusBadge from '../../components/ui/StatusBadge';
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
