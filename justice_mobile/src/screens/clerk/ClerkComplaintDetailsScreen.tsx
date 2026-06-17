@@ -66,9 +66,7 @@ export default function ClerkComplaintDetailsScreen({ navigation, route }: Clerk
   }
 
   const handleGoToRegister = () => {
-    // Navigation vers l'enrôlement officiel (Attribution RG)
-    // navigation.navigate("ClerkRegisterCase", { complaintId: complaint.id });
-    console.log("Naviguer vers l'enrôlement RG pour", complaint.id);
+    navigation.navigate("ClerkRegisterCase" as any, { complaintId: complaint.id });
   };
 
   return (

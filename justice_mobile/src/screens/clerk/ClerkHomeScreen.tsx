@@ -24,6 +24,8 @@ import { ClerkScreenProps } from "../../types/navigation";
 import ScreenContainer from "../../components/layout/ScreenContainer";
 import AppHeader from "../../components/layout/AppHeader";
 import SmartFooter from "../../components/layout/SmartFooter";
+import { getAllComplaints } from "../../services/complaint.service";
+import { getAllHearings } from "../../services/hearing.service";
 
 const { width } = Dimensions.get("window");
 const gap = 12;
@@ -42,17 +44,24 @@ export default function ClerkHomeScreen({ navigation }: ClerkScreenProps<'ClerkH
     return () => clearInterval(timer);
   }, []);
 
-  // 🔄 DONNÉES SIMULÉES (Stats)
   const { data: stats, isLoading, refetch } = useQuery({
     queryKey: ['clerk-stats'],
-    queryFn: async () => ({
-        pending: 14, // À enrôler
-        hearings: 5, // Audiences du jour
-        detention: 32 // Écrous
-    })
+    queryFn: async () => {
+      const [complaints, hearings] = await Promise.all([
+        getAllComplaints().catch(() => []),
+        getAllHearings().catch(() => []),
+      ]);
+      const list = Array.isArray(complaints) ? complaints : (complaints as any)?.data || [];
+      const hearingList = Array.isArray(hearings) ? hearings : [];
+      return {
+        pending: list.filter((c: any) => ['transmise_parquet', 'saisi_juge'].includes(c.status)).length,
+        hearings: hearingList.length,
+        detention: list.filter((c: any) => c.status === 'instruction').length,
+      };
+    }
   });
 
-  useFocusEffect(useCallback(() => { refetch(); }, []));
+  useFocusEffect(useCallback(() => { refetch(); }, [refetch]));
 
   const timeString = currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
   const dateFull = currentTime.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" }).toUpperCase();

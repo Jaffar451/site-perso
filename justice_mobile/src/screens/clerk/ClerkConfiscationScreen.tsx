@@ -1,4 +1,3 @@
-import StatusBadge from '../../components/ui/StatusBadge';
 import React, { useState } from "react";
 import {
   View,
@@ -79,7 +78,8 @@ export default function ClerkConfiscationScreen() {
 
   const handleAddItem = () => {
     if (!newRef.trim() || !newDesc.trim()) {
-      Alert.alert("Champs requis", "La référence du PV et la désignation sont obligatoires.");
+      if (Platform.OS === 'web') window.alert("Champs requis\n\nLa référence du PV et la désignation sont obligatoires.");
+      else Alert.alert("Champs requis", "La référence du PV et la désignation sont obligatoires.");
       return;
     }
 

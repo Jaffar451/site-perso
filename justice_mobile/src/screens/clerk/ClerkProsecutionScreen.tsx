@@ -58,7 +58,8 @@ export default function ClerkProsecutionScreen() {
     const trimmedCharge = currentCharge.trim();
     if (!trimmedCharge) return;
     if (charges.some(c => c.toLowerCase() === trimmedCharge.toLowerCase())) {
-      Alert.alert("Doublon", "Cette infraction est déjà listée dans le réquisitoire.");
+      if (Platform.OS === 'web') window.alert("Doublon\n\nCette infraction est déjà listée dans le réquisitoire.");
+      else Alert.alert("Doublon", "Cette infraction est déjà listée dans le réquisitoire.");
       return;
     }
     setCharges([...charges, trimmedCharge]);
@@ -76,7 +77,8 @@ export default function ClerkProsecutionScreen() {
       return;
     }
     if (charges.length === 0) {
-      Alert.alert("Action requise", "Veuillez spécifier au moins un chef d'inculpation.");
+      if (Platform.OS === 'web') window.alert("Action requise\n\nVeuillez spécifier au moins un chef d'inculpation.");
+      else Alert.alert("Action requise", "Veuillez spécifier au moins un chef d'inculpation.");
       return;
     }
 
@@ -98,8 +100,11 @@ export default function ClerkProsecutionScreen() {
     // Simulation e-Justice : Transmission au Cabinet d'Instruction
     setTimeout(() => {
       setLoading(false);
-      if (Platform.OS === 'web') window.alert("✅ Réquisitoire enrôlé avec succès.");
-      Alert.alert("Succès", "Réquisitoire enregistré. Le dossier est transmis au Cabinet d'Instruction.");
+      if (Platform.OS === 'web') {
+        window.alert("✅ Réquisitoire enrôlé avec succès.");
+      } else {
+        Alert.alert("Succès", "Réquisitoire enregistré. Le dossier est transmis au Cabinet d'Instruction.");
+      }
       navigation.goBack();
     }, 1500);
   };

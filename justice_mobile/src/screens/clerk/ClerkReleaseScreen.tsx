@@ -65,7 +65,8 @@ export default function ClerkReleaseScreen() {
 
   const handleSearch = () => {
     if (!searchQuery.trim()) {
-      Alert.alert("Recherche", "Veuillez saisir un numéro d'écrou valide.");
+      if (Platform.OS === 'web') window.alert("Recherche\n\nVeuillez saisir un numéro d'écrou valide.");
+      else Alert.alert("Recherche", "Veuillez saisir un numéro d'écrou valide.");
       return;
     }
     setIsSearching(true);
@@ -88,7 +89,8 @@ export default function ClerkReleaseScreen() {
 
   const handleReleaseSubmit = () => {
     if (!releaseReason) {
-      Alert.alert("Motif manquant", "Sélectionnez le fondement juridique de la libération.");
+      if (Platform.OS === 'web') window.alert("Motif manquant\n\nSélectionnez le fondement juridique de la libération.");
+      else Alert.alert("Motif manquant", "Sélectionnez le fondement juridique de la libération.");
       return;
     }
 

@@ -12,7 +12,10 @@ import {
   StatusBar
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import DateTimePicker from "@react-native-community/datetimepicker";
+let DateTimePicker: any = null;
+if (Platform.OS !== 'web') {
+  try { DateTimePicker = require("@react-native-community/datetimepicker").default; } catch {}
+}
 
 // ✅ Architecture
 import { useAppTheme } from "../../theme/AppThemeProvider"; // ✅ Hook dynamique
@@ -76,13 +79,17 @@ export default function ClerkAdjournHearingScreen({ navigation, route }: ClerkSc
         notes: `Motif officiel: ${reason}\n\nObservations additionnelles: ${notes}`
       });
       
-      if (Platform.OS === 'web') window.alert("✅ PV de renvoi enregistré au registre.");
-      
-      Alert.alert("PV Enregistré", "Le renvoi a été acté dans le registre numérique.", [
-        { text: "OK", onPress: () => navigation.goBack() }
-      ]);
+      if (Platform.OS === 'web') {
+        window.alert("✅ PV de renvoi enregistré au registre.");
+        navigation.goBack();
+      } else {
+        Alert.alert("PV Enregistré", "Le renvoi a été acté dans le registre numérique.", [
+          { text: "OK", onPress: () => navigation.goBack() }
+        ]);
+      }
     } catch (error) {
-      Alert.alert("Erreur", "Échec de la synchronisation avec le serveur du Greffe.");
+      if (Platform.OS === 'web') window.alert("Erreur\n\nÉchec de la synchronisation avec le serveur du Greffe.");
+      else Alert.alert("Erreur", "Échec de la synchronisation avec le serveur du Greffe.");
     } finally {
       setLoading(false);
     }
@@ -160,16 +167,26 @@ export default function ClerkAdjournHearingScreen({ navigation, route }: ClerkSc
           <Ionicons name="chevron-down" size={18} color={colors.textSub} style={{ marginLeft: 'auto' }} />
         </TouchableOpacity>
 
-        {showDatePicker && (
+        {showDatePicker && Platform.OS !== 'web' && DateTimePicker && (
           <DateTimePicker
             value={nextDate}
             mode="date"
             minimumDate={new Date()}
             display={Platform.OS === 'ios' ? 'inline' : 'default'}
-            onChange={(event, date) => {
+            onChange={(_event: any, date: any) => {
               setShowDatePicker(false);
               if (date) setNextDate(date);
             }}
+          />
+        )}
+        {Platform.OS === 'web' && showDatePicker && (
+          <input
+            type="date"
+            title="Date de renvoi"
+            value={nextDate.toISOString().split('T')[0]}
+            min={new Date().toISOString().split('T')[0]}
+            onChange={(e: any) => { if (e.target.value) { setNextDate(new Date(e.target.value)); setShowDatePicker(false); } }}
+            style={{ fontSize: 15, padding: 12, borderRadius: 8, border: '1px solid #E2E8F0', width: '100%', marginBottom: 10, backgroundColor: 'transparent', color: isDark ? '#FFF' : '#1E293B' } as any}
           />
         )}
 
