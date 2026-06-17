@@ -6,3 +6,5 @@ dist
 uploads
 *.log
 .vscode
+.claude/
+src/config/config.json

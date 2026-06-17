@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 
 export const getNotifications = async (_: Request, res: Response) => {
-  return res.json({ success: true, data: [] });
+  return res.status(501).json({ success: false, message: "Endpoint non implémenté" });
 };
 
 export const markAsRead = async (req: Request, res: Response) => {
