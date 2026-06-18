@@ -68,6 +68,15 @@ export default class Decision extends Model {
   @Column({ type: DataType.STRING, allowNull: false, unique: true })
   decisionNumber!: string;
 
+  @Column({
+    type: DataType.ENUM("draft", "issued", "signed", "revoked"),
+    defaultValue: "draft",
+  })
+  status!: string;
+
+  @Column({ type: DataType.DATE, allowNull: true })
+  signedAt?: Date;
+
   @HasMany(() => Sentence, { as: "sentences" })
   sentences!: Sentence[];
 
