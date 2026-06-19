@@ -5,17 +5,18 @@ import crypto from "crypto";
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 16;
 
-// 🚨 CLÉ DE 32 CARACTÈRES
-const ENCRYPTION_KEY =
-  process.env.ENCRYPTION_KEY || "votre_cle_de_32_caracteres_min_!!";
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
+if (!ENCRYPTION_KEY || ENCRYPTION_KEY.length < 32) {
+  console.warn("SECURITY: ENCRYPTION_KEY manquante ou trop courte. Le chiffrement sera désactivé.");
+}
 
-// ✅ Créer une KeyObject une fois au démarrage
-const keyObject = crypto.createSecretKey(Buffer.from(ENCRYPTION_KEY));
+const keyObject = ENCRYPTION_KEY
+  ? crypto.createSecretKey(Buffer.from(ENCRYPTION_KEY))
+  : null;
 
 export const encrypt = (text: string): string => {
+  if (!keyObject) return text;
   const iv = crypto.randomBytes(IV_LENGTH);
-
-  // ✅ Utiliser keyObject au lieu de Buffer
   const cipher = crypto.createCipheriv(ALGORITHM, keyObject, iv);
 
   let encrypted = cipher.update(text, "utf8", "hex");
@@ -27,12 +28,11 @@ export const encrypt = (text: string): string => {
 };
 
 export const decrypt = (hash: string): string => {
+  if (!keyObject) return hash;
   const [ivHex, authTagHex, encryptedText] = hash.split(":");
 
   const iv = Buffer.from(ivHex, "hex");
   const authTag = Buffer.from(authTagHex, "hex");
-
-  // ✅ Utiliser keyObject au lieu de Buffer
   const decipher = crypto.createDecipheriv(ALGORITHM, keyObject, iv);
 
   // ✅ Cast simple pour authTag

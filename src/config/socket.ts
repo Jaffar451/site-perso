@@ -9,7 +9,7 @@ export let io: Server;
 export const initSocket = (server: HttpServer) => {
   io = new Server(server, {
     cors: {
-      origin: "*", // En production, remplacez par l'URL de votre application/API
+      origin: env.socket.corsOrigins,
       methods: ["GET", "POST"],
     },
   });
@@ -24,7 +24,7 @@ export const initSocket = (server: HttpServer) => {
 
     try {
       // Vérification du JWT (même secret que votre API)
-      const decoded = jwt.verify(token, env.JWT_SECRET);
+      const decoded = jwt.verify(token, env.jwt.secret);
       (socket as any).user = decoded;
       next();
     } catch (err) {

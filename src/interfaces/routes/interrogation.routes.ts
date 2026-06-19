@@ -1,4 +1,5 @@
 // src/interfaces/routes/interrogation.routes.ts
+import { authenticate, authorize } from "../middleware/auth.middleware";
 import { Router } from "express";
 import {
   createInterrogation,
@@ -9,6 +10,7 @@ import {
 } from "../controllers/interrogation.controller";
 
 const router = Router();
+router.use(authenticate, authorize(["officier_police","commissaire","prosecutor","judge","greffier","admin"]));
 
 router.post("/", createInterrogation);
 router.get("/", getAllInterrogations);

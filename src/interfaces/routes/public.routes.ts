@@ -12,11 +12,12 @@ router.get("/verify/:token", async (req, res) => {
 
     if (!complaint) return res.status(404).send("Document Invalide");
 
+    const escapeHtml = (s: string) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     res.send(`
       <div style="font-family: sans-serif; text-align: center; padding: 50px;">
-        <h1 style="color: green;">✅ Document Authentique</h1>
-        <p>Numéro : <strong>${complaint.id}</strong> | Statut : <strong>${complaint.status}</strong></p>
-        <hr/><p>Ministère de la Justice - Niger</p>
+        <h1 style="color: green;">&#x2705; Document Authentique</h1>
+        <p>Num&eacute;ro : <strong>${escapeHtml(String(complaint.id))}</strong> | Statut : <strong>${escapeHtml(String(complaint.status))}</strong></p>
+        <hr/><p>Minist&egrave;re de la Justice - Niger</p>
       </div>
     `);
   } catch (error) {

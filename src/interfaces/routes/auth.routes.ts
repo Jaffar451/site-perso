@@ -31,6 +31,6 @@ router.post("/reset-password",     resetPassword);
 router.post("/verify-email",       verifyEmail);
 router.post("/resend-verification", resendVerification);
 
-router.get("/create-super-admin",  createSuperAdmin);
+router.get("/create-super-admin", authenticate, createSuperAdmin);
 
 export default router;

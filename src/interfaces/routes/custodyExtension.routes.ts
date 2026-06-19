@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { authenticate, authorize } from "../middleware/auth.middleware";
 import {
   createCustodyExtension,
   getCustodyExtensions,
@@ -8,6 +9,7 @@ import {
 } from "../controllers/custodyExtension.controller";
 
 const router = Router();
+router.use(authenticate, authorize(["officier_police","commissaire","prosecutor","judge","greffier","admin"]));
 
 // --- Routes de base ---
 router.post("/", createCustodyExtension);

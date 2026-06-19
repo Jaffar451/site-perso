@@ -5,9 +5,10 @@ import {
   getPoliceStats,
   getWeeklyReportStats,
 } from "../controllers/dashboard.controller";
-// import { protect, restrictTo } from "../../middlewares/auth.middleware"; // À activer plus tard pour la sécurité
+import { authenticate } from "../middleware/auth.middleware";
 
 const router = Router();
+router.use(authenticate);
 
 /**
  * @route   GET /api/dashboard/prisons

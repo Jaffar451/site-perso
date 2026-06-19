@@ -269,6 +269,7 @@ export default function AdminUserDetailsScreen() {
           <View style={[styles.infoCard, { backgroundColor: colors.bgCard, borderColor: colors.border }]}>
             <InfoRow icon="barcode-outline"    label="Matricule"        value={user.matricule || user.registrationNumber}   primaryColor={primaryColor} colors={colors} />
             <InfoRow icon="business-outline"   label="Organisation"     value={user.organization}                           primaryColor={primaryColor} colors={colors} />
+            <InfoRow icon="shield-outline"     label="Unité d'affectation" value={user.station?.name}                       primaryColor={primaryColor} colors={colors} />
             <InfoRow icon="mail-outline"       label="Email pro."       value={user.email}                                  primaryColor={primaryColor} colors={colors} />
             <InfoRow icon="mail-outline"       label="Email perso."     value={person.email}                                primaryColor={primaryColor} colors={colors} />
             <InfoRow icon="call-outline"       label="Téléphone"        value={user.telephone}                              primaryColor={primaryColor} colors={colors} />

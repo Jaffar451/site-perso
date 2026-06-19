@@ -5,49 +5,61 @@ import path from "path";
 // Charger les variables d'environnement depuis .env
 dotenv.config();
 
+const requiredEnv = (key: string, fallback?: string): string => {
+  const val = process.env[key] || fallback;
+  if (!val) {
+    console.error(`FATAL: Variable d'environnement ${key} manquante`);
+    if (process.env.NODE_ENV === "production") process.exit(1);
+    return "DEV_ONLY_INSECURE_" + key;
+  }
+  return val;
+};
+
+const ALLOWED_ORIGINS = [
+  "https://justice-mobile-web.vercel.app",
+  "http://localhost:8081",
+  "http://localhost:19006",
+  "http://localhost:3000",
+];
+
 export const env = {
   NODE_ENV: process.env.NODE_ENV || "development",
-  // On s'assure que le PORT est bien un nombre pour éviter l'erreur TypeScript
   PORT: parseInt(process.env.PORT || "4000", 10),
 
-  // Configuration Base de données
   database: {
     host: process.env.DB_HOST || "localhost",
     port: parseInt(process.env.DB_PORT || "5432"),
     username: process.env.DB_USER || "postgres",
-    password: process.env.DB_PASSWORD || "admin",
+    password: process.env.DB_PASSWORD || "",
     name: process.env.DB_NAME || "justice_db",
   },
 
-  // ✅ CONFIGURATION JWT COMPLÈTE (C'est ici que ça bloquait)
   jwt: {
-    // Clé pour le Token d'accès (court terme)
-    secret: process.env.JWT_SECRET || "SUPER_SECRET_KEY_JUSTICE_NIGER_2025",
+    secret: requiredEnv("JWT_SECRET"),
     expiration: process.env.JWT_EXPIRATION || "24h",
-
-    // Clé pour le Token de rafraîchissement (long terme) -> Celle qui manquait !
-    refreshSecret:
-      process.env.JWT_REFRESH_SECRET || "SUPER_REFRESH_SECRET_KEY_2025",
-    refreshExpiration: process.env.JWT_REFRESH_EXPIRATION || "7d", // Valable 7 jours
+    refreshSecret: requiredEnv("JWT_REFRESH_SECRET", process.env.REFRESH_SECRET),
+    refreshExpiration: process.env.JWT_REFRESH_EXPIRATION || "7d",
   },
 
-  // Sécurité & CORS
   security: {
-    corsOrigin: process.env.CORS_ORIGIN || "*",
-    // On duplique ici pour compatibilité si d'autres fichiers l'utilisent
-    jwtSecret: process.env.JWT_SECRET || "SUPER_SECRET_KEY_JUSTICE_NIGER_2025",
+    corsOrigins: process.env.CORS_ORIGIN
+      ? process.env.CORS_ORIGIN.split(",").map((s: string) => s.trim())
+      : ALLOWED_ORIGINS,
+    jwtSecret: requiredEnv("JWT_SECRET"),
     rateLimitWindowMs: 15 * 60 * 1000,
     rateLimitMax: 100,
+    authRateLimitMax: 10,
+    bcryptRounds: parseInt(process.env.BCRYPT_ROUNDS || "12"),
   },
 
-  // Gestion des fichiers (Uploads)
   files: {
     path: process.env.UPLOAD_PATH || path.join(__dirname, "../../uploads"),
-    maxSize: 10 * 1024 * 1024, // 10MB
+    maxSize: 10 * 1024 * 1024,
   },
 
-  // Configuration Socket.IO
   socket: {
-    corsOrigin: process.env.CORS_ORIGIN || "*",
+    corsOrigins: process.env.CORS_ORIGIN
+      ? process.env.CORS_ORIGIN.split(",").map((s: string) => s.trim())
+      : ALLOWED_ORIGINS,
   },
 };

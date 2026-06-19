@@ -32,15 +32,16 @@ app.use(
 // Cela permet à Expo Web de fonctionner avec les cookies/headers sécurisés.
 app.use(
   cors({
-    origin: true,
+    origin: (origin, callback) => {
+      if (!origin || env.security.corsOrigins.includes(origin) || env.NODE_ENV === "development") {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS non autorisé: " + origin));
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "X-Requested-With",
-      "Accept",
-    ],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
   }),
 );
 
@@ -58,14 +59,24 @@ const limiter = rateLimit({
   },
 });
 
-// Application du limiteur uniquement aux routes API
 app.use("/api/", limiter);
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: env.security.authRateLimitMax || 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: "Trop de tentatives. Réessayez dans 15 minutes." },
+});
+app.use("/api/auth/login", authLimiter);
+app.use("/api/auth/register", authLimiter);
+app.use("/api/auth/forgot-password", authLimiter);
 
 // ==========================================
 // ⚙️ MIDDLEWARES DE PARSING & LOGS
 // ==========================================
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+app.use(express.json({ limit: "5mb" }));
+app.use(express.urlencoded({ extended: true, limit: "5mb" }));
 
 if (env.NODE_ENV === "development") {
   app.use(morgan("dev"));
