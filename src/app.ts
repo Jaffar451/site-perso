@@ -97,7 +97,20 @@ if (!fs.existsSync(uploadsPath)) {
 }
 
 console.log(`📂 [INFO] Dossier Uploads servi depuis : ${uploadsPath}`);
-app.use("/uploads", express.static(uploadsPath));
+
+app.use("/uploads", (req: Request, res: Response, next: NextFunction) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Accès non autorisé aux fichiers" });
+  }
+  try {
+    const jwt = require("jsonwebtoken");
+    jwt.verify(authHeader.split(" ")[1], env.jwt.secret);
+    next();
+  } catch {
+    return res.status(401).json({ message: "Token invalide" });
+  }
+}, express.static(uploadsPath));
 
 // ==========================================
 // 🚀 POINTS D'ENTRÉE (API ROUTES)

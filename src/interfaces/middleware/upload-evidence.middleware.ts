@@ -17,7 +17,8 @@ const allowedMimeTypes = [
   "image/webp",
   "application/pdf",
   "video/mp4",
-  "text/plain",
+  "audio/mpeg",
+  "audio/wav",
 ];
 
 const storage = multer.diskStorage({
@@ -26,7 +27,8 @@ const storage = multer.diskStorage({
   },
   filename: (_req: Request, file: Express.Multer.File, cb) => {
     const unique = Date.now() + "_" + Math.round(Math.random() * 1e9);
-    cb(null, unique + "_" + file.originalname.replace(/\s+/g, "_"));
+    const safeName = path.basename(file.originalname).replace(/[^a-zA-Z0-9._-]/g, "_");
+    cb(null, unique + "_" + safeName);
   },
 });
 
@@ -44,5 +46,5 @@ const fileFilter = (
 export const uploadEvidence = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 50 * 1024 * 1024 },
+  limits: { fileSize: 10 * 1024 * 1024 },
 }).single("file");
