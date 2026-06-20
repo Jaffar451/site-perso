@@ -262,6 +262,17 @@ export const forgotPassword = async (req: Request, res: Response) => {
     const { email } = req.body;
     if (!email) return res.status(400).json({ message: "Email requis" });
     const user = await User.findOne({ where: { email: email.toLowerCase() } });
+    if (user) {
+      const resetToken = jwt.sign({ id: user.id, type: 'reset' }, env.jwt.secret, { expiresIn: '1h' });
+      try {
+        const { NotificationService } = require("../../application/services/notification.service");
+        const notif = new NotificationService();
+        await notif.sendPasswordResetEmail(user.email, user.firstname, resetToken);
+        console.log(`[AUTH] Email reset envoyé à ${user.email}`);
+      } catch (mailErr: any) {
+        console.error("[AUTH] Erreur envoi email reset:", mailErr.message);
+      }
+    }
     return res.json({ success: true, message: "Si cet email existe, un lien de réinitialisation a été envoyé." });
   } catch (error) {
     return res.status(500).json({ message: "Erreur serveur" });
@@ -272,9 +283,19 @@ export const resetPassword = async (req: Request, res: Response) => {
   try {
     const { token, newPassword } = req.body;
     if (!token || !newPassword) return res.status(400).json({ message: "Token et nouveau mot de passe requis" });
-    return res.status(501).json({ message: "Réinitialisation par email non encore configurée" });
-  } catch (error) {
-    return res.status(500).json({ message: "Erreur serveur" });
+    if (newPassword.length < 8 || !/[A-Z]/.test(newPassword) || !/[a-z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+      return res.status(400).json({ message: "Mot de passe invalide (min 8 caractères, 1 majuscule, 1 minuscule, 1 chiffre)" });
+    }
+    const decoded: any = jwt.verify(token, env.jwt.secret);
+    if (decoded.type !== 'reset') return res.status(400).json({ message: "Token invalide" });
+    const user = await User.findByPk(decoded.id);
+    if (!user) return res.status(404).json({ message: "Utilisateur introuvable" });
+    user.password = await bcrypt.hash(newPassword, env.security.bcryptRounds);
+    await user.save();
+    return res.json({ success: true, message: "Mot de passe réinitialisé avec succès" });
+  } catch (error: any) {
+    if (error.name === 'TokenExpiredError') return res.status(400).json({ message: "Lien expiré. Veuillez refaire une demande." });
+    return res.status(400).json({ message: "Token invalide ou expiré" });
   }
 };
 
