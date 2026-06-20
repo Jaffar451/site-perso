@@ -13,7 +13,8 @@ import {
   Platform
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
+import { useOfflineMutation } from "../../hooks/useOfflineMutation";
 import * as DocumentPicker from 'expo-document-picker';
 
 import { useAuthStore } from "../../stores/useAuthStore";
@@ -222,8 +223,11 @@ export default function CitizenCreateComplaintScreen({ navigation }: CitizenScre
     setAttachments(prev => prev.filter((_, index) => index !== indexToRemove));
   };
 
-  const mutation = useMutation({
+  const mutation = useOfflineMutation({
+    resource: 'complaints',
+    action: 'create',
     mutationFn: createComplaint,
+    invalidateKeys: [["my-complaints"]],
     onSuccess: async (data) => {
       queryClient.invalidateQueries({ queryKey: ["my-complaints"] });
 

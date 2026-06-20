@@ -10,6 +10,7 @@ import { navigationRef } from "./RootNavigation";
 import { useAuthStore } from "../stores/useAuthStore";
 import { useAppTheme } from "../theme/AppThemeProvider";
 import { SyncManager } from "../components/SyncManager";
+import { NetworkBanner } from "../components/ui/NetworkBanner";
 
 // ✅ Imports de vos navigateurs
 import AuthNavigator from "./AuthNavigator";
@@ -44,6 +45,7 @@ export default function AppNavigator() {
       />
       
       <SyncManager />
+      <NetworkBanner />
 
       <NavigationContainer ref={navigationRef} theme={navigationTheme}>
         <Stack.Navigator 
