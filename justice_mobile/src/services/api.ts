@@ -1,4 +1,5 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import { Platform } from 'react-native';
 import { ENV } from '../config/env';
 import { secureGet, secureSet, secureDelete } from '../utils/secureStorage';
 
@@ -7,9 +8,11 @@ export const API_URL = ENV.API_URL;
 const api = axios.create({
   baseURL: API_URL,
   timeout: ENV.TIMEOUT || 10000,
+  withCredentials: Platform.OS === 'web',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
+    ...(Platform.OS === 'web' ? { 'X-Platform': 'web' } : {}),
   },
 });
 

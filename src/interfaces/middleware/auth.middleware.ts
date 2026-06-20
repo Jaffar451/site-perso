@@ -14,14 +14,17 @@ export const authenticate = async (
 ) => {
   try {
     const authHeader = req.headers.authorization;
+    const cookieToken = req.cookies?.token;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    const token = (authHeader && authHeader.startsWith("Bearer "))
+      ? authHeader.split(" ")[1]
+      : cookieToken;
+
+    if (!token) {
       return res
         .status(401)
-        .json({ success: false, message: "Format de token invalide ou manquant" });
+        .json({ success: false, message: "Token manquant" });
     }
-
-    const token = authHeader.split(" ")[1];
     const secret = env.jwt.secret;
 
     if (!secret) {

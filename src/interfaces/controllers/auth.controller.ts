@@ -128,11 +128,24 @@ export const login = async (req: Request, res: Response) => {
       expiryDate: expiryDate
     });
 
-    return res.json({ 
+    const isWeb = req.headers['x-platform'] === 'web' || req.headers.origin?.includes('vercel');
+
+    if (isWeb) {
+      res.cookie('token', token, {
+        httpOnly: true, secure: true, sameSite: 'none',
+        maxAge: 24 * 60 * 60 * 1000,
+      });
+      res.cookie('refresh', refresh, {
+        httpOnly: true, secure: true, sameSite: 'none',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+    }
+
+    return res.json({
       success: true,
-      token, 
-      refresh, 
-      user: publicUser(user) 
+      token,
+      refresh,
+      user: publicUser(user)
     });
   } catch (err) {
     if (err instanceof z.ZodError) {

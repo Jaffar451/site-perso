@@ -36,7 +36,11 @@ const isWeb = Platform.OS === 'web';
 async function setItem(key: string, value: string) {
   try {
     if (isWeb) {
-      localStorage.setItem(key, value);
+      if (key === STORAGE_KEYS.TOKEN || key === STORAGE_KEYS.REFRESH) {
+        sessionStorage.setItem(key, value);
+      } else {
+        sessionStorage.setItem(key, value);
+      }
     } else {
       await SecureStore.setItemAsync(key, value);
     }
@@ -48,7 +52,7 @@ async function setItem(key: string, value: string) {
 async function getItem(key: string) {
   try {
     if (isWeb) {
-      return localStorage.getItem(key);
+      return sessionStorage.getItem(key);
     } else {
       return await SecureStore.getItemAsync(key);
     }
@@ -61,7 +65,7 @@ async function getItem(key: string) {
 async function removeItem(key: string) {
   try {
     if (isWeb) {
-      localStorage.removeItem(key);
+      sessionStorage.removeItem(key);
     } else {
       await SecureStore.deleteItemAsync(key);
     }
