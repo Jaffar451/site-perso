@@ -49,7 +49,7 @@ export const register = async (req: Request, res: Response) => {
     const exists = await User.findOne({ where: { email: emailNormalized } });
     if (exists) return res.status(409).json({ message: "Email déjà utilisé" });
 
-    const hashedPass = await bcrypt.hash(body.password, 10);
+    const hashedPass = await bcrypt.hash(body.password, env.security.bcryptRounds);
     
     const user = await User.create({ 
       ...body, 
@@ -210,7 +210,7 @@ export const updateProfile = async (req: Request, res: Response) => {
     if (telephone) user.telephone = telephone.trim();
 
     if (password && password.length >= 6) {
-      user.password = await bcrypt.hash(password, 10);
+      user.password = await bcrypt.hash(password, env.security.bcryptRounds);
     }
 
     await user.save();
@@ -229,14 +229,14 @@ export const changePassword = async (req: Request, res: Response) => {
     const userId = (req as any).user?.id;
     if (!userId) return res.status(401).json({ message: "Non authentifié" });
     const { currentPassword, newPassword } = req.body;
-    if (!currentPassword || !newPassword || newPassword.length < 6) {
-      return res.status(400).json({ message: "Mot de passe invalide (min 6 caractères)" });
+    if (!currentPassword || !newPassword || newPassword.length < 8 || !/[A-Z]/.test(newPassword) || !/[a-z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+      return res.status(400).json({ message: "Mot de passe invalide (min 8 caractères, 1 majuscule, 1 minuscule, 1 chiffre)" });
     }
     const user = await User.findByPk(userId);
     if (!user) return res.status(404).json({ message: "Utilisateur introuvable" });
     const ok = await bcrypt.compare(currentPassword, user.password);
     if (!ok) return res.status(401).json({ message: "Mot de passe actuel incorrect" });
-    user.password = await bcrypt.hash(newPassword, 10);
+    user.password = await bcrypt.hash(newPassword, env.security.bcryptRounds);
     await user.save();
     return res.json({ success: true, message: "Mot de passe modifié avec succès" });
   } catch (error) {
