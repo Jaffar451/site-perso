@@ -30,21 +30,45 @@ export const getDashboardStats = async (_req: Request, res: Response) => {
       }).catch(() => 0),
     ]);
 
+    const [statusStats, categoryStats, monthlyStats, complaints_total] = await Promise.all([
+      sequelize.query(
+        `SELECT status, COUNT(*)::int as count FROM "Complaints" GROUP BY status ORDER BY count DESC`,
+        { type: 'SELECT' }
+      ).catch(() => []),
+
+      sequelize.query(
+        `SELECT category, COUNT(*)::int as count FROM "Complaints" WHERE category IS NOT NULL GROUP BY category ORDER BY count DESC LIMIT 10`,
+        { type: 'SELECT' }
+      ).catch(() => []),
+
+      sequelize.query(
+        `SELECT TO_CHAR(created_at, 'YYYY-MM') as month, COUNT(*)::int as count FROM "Complaints" WHERE created_at >= NOW() - INTERVAL '6 months' GROUP BY month ORDER BY month ASC`,
+        { type: 'SELECT' }
+      ).catch(() => []),
+
+      Complaint.count().catch(() => 0),
+    ]);
+
+    const regionalStats = await sequelize.query(
+      `SELECT ps.district, ps.city, COUNT(c.id)::int as total FROM "Complaints" c JOIN police_stations ps ON c.police_station_id = ps.id WHERE ps.district IS NOT NULL GROUP BY ps.district, ps.city ORDER BY total DESC`,
+      { type: 'SELECT' }
+    ).catch(() => []);
+
     return res.status(200).json({
       success: true,
       data: {
         summary: {
-          users_total:     usersCount,
-          complaints_open: pendingComplaints,
-          active_cases:    activeCases,
-          logs_total:      recentLogs,
-          systemHealth:    "100%",
-          police_users:    activeCases + 2,
+          users_total:      usersCount,
+          complaints_total: complaints_total,
+          complaints_open:  pendingComplaints,
+          active_cases:     activeCases,
+          logs_total:       recentLogs,
         },
-        regionalStats: [],
-        statusStats:   [],
-        timingStats:   { avg_days: 0 },
-        timestamp:     new Date().toISOString(),
+        statusStats,
+        categoryStats,
+        monthlyStats,
+        regionalStats,
+        timestamp: new Date().toISOString(),
       },
     });
   } catch (error) {
