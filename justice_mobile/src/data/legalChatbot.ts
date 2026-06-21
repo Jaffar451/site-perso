@@ -319,6 +319,112 @@ export const LEGAL_KB: LegalEntry[] = [
     answer: "Le sursis simple suspend l'exécution de la peine pendant 5 ans. Si le condamné ne commet pas de nouvelle infraction durant cette période, la peine est réputée non avenue. Le sursis avec mise à l'épreuve impose des obligations (travail, soins, pointage). Le sursis n'est possible que pour les peines de moins de 5 ans.",
     articles: "Art. 63-68 Code Pénal Niger", referTo: "Tribunal / Juge d'Application des Peines" },
 
+  // ═══ VIOL ET AGRESSION SEXUELLE ═══
+  { keywords: ["viol", "agression sexuelle", "abus sexuel", "attouchement"],
+    question: "Quelles sont les peines pour viol au Niger ?",
+    answer: "Le viol est un crime puni de 10 à 20 ans de réclusion criminelle. Si la victime est mineure de 13 ans : réclusion à perpétuité. Circonstances aggravantes : pluralité d'auteurs, utilisation d'une arme, lien d'autorité. L'attentat à la pudeur est puni de 2 à 5 ans.",
+    articles: "Art. 278-283 Code Pénal Niger", referTo: "Commissariat (OPJ spécialisé) / Hôpital (certificat médical) / Tribunal" },
+
+  { keywords: ["pédophilie", "abus enfant", "mineur victime"],
+    question: "Que faire si un enfant est victime d'abus ?",
+    answer: "1) Protégez l'enfant immédiatement. 2) Signalez aux services sociaux ou au commissariat. 3) Faites examiner l'enfant par un médecin. 4) Le délai de prescription ne court qu'à la majorité de l'enfant. Les peines sont aggravées quand la victime est mineure. L'auteur encourt la réclusion à perpétuité.",
+    articles: "Art. 278-283 Code Pénal + Ordonnance n°99-11", referTo: "Protection de l'Enfance / Commissariat / Hôpital" },
+
+  // ═══ TRAFIC D'ÊTRES HUMAINS ═══
+  { keywords: ["traite", "trafic humain", "esclavage", "exploitation"],
+    question: "Quelles sont les peines pour traite des personnes ?",
+    answer: "La traite des personnes est punie de 5 à 10 ans d'emprisonnement. Si la victime est mineure : 10 à 30 ans. L'esclavage et les pratiques analogues : 10 à 30 ans. Le Niger dispose d'une Agence Nationale de Lutte contre la Traite (ANLTP).",
+    articles: "Ordonnance n°2010-86 + Loi n°2003-025", referTo: "ANLTP / Commissariat / Tribunal" },
+
+  // ═══ SÉQUESTRATION ═══
+  { keywords: ["séquestration", "enfermé", "retenu contre gré", "enlèvement rançon"],
+    question: "Quelles sont les peines pour séquestration ?",
+    answer: "La séquestration est punie de 5 à 10 ans d'emprisonnement. Si elle dure plus d'un mois : 10 à 20 ans. Si elle est accompagnée de torture : réclusion à perpétuité. L'enlèvement avec demande de rançon : 10 à 20 ans. Si la victime décède : perpétuité.",
+    articles: "Art. 270-274 Code Pénal Niger", referTo: "Commissariat / Gendarmerie / Procureur" },
+
+  // ═══ INCENDIE ═══
+  { keywords: ["incendie volontaire", "feu", "pyromanie", "brûler"],
+    question: "Quelles sont les peines pour incendie volontaire ?",
+    answer: "L'incendie volontaire d'un bien appartenant à autrui est puni de 5 à 10 ans. Si l'incendie met en danger des personnes : 10 à 20 ans. Si des personnes décèdent : réclusion à perpétuité. L'incendie de forêts ou récoltes : 2 à 5 ans.",
+    articles: "Art. 345-351 Code Pénal Niger", referTo: "Sapeurs-Pompiers / Commissariat / Tribunal" },
+
+  // ═══ RECEL ═══
+  { keywords: ["recel", "acheter volé", "objet volé", "recéleur"],
+    question: "Quelles sont les peines pour recel ?",
+    answer: "Le recel (détenir ou acheter un bien en sachant qu'il provient d'un crime/délit) est puni de 1 à 5 ans d'emprisonnement. La peine peut être supérieure à celle du vol initial si le receleur connaissait les circonstances aggravantes. Les biens recelés sont confisqués.",
+    articles: "Art. 341-343 Code Pénal Niger", referTo: "Commissariat / Tribunal" },
+
+  // ═══ OUTRAGE ET RÉBELLION ═══
+  { keywords: ["outrage", "insulter policier", "insulter juge", "rébellion"],
+    question: "Quelles sont les peines pour outrage à agent ?",
+    answer: "L'outrage à un agent public dans l'exercice de ses fonctions est puni de 1 mois à 1 an d'emprisonnement. L'outrage à un magistrat : 2 mois à 2 ans. La rébellion (résistance violente) : 6 mois à 2 ans. Si elle est commise en réunion avec armes : 1 à 5 ans.",
+    articles: "Art. 167-175 Code Pénal Niger", referTo: "Commissariat / Tribunal de Police" },
+
+  // ═══ ATTEINTE À LA VIE PRIVÉE ═══
+  { keywords: ["vie privée", "espionnage", "écoute", "caméra cachée", "photo sans accord"],
+    question: "Quelles sont les peines pour atteinte à la vie privée ?",
+    answer: "L'enregistrement de conversations privées sans consentement : 1 à 5 ans. La publication de photos/vidéos intimes sans consentement : 1 à 3 ans + amende. La violation de domicile : 1 à 5 ans. L'ouverture de correspondance privée : 6 mois à 2 ans.",
+    articles: "Art. 261-265 Code Pénal + Loi n°2019-33 (cyber)", referTo: "Commissariat / Division Cybercriminalité" },
+
+  // ═══ MENDICITÉ ET VAGABONDAGE ═══
+  { keywords: ["mendicité", "mendiant", "vagabondage", "enfant mendiant"],
+    question: "La mendicité est-elle punie au Niger ?",
+    answer: "Le vagabondage est puni de 15 jours à 6 mois. L'exploitation de la mendicité d'autrui (surtout d'enfants) est punie de 1 à 5 ans. Les maîtres coraniques qui forcent les enfants (talibés) à mendier peuvent être poursuivis. Des programmes de réinsertion existent.",
+    articles: "Art. 274-277 Code Pénal Niger", referTo: "Services Sociaux / Protection de l'Enfance / Commissariat" },
+
+  // ═══ BLANCHIMENT D'ARGENT ═══
+  { keywords: ["blanchiment", "argent sale", "blanchiment argent", "centif"],
+    question: "Quelles sont les peines pour blanchiment d'argent ?",
+    answer: "Le blanchiment de capitaux est puni de 3 à 7 ans d'emprisonnement et d'une amende pouvant aller jusqu'à 5 fois la somme blanchie. Les personnes morales (sociétés) peuvent être condamnées à des amendes jusqu'à 5 fois le montant. La CENTIF est l'organe de renseignement financier du Niger.",
+    articles: "Loi n°2004-041 (lutte contre le blanchiment) + CENTIF", referTo: "CENTIF / Procureur de la République / Tribunal" },
+
+  // ═══ DÉTOURNEMENT DE FONDS PUBLICS ═══
+  { keywords: ["détournement", "fonds publics", "détournement deniers", "fonctionnaire"],
+    question: "Quelles sont les peines pour détournement de fonds publics ?",
+    answer: "Le détournement de deniers publics par un fonctionnaire est puni de 5 à 10 ans d'emprisonnement et d'une amende égale au montant détourné. Si le montant dépasse 1 million FCFA : 10 à 20 ans. Le fonctionnaire est destitué et déchu de ses droits civiques.",
+    articles: "Art. 134-140 Code Pénal Niger + Loi n°2003-025", referTo: "HALCIA / Procureur de la République / Cour des Comptes" },
+
+  // ═══ EMPOISONNEMENT ═══
+  { keywords: ["empoisonnement", "poison", "intoxication volontaire"],
+    question: "Quelles sont les peines pour empoisonnement ?",
+    answer: "L'empoisonnement (administration de substances mortelles) est un crime puni de la réclusion criminelle à perpétuité, quelle que soit l'issue (même si la victime survit). La tentative d'empoisonnement est punie des mêmes peines. L'administration de substances nuisibles : 2 à 5 ans.",
+    articles: "Art. 219-221 Code Pénal Niger", referTo: "Commissariat / Hôpital (analyse toxicologique) / Tribunal" },
+
+  // ═══ ASSOCIATION DE MALFAITEURS ═══
+  { keywords: ["bande organisée", "association malfaiteurs", "gang", "mafia"],
+    question: "Quelles sont les peines pour association de malfaiteurs ?",
+    answer: "L'association de malfaiteurs est punie de 5 à 10 ans d'emprisonnement. Si l'association est en vue de commettre des crimes : 10 à 20 ans. Les chefs et organisateurs encourent le double de la peine. Les membres qui dénoncent avant l'action bénéficient d'une exemption de peine.",
+    articles: "Art. 177-180 Code Pénal Niger", referTo: "Police Judiciaire / Procureur / Tribunal" },
+
+  // ═══ USURE ═══
+  { keywords: ["usure", "taux intérêt", "prêt usuraire", "prêteur"],
+    question: "L'usure est-elle punie au Niger ?",
+    answer: "Le prêt à un taux d'intérêt excessif (usure) est puni de 2 mois à 2 ans d'emprisonnement et d'une amende. Le taux d'intérêt maximum légal est fixé par la BCEAO. Le prêteur usuraire est tenu de restituer les intérêts perçus au-delà du taux légal.",
+    articles: "Loi n°2007-14 + Réglementation BCEAO/UEMOA", referTo: "Tribunal d'Instance / BCEAO" },
+
+  // ═══ PROCURATION ET TUTELLE ═══
+  { keywords: ["tutelle", "curatelle", "procuration", "incapable majeur", "personne âgée"],
+    question: "Comment mettre une personne sous tutelle au Niger ?",
+    answer: "La mise sous tutelle est prononcée par le juge des tutelles (Tribunal d'Instance) pour les personnes atteintes d'une altération de leurs facultés. La demande peut être faite par la famille, le Procureur ou un médecin. Le tuteur gère les biens et représente la personne.",
+    articles: "Code Civil Niger (Titre X : Tutelle)", referTo: "Tribunal d'Instance / Juge des Tutelles" },
+
+  // ═══ NUMÉROS UTILES ═══
+  { keywords: ["numéro urgence", "téléphone", "appeler police", "numéro utile"],
+    question: "Quels sont les numéros d'urgence au Niger ?",
+    answer: "• Police Secours : 17\n• Gendarmerie : 20 72 23 41\n• Sapeurs-Pompiers : 18\n• SAMU : 15\n• Protection Civile : 20 73 28 49\n• HALCIA (anti-corruption) : 20 72 29 00\n• SOS Femmes : 08 00 11 33\n• Croix-Rouge Niger : 20 73 31 64",
+    articles: "Annuaire des services d'urgence du Niger", referTo: "Selon la nature de l'urgence (voir numéros ci-dessus)" },
+
+  // ═══ E-JUSTICE NIGER ═══
+  { keywords: ["e-justice", "application", "comment utiliser", "aide application"],
+    question: "Comment utiliser l'application e-Justice Niger ?",
+    answer: "L'application e-Justice permet de : 1) Déposer une plainte en ligne. 2) Suivre l'avancement de votre dossier avec un code de suivi. 3) Vérifier l'authenticité d'un acte judiciaire (QR Code). 4) Consulter vos droits via cet assistant juridique. 5) Recevoir des notifications sur votre dossier.",
+    articles: "Système d'Information Judiciaire du Niger", referTo: "Support technique : mamanejaffar456@gmail.com" },
+
+  { keywords: ["code suivi", "numéro dossier", "plt", "tracking"],
+    question: "Comment retrouver mon code de suivi ?",
+    answer: "Votre code de suivi (format PLT-AAAA-XXXXXX) vous est communiqué lors du dépôt de votre plainte. Il figure sur le récépissé (PDF) et dans l'email de confirmation. Si vous l'avez perdu, rendez-vous au commissariat avec votre pièce d'identité pour le récupérer.",
+    articles: "Système e-Justice Niger", referTo: "Commissariat d'origine / Application e-Justice" },
+
   // ═══ ORIENTATION GÉNÉRALE ═══
   { keywords: ["commissariat", "où aller", "qui contacter", "urgence"],
     question: "Où se référer en cas de problème juridique ?",
