@@ -143,6 +143,182 @@ export const LEGAL_KB: LegalEntry[] = [
     answer: "Le harcèlement est puni de 1 à 3 ans d'emprisonnement. Conservez les preuves (messages, témoignages). Déposez plainte au commissariat. Le harcèlement sexuel par un supérieur hiérarchique est une circonstance aggravante.",
     articles: "Art. 281 Code Pénal Niger", referTo: "Commissariat / Inspection du Travail / Tribunal" },
 
+  // ═══ FAUX ET USAGE DE FAUX ═══
+  { keywords: ["faux", "usage de faux", "falsification", "faux document"],
+    question: "Quelles sont les peines pour faux et usage de faux ?",
+    answer: "La fabrication de faux documents est punie de 5 à 10 ans d'emprisonnement. L'usage de faux documents (utilisation en connaissance de cause) est puni des mêmes peines. En matière de faux en écriture publique (actes notariés, jugements), la peine peut aller jusqu'à 20 ans.",
+    articles: "Art. 149-156 Code Pénal Niger", referTo: "Commissariat / Tribunal de Grande Instance" },
+
+  { keywords: ["fausse identité", "usurpation identité", "faux papier"],
+    question: "Quelles sont les peines pour usurpation d'identité ?",
+    answer: "L'usurpation d'identité est punie de 1 à 5 ans d'emprisonnement. Si elle est commise via des moyens numériques (réseaux sociaux, email), la Loi sur la Cybercriminalité s'applique également avec des peines plus lourdes.",
+    articles: "Art. 156 Code Pénal + Loi n°2019-33", referTo: "Commissariat / Division Cybercriminalité" },
+
+  // ═══ INFRACTIONS ROUTIÈRES ═══
+  { keywords: ["accident", "accident route", "accident circulation", "blessé route"],
+    question: "Que faire en cas d'accident de la route ?",
+    answer: "1) Sécurisez les lieux et appelez les secours. 2) Ne déplacez pas les véhicules avant l'arrivée de la police. 3) Prenez des photos et relevez les témoins. 4) Le constat doit être établi par un OPJ. L'homicide involontaire par accident est puni de 1 à 5 ans.",
+    articles: "Art. 244-248 Code Pénal Niger", referTo: "Police / Gendarmerie / Hôpital" },
+
+  { keywords: ["conduite ivresse", "alcool volant", "conduite dangereuse"],
+    question: "Quelles sont les peines pour conduite en état d'ivresse ?",
+    answer: "La conduite en état d'ivresse est punie de 1 mois à 1 an d'emprisonnement et d'une amende. En cas d'accident corporel : 2 à 5 ans. En cas d'homicide involontaire : 5 à 10 ans. Le permis peut être suspendu ou annulé.",
+    articles: "Art. 244-248 Code Pénal + Code de la Route Niger", referTo: "Police / Gendarmerie / Tribunal de Police" },
+
+  // ═══ INFRACTIONS CONTRE LA FAMILLE ═══
+  { keywords: ["abandon famille", "pension alimentaire", "non paiement pension"],
+    question: "Quelles sont les peines pour abandon de famille ?",
+    answer: "L'abandon de famille (non-paiement de pension alimentaire pendant plus de 2 mois) est puni de 1 à 3 ans d'emprisonnement et d'une amende. La victime peut saisir directement le tribunal par citation directe.",
+    articles: "Art. 269-271 Code Pénal Niger", referTo: "Tribunal de Grande Instance / Avocat" },
+
+  { keywords: ["bigamie", "deux mariages", "polygamie illégale"],
+    question: "La bigamie est-elle punie au Niger ?",
+    answer: "Le Niger autorise la polygamie (jusqu'à 4 épouses) conformément au droit musulman, à condition que le mariage soit déclaré. La bigamie (mariage sans déclaration) peut être sanctionnée. Le consentement de la première épouse est recommandé mais non obligatoire.",
+    articles: "Loi n°62-11 + Coutume et droit islamique", referTo: "Tribunal d'Instance / Mairie" },
+
+  { keywords: ["mariage forcé", "mariage précoce", "mariage mineur"],
+    question: "Le mariage forcé est-il interdit au Niger ?",
+    answer: "Le mariage forcé est interdit. L'âge minimum légal est de 15 ans pour les filles et 18 ans pour les garçons (avec dérogation du juge). Tout mariage sans consentement libre est nul. Le mariage d'une mineure de moins de 15 ans est puni de 1 à 3 ans.",
+    articles: "Code Civil Niger + Loi n°2014-72", referTo: "Tribunal d'Instance / Protection de l'Enfance" },
+
+  { keywords: ["divorce", "comment divorcer", "procédure divorce"],
+    question: "Comment obtenir un divorce au Niger ?",
+    answer: "Le divorce peut être demandé : 1) Par consentement mutuel (tribunal d'instance). 2) Pour faute (violence, abandon, infidélité). 3) Par répudiation (droit musulman, avec compensation). Le juge statue sur la garde des enfants et la pension alimentaire.",
+    articles: "Code Civil Niger + Droit coutumier/islamique", referTo: "Tribunal d'Instance / Tribunal de Grande Instance" },
+
+  // ═══ DROIT DU TRAVAIL ═══
+  { keywords: ["licenciement", "renvoyé travail", "licenciement abusif"],
+    question: "Que faire en cas de licenciement abusif ?",
+    answer: "Le licenciement doit être notifié par écrit avec motif. Le préavis est de 1 à 3 mois selon l'ancienneté. En cas de licenciement abusif, le salarié peut saisir l'Inspection du Travail puis le Tribunal du Travail. Les indemnités peuvent aller jusqu'à 24 mois de salaire.",
+    articles: "Code du Travail Niger (Loi n°2012-45)", referTo: "Inspection du Travail / Tribunal du Travail" },
+
+  { keywords: ["salaire impayé", "pas payé", "retard salaire"],
+    question: "Que faire si mon employeur ne me paie pas ?",
+    answer: "Le non-paiement du salaire est une infraction pénale. 1) Adressez une mise en demeure écrite à l'employeur. 2) Saisissez l'Inspection du Travail pour conciliation. 3) En cas d'échec, saisissez le Tribunal du Travail. Le SMIG au Niger est de 30 047 FCFA/mois.",
+    articles: "Art. 152-168 Code du Travail Niger", referTo: "Inspection du Travail / Tribunal du Travail" },
+
+  { keywords: ["accident travail", "blessé au travail", "maladie professionnelle"],
+    question: "Que faire en cas d'accident du travail ?",
+    answer: "1) Faites constater l'accident par un médecin sous 48h. 2) Déclarez l'accident à la CNSS (Caisse Nationale de Sécurité Sociale). 3) L'employeur doit prendre en charge les frais médicaux. 4) En cas d'invalidité, une rente est versée par la CNSS.",
+    articles: "Loi n°2003-34 (régime de sécurité sociale)", referTo: "CNSS / Inspection du Travail / Hôpital" },
+
+  // ═══ TERRORISME ET SÉCURITÉ ═══
+  { keywords: ["terrorisme", "attentat", "sécurité nationale", "boko haram"],
+    question: "Quelles sont les peines pour terrorisme au Niger ?",
+    answer: "Le terrorisme est puni de la réclusion criminelle à perpétuité. Le financement du terrorisme : 10 à 20 ans. L'apologie du terrorisme : 5 à 10 ans. La garde à vue pour terrorisme peut aller jusqu'à 15 jours (renouvelable). Les affaires sont jugées par le Pôle Judiciaire Spécialisé.",
+    articles: "Loi n°2016-22 + Loi n°2011-12 (anti-terrorisme)", referTo: "Pôle Judiciaire Spécialisé / DGSE / Gendarmerie" },
+
+  // ═══ DROIT COMMERCIAL ═══
+  { keywords: ["chèque sans provision", "chèque impayé", "chèque refusé"],
+    question: "Quelles sont les peines pour chèque sans provision ?",
+    answer: "L'émission de chèque sans provision est punie de 1 à 5 ans d'emprisonnement et d'une amende. La régularisation (paiement du montant) avant poursuites peut éteindre l'action pénale. Le bénéficiaire peut aussi engager une action civile.",
+    articles: "Acte Uniforme OHADA (Art. 60-65)", referTo: "Tribunal de Commerce / Banque" },
+
+  { keywords: ["dette", "créancier", "recouvrement", "argent prêté"],
+    question: "Comment récupérer une dette au Niger ?",
+    answer: "1) Mise en demeure par huissier (sommation de payer). 2) Si pas de réponse sous 30 jours : saisir le tribunal. 3) Le juge peut ordonner une injonction de payer. 4) L'huissier procède à la saisie des biens si nécessaire. Conservez toute preuve (reconnaissance de dette, messages).",
+    articles: "Acte Uniforme OHADA (recouvrement)", referTo: "Huissier de Justice / Tribunal de Commerce" },
+
+  // ═══ DÉTENTION ET PRISON ═══
+  { keywords: ["condition détention", "traitement prison", "droit détenu prison"],
+    question: "Quels sont les droits d'un détenu en prison ?",
+    answer: "Le détenu a droit : 1) À la dignité et l'intégrité physique. 2) À l'alimentation et aux soins médicaux. 3) Aux visites familiales. 4) À la correspondance. 5) À l'exercice religieux. 6) À la formation professionnelle. Les traitements inhumains sont interdits et punissables.",
+    articles: "Loi n°2017-05 (régime pénitentiaire Niger)", referTo: "Direction de l'Administration Pénitentiaire / CNDH" },
+
+  { keywords: ["transfert prison", "changer prison", "rapprochement familial"],
+    question: "Comment demander un transfert de prison ?",
+    answer: "Le transfert peut être demandé par le détenu, sa famille ou son avocat au Directeur de l'Administration Pénitentiaire. Motifs acceptés : rapprochement familial, raisons médicales, surpopulation, sécurité. Le transfert est ordonné par le Garde des Sceaux.",
+    articles: "Loi n°2017-05 (Art. 45-50)", referTo: "Direction de l'Administration Pénitentiaire / Avocat" },
+
+  { keywords: ["grâce présidentielle", "amnistie", "réduction peine"],
+    question: "Comment obtenir une grâce ou réduction de peine ?",
+    answer: "La grâce présidentielle est accordée par le Président de la République sur proposition du Ministre de la Justice. La réduction de peine est accordée pour bonne conduite (1 à 3 mois par année de détention). L'amnistie est votée par l'Assemblée Nationale et efface la condamnation.",
+    articles: "Constitution du Niger (Art. 79) + Code Pénal", referTo: "Ministère de la Justice / Direction des Grâces" },
+
+  // ═══ ENVIRONNEMENT ═══
+  { keywords: ["environnement", "pollution", "déforestation", "braconnage"],
+    question: "Quelles sont les infractions environnementales au Niger ?",
+    answer: "Le braconnage d'espèces protégées : 1 à 5 ans + amende. La coupe abusive de bois : amende + confiscation. La pollution des eaux : 2 à 5 ans. Le trafic de faune sauvage : 1 à 5 ans. Les infractions sont constatées par les agents des Eaux et Forêts.",
+    articles: "Loi n°98-07 (régime de la faune) + Code de l'Environnement", referTo: "Direction des Eaux et Forêts / Tribunal" },
+
+  // ═══ PROPRIÉTÉ INTELLECTUELLE ═══
+  { keywords: ["contrefaçon", "copie", "marque", "propriété intellectuelle"],
+    question: "Quelles sont les peines pour contrefaçon ?",
+    answer: "La contrefaçon de marques et brevets est punie de 1 à 3 ans d'emprisonnement et d'une amende. La saisie et destruction des produits contrefaits est ordonnée. Le Niger est membre de l'OAPI (Organisation Africaine de la Propriété Intellectuelle).",
+    articles: "Accord de Bangui (OAPI) + Code Pénal", referTo: "OAPI / Tribunal de Commerce" },
+
+  // ═══ NATIONALITÉ ET IMMIGRATION ═══
+  { keywords: ["nationalité", "devenir nigérien", "naturalisation"],
+    question: "Comment obtenir la nationalité nigérienne ?",
+    answer: "La nationalité nigérienne s'acquiert : 1) Par naissance (père ou mère nigérien). 2) Par naturalisation (10 ans de résidence + bonne moralité). 3) Par mariage (après 5 ans de mariage avec un nigérien). La demande se fait auprès du Ministère de la Justice.",
+    articles: "Code de la Nationalité Niger (Ordonnance n°84-33)", referTo: "Ministère de la Justice / Tribunal de Grande Instance" },
+
+  { keywords: ["expulsion", "étranger", "séjour irrégulier", "sans papier"],
+    question: "Quelles sont les règles sur l'immigration au Niger ?",
+    answer: "Le séjour irrégulier est puni d'une amende et de l'expulsion. La carte de séjour est obligatoire pour les étrangers résidant plus de 3 mois. L'aide à l'immigration clandestine est punie de 5 à 10 ans. Les réfugiés ont un statut protégé par la convention de Genève.",
+    articles: "Ordonnance n°81-40 + Loi n°2015-36 (trafic de migrants)", referTo: "Direction de la Surveillance du Territoire / HCR" },
+
+  // ═══ MÉDIATION ET CONCILIATION ═══
+  { keywords: ["médiation", "conciliation", "régler à l'amiable", "arrangement"],
+    question: "Peut-on régler un litige à l'amiable au Niger ?",
+    answer: "Oui, la médiation est encouragée avant toute action judiciaire. Les modes de règlement : 1) Chef de quartier/village (litiges de voisinage). 2) Commission de conciliation au tribunal. 3) Médiateur agréé (litiges commerciaux). 4) Arbitrage OHADA (litiges d'affaires). La conciliation est gratuite au tribunal.",
+    articles: "Code de Procédure Civile Niger + Acte Uniforme OHADA", referTo: "Chef de quartier / Tribunal d'Instance / Médiateur agréé" },
+
+  // ═══ PRESSE ET LIBERTÉ D'EXPRESSION ═══
+  { keywords: ["diffamation", "injure", "calomnie", "presse"],
+    question: "Quelles sont les peines pour diffamation ?",
+    answer: "La diffamation publique est punie de 3 mois à 1 an d'emprisonnement et d'une amende. L'injure : 1 à 6 mois. La diffamation par voie de presse est encadrée par la loi sur la liberté de la presse. La plainte doit être déposée dans les 3 mois suivant la publication.",
+    articles: "Loi n°2010-24 (liberté de la presse) + Art. 263 Code Pénal", referTo: "Commissariat / CSC (Conseil Supérieur de la Communication)" },
+
+  // ═══ DROIT ÉLECTORAL ═══
+  { keywords: ["élection", "fraude électorale", "vote", "carte électeur"],
+    question: "Quelles sont les infractions électorales au Niger ?",
+    answer: "La fraude électorale est punie de 1 à 5 ans d'emprisonnement. Cela inclut : le bourrage d'urnes, l'achat de voix, la falsification de résultats, l'empêchement de voter. Le contentieux électoral relève de la Cour Constitutionnelle.",
+    articles: "Code Électoral Niger (Loi n°2019-38)", referTo: "CENI / Cour Constitutionnelle" },
+
+  // ═══ DOUANE ═══
+  { keywords: ["douane", "contrebande", "fraude douanière", "importation"],
+    question: "Quelles sont les peines pour contrebande ?",
+    answer: "La contrebande (importation/exportation sans déclaration) est punie de 1 à 5 ans et d'une amende de 3 à 10 fois la valeur des marchandises. Les marchandises sont confisquées. Les agents des douanes peuvent procéder à des saisies et des arrestations.",
+    articles: "Code des Douanes Niger + Tarif Extérieur Commun CEDEAO", referTo: "Direction Générale des Douanes / Tribunal" },
+
+  // ═══ SANTÉ PUBLIQUE ═══
+  { keywords: ["exercice illégal médecine", "faux médecin", "charlatanisme"],
+    question: "Quelles sont les peines pour exercice illégal de la médecine ?",
+    answer: "L'exercice illégal de la médecine est puni de 6 mois à 3 ans d'emprisonnement et d'une amende. Cela inclut les guérisseurs qui se font passer pour des médecins et prescrivent des médicaments. La vente de faux médicaments est punie de 5 à 10 ans.",
+    articles: "Loi n°98-016 (Code de la Santé Publique)", referTo: "Ordre des Médecins / Tribunal / Direction de la Pharmacie" },
+
+  // ═══ PROCÉDURES SPÉCIALES ═══
+  { keywords: ["flagrant délit", "pris sur le fait", "flagrance"],
+    question: "Qu'est-ce que le flagrant délit ?",
+    answer: "Il y a flagrant délit quand l'infraction se commet ou vient de se commettre. En flagrance, l'OPJ dispose de pouvoirs étendus : perquisition sans mandat (même de nuit), garde à vue immédiate, saisie des preuves. Le Procureur est immédiatement informé.",
+    articles: "Art. 41-68 CPP Niger", referTo: "Commissariat / Procureur de la République" },
+
+  { keywords: ["prescription", "délai plainte", "trop tard plainte"],
+    question: "Quel est le délai pour porter plainte ?",
+    answer: "Les délais de prescription sont : Contravention : 1 an. Délit : 3 ans. Crime : 10 ans. Le délai court à partir du jour de la commission de l'infraction. Pour les crimes contre des mineurs, le délai ne court qu'à partir de la majorité de la victime.",
+    articles: "Art. 7-9 CPP Niger", referTo: "Commissariat / Procureur de la République" },
+
+  { keywords: ["casier judiciaire", "bulletin n°3", "extrait casier"],
+    question: "Comment obtenir un extrait de casier judiciaire ?",
+    answer: "Le bulletin n°3 (extrait destiné au demandeur) est délivré par le greffe du tribunal du lieu de naissance. Pièces requises : acte de naissance + pièce d'identité + timbre fiscal. Délai : 3 à 7 jours. Pour les personnes nées à l'étranger, s'adresser au Tribunal de Grande Instance de Niamey.",
+    articles: "Art. 341-350 CPP Niger", referTo: "Greffe du Tribunal du lieu de naissance" },
+
+  { keywords: ["témoin", "témoignage", "obligation témoigner"],
+    question: "Est-on obligé de témoigner en justice ?",
+    answer: "Oui, toute personne convoquée comme témoin est tenue de comparaître sous peine d'amende. Le faux témoignage est puni de 2 à 5 ans d'emprisonnement. Les exceptions : le conjoint, les ascendants et descendants du prévenu ne sont pas tenus de témoigner.",
+    articles: "Art. 90-95 CPP Niger + Art. 160-165 Code Pénal", referTo: "Tribunal / Juge d'Instruction" },
+
+  { keywords: ["récidive", "deuxième infraction", "récidiviste"],
+    question: "Quelles sont les conséquences de la récidive ?",
+    answer: "En cas de récidive, le maximum de la peine est doublé. Pour les contraventions : la récidive entraîne l'emprisonnement. Pour les délits : le maximum est doublé. Pour les crimes : la réclusion à perpétuité peut être prononcée.",
+    articles: "Art. 58-62 Code Pénal Niger", referTo: "Tribunal / Avocat" },
+
+  { keywords: ["sursis", "peine avec sursis", "sursis probatoire"],
+    question: "Qu'est-ce qu'une peine avec sursis ?",
+    answer: "Le sursis simple suspend l'exécution de la peine pendant 5 ans. Si le condamné ne commet pas de nouvelle infraction durant cette période, la peine est réputée non avenue. Le sursis avec mise à l'épreuve impose des obligations (travail, soins, pointage). Le sursis n'est possible que pour les peines de moins de 5 ans.",
+    articles: "Art. 63-68 Code Pénal Niger", referTo: "Tribunal / Juge d'Application des Peines" },
+
   // ═══ ORIENTATION GÉNÉRALE ═══
   { keywords: ["commissariat", "où aller", "qui contacter", "urgence"],
     question: "Où se référer en cas de problème juridique ?",
@@ -179,5 +355,9 @@ export const SUGGESTED_QUESTIONS = [
   "Quelles sont les peines pour vol ?",
   "Que faire en cas de violence conjugale ?",
   "Comment obtenir un avocat gratuit ?",
+  "Quel est le délai pour porter plainte ?",
+  "Comment obtenir un casier judiciaire ?",
+  "Que faire en cas d'accident de la route ?",
+  "Comment régler un litige foncier ?",
   "Où se référer en cas de problème ?",
 ];
