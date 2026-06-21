@@ -82,14 +82,28 @@ export const getDashboardStats = async (_req: Request, res: Response) => {
 
 export const getSystemHealth = async (_req: Request, res: Response) => {
   try {
+    const start = Date.now();
     await sequelize.authenticate();
+    const latency = Date.now() - start;
+
+    const [usersCount] = await sequelize.query("SELECT COUNT(*)::int as c FROM users", { type: "SELECT" }).catch(() => [{ c: 0 }]) as any;
+    const [complaintsCount] = await sequelize.query('SELECT COUNT(*)::int as c FROM "Complaints"', { type: "SELECT" }).catch(() => [{ c: 0 }]) as any;
+    const [tablesCount] = await sequelize.query("SELECT COUNT(*)::int as c FROM information_schema.tables WHERE table_schema='public'", { type: "SELECT" }).catch(() => [{ c: 0 }]) as any;
+
     return res.status(200).json({
       success: true,
       data: {
         status:    "healthy",
         database:  "connected",
+        latency,
         uptime:    process.uptime(),
         memory:    process.memoryUsage(),
+        nodeVersion: process.version,
+        dbStats: {
+          users: usersCount?.c || 0,
+          complaints: complaintsCount?.c || 0,
+          tables: tablesCount?.c || 0,
+        },
         timestamp: new Date().toISOString(),
       },
     });

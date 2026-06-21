@@ -16,6 +16,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 // Architecture
 import ScreenContainer from "../../components/layout/ScreenContainer";
 import AppHeader from "../../components/layout/AppHeader";
+import SmartFooter from "../../components/layout/SmartFooter";
 import { useAppTheme } from "../../theme/AppThemeProvider";
 
 // SERVICES API
@@ -178,12 +179,25 @@ export default function AdminMaintenanceScreen() {
           />
 
           {/* MÉMOIRE SYSTÈME */}
-          <StatusCard 
-            label="Mémoire (RSS)" 
-            value={health?.memory ? `${Math.round(health.memory.rss / 1024 / 1024)} MB` : "--"} 
-            status="info" colors={colors} icon="hardware-chip-outline" 
+          <StatusCard
+            label="Mémoire (RSS)"
+            value={health?.memory ? `${Math.round(health.memory.rss / 1024 / 1024)} MB` : "--"}
+            status="info" colors={colors} icon="hardware-chip-outline"
           />
         </View>
+
+        {/* INFOS BASE DE DONNÉES */}
+        {health?.dbStats && (
+          <>
+            <Text style={[styles.sectionTitle, { color: colors.textSub, marginTop: 25 }]}>BASE DE DONNÉES</Text>
+            <View style={styles.grid}>
+              <StatusCard label="Utilisateurs" value={String(health.dbStats.users || 0)} status="info" colors={colors} icon="people-outline" />
+              <StatusCard label="Plaintes" value={String(health.dbStats.complaints || 0)} status="info" colors={colors} icon="document-text-outline" />
+              <StatusCard label="Tables" value={String(health.dbStats.tables || 0)} status="ok" colors={colors} icon="grid-outline" />
+              <StatusCard label="Uptime" value={health.uptime ? `${Math.round(health.uptime / 60)}min` : "--"} status="ok" colors={colors} icon="time-outline" />
+            </View>
+          </>
+        )}
 
         <Text style={[styles.sectionTitle, { color: colors.textSub, marginTop: 25 }]}>CONTRÔLE DU SYSTÈME</Text>
         <Surface style={[styles.card, { backgroundColor: colors.bgCard }]} elevation={1}>
@@ -244,8 +258,9 @@ export default function AdminMaintenanceScreen() {
             )}
         </View>
 
-        <View style={{ height: 40 }} />
+        <View style={{ height: 120 }} />
       </ScrollView>
+      <SmartFooter />
     </ScreenContainer>
   );
 }
