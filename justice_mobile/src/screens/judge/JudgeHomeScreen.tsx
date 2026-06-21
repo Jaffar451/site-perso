@@ -17,6 +17,7 @@ import { getAllHearings } from "../../services/hearing.service";
 import ScreenContainer from "../../components/layout/ScreenContainer";
 import AppHeader from "../../components/layout/AppHeader";
 import SmartFooter from "../../components/layout/SmartFooter";
+import ChatbotFAB from "../../components/ui/ChatbotFAB";
 
 // ✅ Code Pénal Niger — données intégrées (pas besoin de navigation externe)
 // Sinon on affiche les catégories directement
@@ -193,6 +194,7 @@ export default function JudgeHomeScreen({ navigation }: JudgeScreenProps<'JudgeH
         <View style={{ height: 140 }} />
       </ScrollView>
 
+      <ChatbotFAB />
       <SmartFooter />
     </ScreenContainer>
   );

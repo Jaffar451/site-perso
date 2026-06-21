@@ -29,6 +29,7 @@ import { getAdminStats } from "../../services/admin.service";
 // ✅ COMPOSANTS UI
 import AppHeader from "../../components/layout/AppHeader";
 import SmartFooter from "../../components/layout/SmartFooter";
+import ChatbotFAB from "../../components/ui/ChatbotFAB";
 import ScreenContainer from "../../components/layout/ScreenContainer";
 
 // --- COMPOSANT HORLOGE ---
@@ -196,6 +197,7 @@ export default function AdminHomeScreen({ navigation }: AdminScreenProps<'AdminH
         <View style={{ height: 120 }} />
       </ScrollView>
 
+      <ChatbotFAB />
       <SmartFooter />
     </ScreenContainer>
   );

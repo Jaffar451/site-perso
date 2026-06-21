@@ -21,6 +21,7 @@ import { CitizenScreenProps } from "../../types/navigation";
 import ScreenContainer from "../../components/layout/ScreenContainer";
 import AppHeader from "../../components/layout/AppHeader";
 import SmartFooter from "../../components/layout/SmartFooter";
+import ChatbotFAB from "../../components/ui/ChatbotFAB";
 
 // 📐 Calcul précis des dimensions pour la grille
 const { width } = Dimensions.get("window");
@@ -205,6 +206,7 @@ export default function CitizenHomeScreen({ navigation }: CitizenScreenProps<'Ci
         <View style={{ height: 120 }} />
       </ScrollView>
 
+      <ChatbotFAB />
       <SmartFooter />
     </ScreenContainer>
   );

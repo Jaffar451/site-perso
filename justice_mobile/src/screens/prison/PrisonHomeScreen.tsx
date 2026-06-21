@@ -13,6 +13,7 @@ import { useAppTheme } from "../../theme/AppThemeProvider";
 import ScreenContainer from "../../components/layout/ScreenContainer";
 import AppHeader from "../../components/layout/AppHeader";
 import SmartFooter from "../../components/layout/SmartFooter";
+import ChatbotFAB from "../../components/ui/ChatbotFAB";
 import api from "../../services/api";
 
 export default function PrisonHomeScreen({ navigation }: any) {
@@ -115,6 +116,7 @@ export default function PrisonHomeScreen({ navigation }: any) {
 
         <View style={{ height: 120 }} />
       </ScrollView>
+      <ChatbotFAB />
       <SmartFooter />
     </ScreenContainer>
   );

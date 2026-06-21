@@ -24,6 +24,7 @@ import { ClerkScreenProps } from "../../types/navigation";
 import ScreenContainer from "../../components/layout/ScreenContainer";
 import AppHeader from "../../components/layout/AppHeader";
 import SmartFooter from "../../components/layout/SmartFooter";
+import ChatbotFAB from "../../components/ui/ChatbotFAB";
 import { getAllComplaints } from "../../services/complaint.service";
 import { getAllHearings } from "../../services/hearing.service";
 
@@ -172,6 +173,7 @@ export default function ClerkHomeScreen({ navigation }: ClerkScreenProps<'ClerkH
         <View style={{ height: 140 }} />
       </ScrollView>
 
+      <ChatbotFAB />
       <SmartFooter />
     </ScreenContainer>
   );

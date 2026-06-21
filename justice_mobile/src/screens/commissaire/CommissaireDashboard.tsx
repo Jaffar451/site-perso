@@ -24,6 +24,7 @@ import { CommissaireScreenProps } from "../../types/navigation";
 import ScreenContainer from '../../components/layout/ScreenContainer';
 import AppHeader from '../../components/layout/AppHeader';
 import SmartFooter from '../../components/layout/SmartFooter';
+import ChatbotFAB from "../../components/ui/ChatbotFAB";
 
 const { width } = Dimensions.get("window");
 const gap = 12;
@@ -205,6 +206,7 @@ export default function CommissaireDashboard({ navigation }: CommissaireScreenPr
 
         <View style={{ height: 140 }} />
       </ScrollView>
+      <ChatbotFAB />
       <SmartFooter />
     </ScreenContainer>
   );

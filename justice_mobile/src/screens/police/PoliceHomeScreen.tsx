@@ -16,6 +16,7 @@ import { PoliceScreenProps } from "../../types/navigation";
 import ScreenContainer from "../../components/layout/ScreenContainer";
 import AppHeader from "../../components/layout/AppHeader";
 import SmartFooter from "../../components/layout/SmartFooter";
+import ChatbotFAB from "../../components/ui/ChatbotFAB";
 
 // ✅ Services
 import { getAllComplaints } from "../../services/complaint.service";
@@ -205,6 +206,7 @@ export default function PoliceHomeScreen({ navigation }: PoliceScreenProps<'Poli
         <View style={{ height: 120 }} /> 
       </ScrollView>
 
+      <ChatbotFAB />
       <SmartFooter />
     </ScreenContainer>
   );
