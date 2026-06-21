@@ -1,6 +1,6 @@
 import cron from "node-cron";
 import { Op, fn, col, literal } from "sequelize";
-import { Prison, AuditLog, Complaint, PoliceStation } from "../../models";
+import { Prison, AuditLog, Complaint, PoliceStation, User } from "../../models";
 import { sequelize } from "../../config/database";
 import { ExportService } from "./export.service";
 import { NotificationService } from "./notification.service";
@@ -57,11 +57,12 @@ export class SchedulerService {
     }
   }
 
-  private static async sendWeeklyComplaintReport() {
+  public static async sendWeeklyComplaintReport() {
     try {
       const dateFrom = new Date();
       dateFrom.setDate(dateFrom.getDate() - 7);
 
+      // 1. PLAINTES PAR COMMISSARIAT
       const byStation = await Complaint.findAll({
         attributes: [
           "policeStationId",
@@ -85,34 +86,85 @@ export class SchedulerService {
         raw: false,
       });
 
-      const report = byStation.map((c: any) => ({
-        Commissariat: c.originStation?.name || "Inconnu",
-        Ville: c.originStation?.city || "-",
-        Quartier: c.originStation?.district || "-",
-        Type: c.originStation?.type || "-",
-        Total: parseInt(c.getDataValue("total")) || 0,
-        Soumises: parseInt(c.getDataValue("soumises")) || 0,
-        "En cours": parseInt(c.getDataValue("enCours")) || 0,
-        Traitées: parseInt(c.getDataValue("traitees")) || 0,
-        Classées: parseInt(c.getDataValue("classees")) || 0,
+      const stationData = byStation.map((c: any) => ({
+        commissariat: c.originStation?.name || "Inconnu",
+        ville: c.originStation?.city || "-",
+        quartier: c.originStation?.district || "-",
+        type: c.originStation?.type || "-",
+        total: parseInt(c.getDataValue("total")) || 0,
+        soumises: parseInt(c.getDataValue("soumises")) || 0,
+        enCours: parseInt(c.getDataValue("enCours")) || 0,
+        traitees: parseInt(c.getDataValue("traitees")) || 0,
+        classees: parseInt(c.getDataValue("classees")) || 0,
       }));
 
-      const excelBuffer = await exportService.generatePrisonExcel(report);
-      const recipients = process.env.REPORT_RECIPIENTS?.split(",") || ["cabinet@justice.ne"];
+      // 2. PERFORMANCES AGENTS OPJ
+      const agents = await User.findAll({
+        where: { role: { [Op.in]: ["officier_police", "inspecteur", "commissaire"] } },
+        attributes: ["id", "firstname", "lastname", "matricule", "policeStationId"],
+        include: [{ model: PoliceStation, as: "station", attributes: ["name"] }],
+      });
+
+      const agentData = [];
+      for (const agent of agents) {
+        const a = agent as any;
+        const traites = await Complaint.count({
+          where: {
+            assignedOpjId: a.id,
+            createdAt: { [Op.gte]: dateFrom },
+            status: { [Op.in]: ["transmise_parquet", "saisi_juge", "instruction", "audience_programmée", "jugée"] },
+          },
+        }).catch(() => 0);
+        const enCours = await Complaint.count({
+          where: {
+            assignedOpjId: a.id,
+            createdAt: { [Op.gte]: dateFrom },
+            status: { [Op.in]: ["soumise", "en_cours_OPJ", "attente_validation"] },
+          },
+        }).catch(() => 0);
+
+        agentData.push({
+          agent: `${(a.lastname || "").toUpperCase()} ${a.firstname || ""}`,
+          matricule: a.matricule || "-",
+          commissariat: a.station?.name || "-",
+          traites,
+          enCours,
+        });
+      }
+
+      // 3. RÉSUMÉ GLOBAL
+      const totalWeek = stationData.reduce((s, d) => s + d.total, 0);
+      const totalTraitees = stationData.reduce((s, d) => s + d.traitees, 0);
+      const totalEnCours = stationData.reduce((s, d) => s + d.enCours, 0);
+      const totalClassees = stationData.reduce((s, d) => s + d.classees, 0);
+
+      // 4. GÉNÉRATION EXCEL 3 ONGLETS
+      const excelBuffer = await exportService.generateWeeklyReport(
+        stationData,
+        agentData,
+        { totalWeek, traitees: totalTraitees, enCours: totalEnCours, classees: totalClassees }
+      );
+
+      const recipients = process.env.REPORT_RECIPIENTS?.split(",") || [process.env.SMTP_USER || "cabinet@justice.ne"];
+      const weekNum = Math.ceil(new Date().getDate() / 7);
 
       for (const email of recipients) {
         await notificationService.sendMailWithAttachment(
-          email,
-          "📋 RAPPORT HEBDO : Plaintes par commissariat/quartier",
-          `Rapport du ${new Date().toLocaleDateString("fr-FR")} — ${report.length} commissariats actifs cette semaine.`,
-          `Plaintes_Commissariats_${new Date().toISOString().split("T")[0]}.xlsx`,
-          excelBuffer as any,
+          email.trim(),
+          `📊 RAPPORT HEBDOMADAIRE S${weekNum} — Performances Commissariats & Agents`,
+          `Rapport de la semaine ${weekNum} (${new Date().toLocaleDateString("fr-FR")}).\n\n` +
+          `• ${stationData.length} commissariats actifs\n` +
+          `• ${agentData.length} agents OPJ\n` +
+          `• ${totalWeek} plaintes cette semaine\n` +
+          `• Taux d'élucidation : ${totalWeek > 0 ? Math.round((totalTraitees / totalWeek) * 100) : 0}%`,
+          `Rapport_Hebdo_S${weekNum}_${new Date().toISOString().split("T")[0]}.xlsx`,
+          excelBuffer,
         );
       }
 
-      console.log(`✅ [CRON] Rapport plaintes envoyé (${report.length} commissariats).`);
+      console.log(`✅ [CRON] Rapport hebdo envoyé — ${stationData.length} commissariats, ${agentData.length} agents.`);
     } catch (error: any) {
-      console.error("❌ [CRON] Erreur rapport plaintes:", error.message);
+      console.error("❌ [CRON] Erreur rapport hebdo:", error.message);
     }
   }
 

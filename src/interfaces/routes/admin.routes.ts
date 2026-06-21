@@ -14,6 +14,17 @@ router.get("/audit-logs", ListAuditLogs);
 // 📊 Stats Dashboard
 router.get("/dashboard-stats", AdminController.getDashboardStats);
 
+// 📧 Déclencher le rapport hebdomadaire manuellement
+router.post("/trigger-weekly-report", async (_req, res) => {
+  try {
+    const { SchedulerService } = require("../../application/services/scheduler.service");
+    await (SchedulerService as any).sendWeeklyComplaintReport();
+    res.json({ success: true, message: "Rapport hebdomadaire envoyé" });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // 🏥 Santé du Système
 router.get("/system-health", AdminController.getSystemHealth);
 
