@@ -56,10 +56,6 @@ export const getArrestWarrants = async (req: Request, res: Response) => {
   try {
     // On récupère les mandats en incluant les infos de l'affaire et du juge
     const warrants = await ArrestWarrant.findAll({
-      include: [
-        { model: CaseModel, as: 'case', attributes: ['id', 'title', 'trackingCode'] },
-        { model: User, as: 'judge', attributes: ['id', 'firstname', 'lastname'] }
-      ],
       order: [['createdAt', 'DESC']]
     });
 
@@ -81,10 +77,6 @@ export const getActiveWarrants = async (_req: Request, res: Response) => {
   try {
     const warrants = await ArrestWarrant.findAll({
       where: { executed: false },
-      include: [
-        { model: CaseModel, as: 'case', attributes: ['id', 'title'] },
-        { model: User, as: 'judge', attributes: ['id', 'firstname', 'lastname'] }
-      ],
       order: [['createdAt', 'DESC']]
     });
     return res.json({ success: true, data: warrants });
