@@ -29,7 +29,7 @@ export default function PoliceCustodyExtensionScreen({ route, navigation }: Poli
   const { complaintId, suspectName = "Individu gardé à vue" } = route.params;
 
   const [reason, setReason] = useState("");
-  const [duration, setDuration] = useState("24");
+  const [duration, setDuration] = useState("48");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Palette de couleurs dynamique
