@@ -209,6 +209,14 @@ export default function CommissaireGAVSupervisionScreen({ navigation }: PoliceSc
           </View>
         </View>
 
+        {/* RÉFÉRENCE LÉGALE */}
+        <View style={{ flexDirection: 'row', padding: 12, borderRadius: 12, borderLeftWidth: 4, borderLeftColor: primaryColor, marginBottom: 16, gap: 10, alignItems: 'center', backgroundColor: isDark ? '#1a1a2e' : '#EFF6FF', borderWidth: 1, borderColor: isDark ? '#1E40AF' : '#BFDBFE', marginHorizontal: 16 }}>
+          <Ionicons name="book-outline" size={18} color={isDark ? '#93C5FD' : '#1E40AF'} />
+          <Text style={{ flex: 1, fontSize: 11, fontWeight: '600', lineHeight: 16, color: isDark ? '#93C5FD' : '#1E40AF' }}>
+            Art. 69-75 CPP Niger — Durée maximale de la GAV : 48h, renouvelable une fois sur autorisation écrite du Procureur de la République. Tout dépassement constitue une détention arbitraire.
+          </Text>
+        </View>
+
         {isLoading && !isRefetching ? (
           <View style={styles.center}>
             <ActivityIndicator size="large" color={primaryColor} />

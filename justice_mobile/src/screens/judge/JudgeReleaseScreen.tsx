@@ -129,6 +129,14 @@ export default function JudgeReleaseScreen({ route, navigation }: JudgeScreenPro
             </View>
           </View>
 
+          {/* 📚 RÉFÉRENCE LÉGALE CPP */}
+          <View style={{ flexDirection: 'row', padding: 12, borderRadius: 12, borderLeftWidth: 4, borderLeftColor: primaryColor, marginBottom: 16, gap: 10, alignItems: 'center', backgroundColor: isDark ? '#1a1a2e' : '#EFF6FF', borderWidth: 1, borderColor: isDark ? '#1E40AF' : '#BFDBFE' }}>
+            <Ionicons name="book-outline" size={18} color={isDark ? '#93C5FD' : '#1E40AF'} />
+            <Text style={{ flex: 1, fontSize: 11, fontWeight: '600', lineHeight: 16, color: isDark ? '#93C5FD' : '#1E40AF' }}>
+              Art. 142-148 CPP Niger — La mise en liberté provisoire peut être ordonnée d'office ou sur demande. Elle peut être assortie d'un contrôle judiciaire (caution, interdiction de quitter le territoire, pointage). La mise en liberté définitive met fin aux poursuites.
+            </Text>
+          </View>
+
           {/* SÉLECTION DU TYPE DE LIBÉRATION */}
           <Text style={[styles.label, { color: colors.textSub }]}>Nature de la mesure d'élargissement *</Text>
           <View style={styles.optionRow}>

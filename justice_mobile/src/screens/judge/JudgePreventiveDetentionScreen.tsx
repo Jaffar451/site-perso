@@ -144,7 +144,13 @@ export default function JudgePreventiveDetentionScreen({ route, navigation }: Ju
             </View>
           </View>
 
-          
+          {/* 📚 RÉFÉRENCE LÉGALE CPP */}
+          <View style={{ flexDirection: 'row', padding: 12, borderRadius: 12, borderLeftWidth: 4, borderLeftColor: JUDGE_ACCENT, marginBottom: 16, gap: 10, alignItems: 'center', backgroundColor: isDark ? '#1a1a2e' : '#EFF6FF', borderWidth: 1, borderColor: isDark ? '#1E40AF' : '#BFDBFE' }}>
+            <Ionicons name="book-outline" size={18} color={isDark ? '#93C5FD' : '#1E40AF'} />
+            <Text style={{ flex: 1, fontSize: 11, fontWeight: '600', lineHeight: 16, color: isDark ? '#93C5FD' : '#1E40AF' }}>
+              Art. 132-142 CPP Niger — La détention préventive est ordonnée par le Juge d'Instruction. Durée max : 6 mois en matière correctionnelle (renouvelable 1 fois), 12 mois en matière criminelle (renouvelable 2 fois). Le détenu peut demander sa mise en liberté à tout moment.
+            </Text>
+          </View>
 
           {/* SÉLECTEUR D'ÉTABLISSEMENT */}
           <Text style={[styles.label, { color: colors.textSub }]}>Lieu de détention *</Text>

@@ -114,7 +114,15 @@ export default function PoliceInterrogationScreen({ route, navigation }: PoliceS
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-            
+
+            {/* RÉFÉRENCE LÉGALE */}
+            <View style={{ flexDirection: 'row', padding: 12, borderRadius: 12, borderLeftWidth: 4, borderLeftColor: primaryColor, marginBottom: 16, gap: 10, alignItems: 'center', backgroundColor: isDark ? '#1a1a2e' : '#EFF6FF', borderWidth: 1, borderColor: isDark ? '#1E40AF' : '#BFDBFE' }}>
+              <Ionicons name="book-outline" size={18} color={isDark ? '#93C5FD' : '#1E40AF'} />
+              <Text style={{ flex: 1, fontSize: 11, fontWeight: '600', lineHeight: 16, color: isDark ? '#93C5FD' : '#1E40AF' }}>
+                Art. 71-73 CPP Niger — Le prévenu a le droit de garder le silence. Tout aveu obtenu sous la contrainte est nul. L'accès à un avocat est garanti après 24h de garde à vue.
+              </Text>
+            </View>
+
             {/* BANDEAU D'IDENTIFICATION DU PRÉVENU */}
             <View style={[styles.headerCard, { borderLeftColor: primaryColor, backgroundColor: colors.headerCard, borderColor: colors.border }]}>
               <Text style={[styles.miniLabel, { color: primaryColor }]}>PROCÈS-VERBAL D'AUDITION NUMÉRIQUE</Text>

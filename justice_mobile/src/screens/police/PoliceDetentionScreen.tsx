@@ -85,6 +85,14 @@ export default function PoliceDetentionScreen({ route, navigation }: PoliceScree
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
           <ScrollView contentContainerStyle={styles.scrollPadding} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
 
+            {/* RÉFÉRENCE LÉGALE */}
+            <View style={{ flexDirection: 'row', padding: 12, borderRadius: 12, borderLeftWidth: 4, borderLeftColor: primaryColor, marginBottom: 16, gap: 10, alignItems: 'center', backgroundColor: isDark ? '#1a1a2e' : '#EFF6FF', borderWidth: 1, borderColor: isDark ? '#1E40AF' : '#BFDBFE' }}>
+              <Ionicons name="book-outline" size={18} color={isDark ? '#93C5FD' : '#1E40AF'} />
+              <Text style={{ flex: 1, fontSize: 11, fontWeight: '600', lineHeight: 16, color: isDark ? '#93C5FD' : '#1E40AF' }}>
+                Art. 132-142 CPP Niger — La détention provisoire ne peut excéder 6 mois en matière correctionnelle, renouvelable une fois. Notification obligatoire au Procureur et au Juge d'Instruction.
+              </Text>
+            </View>
+
             {/* BANDEAU */}
             <View style={[styles.headerCard, { backgroundColor: colors.headerCard }]}>
               <View style={styles.iconCircle}>

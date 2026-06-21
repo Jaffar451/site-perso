@@ -140,7 +140,13 @@ export default function JudgeVerdictScreen({ route, navigation }: JudgeScreenPro
               <Text style={[styles.label, { color: colors.textMain }]}>Dispositif du Jugement</Text>
           </View>
 
-          
+          {/* 📚 RÉFÉRENCE LÉGALE CPP */}
+          <View style={{ flexDirection: 'row', padding: 12, borderRadius: 12, borderLeftWidth: 4, borderLeftColor: JUDGE_ACCENT, marginBottom: 16, gap: 10, alignItems: 'center', backgroundColor: isDark ? '#1a1a2e' : '#EFF6FF', borderWidth: 1, borderColor: isDark ? '#1E40AF' : '#BFDBFE' }}>
+            <Ionicons name="book-outline" size={18} color={isDark ? '#93C5FD' : '#1E40AF'} />
+            <Text style={{ flex: 1, fontSize: 11, fontWeight: '600', lineHeight: 16, color: isDark ? '#93C5FD' : '#1E40AF' }}>
+              Art. 270-290 CPP Niger — Le tribunal statue par jugement motivé. La relaxe est prononcée si les faits ne sont pas établis. Le non-lieu est prononcé s'il n'existe pas de charges suffisantes. Le condamné peut faire appel dans les 10 jours.
+            </Text>
+          </View>
 
           {/* SÉLECTEUR DE VERDICT */}
           <Text style={[styles.sectionLabel, { color: colors.textSub }]}>Sens de la Décision *</Text>

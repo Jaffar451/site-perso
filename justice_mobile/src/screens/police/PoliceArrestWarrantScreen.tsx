@@ -181,6 +181,14 @@ export default function PoliceArrestWarrantScreen({ navigation }: PoliceScreenPr
           renderItem={renderWarrantItem}
           contentContainerStyle={styles.listContent}
           refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={primaryColor} />}
+          ListHeaderComponent={
+            <View style={{ flexDirection: 'row', padding: 12, borderRadius: 12, borderLeftWidth: 4, borderLeftColor: primaryColor, marginBottom: 16, gap: 10, alignItems: 'center', backgroundColor: isDark ? '#1a1a2e' : '#EFF6FF', borderWidth: 1, borderColor: isDark ? '#1E40AF' : '#BFDBFE' }}>
+              <Ionicons name="book-outline" size={18} color={isDark ? '#93C5FD' : '#1E40AF'} />
+              <Text style={{ flex: 1, fontSize: 11, fontWeight: '600', lineHeight: 16, color: isDark ? '#93C5FD' : '#1E40AF' }}>
+                Art. 120-127 CPP Niger — L'exécution d'un mandat d'arrêt requiert la présentation du titre au prévenu. L'OPJ doit conduire la personne devant le magistrat dans les 48h.
+              </Text>
+            </View>
+          }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons name="shield-checkmark" size={70} color="#10B981" />

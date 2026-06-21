@@ -131,6 +131,14 @@ export default function PoliceSearchWarrantScreen({ navigation }: PoliceScreenPr
       </View>
 
       <View style={{ flex: 1, backgroundColor: colors.bgMain }}>
+        {/* RÉFÉRENCE LÉGALE */}
+        <View style={{ flexDirection: 'row', padding: 12, borderRadius: 12, borderLeftWidth: 4, borderLeftColor: primaryColor, marginBottom: 16, gap: 10, alignItems: 'center', backgroundColor: isDark ? '#1a1a2e' : '#EFF6FF', borderWidth: 1, borderColor: isDark ? '#1E40AF' : '#BFDBFE', marginHorizontal: 15, marginTop: 15 }}>
+          <Ionicons name="book-outline" size={18} color={isDark ? '#93C5FD' : '#1E40AF'} />
+          <Text style={{ flex: 1, fontSize: 11, fontWeight: '600', lineHeight: 16, color: isDark ? '#93C5FD' : '#1E40AF' }}>
+            Art. 48-55 CPP Niger — Les perquisitions ne peuvent être effectuées avant 6h et après 21h sauf flagrant délit. La présence de l'occupant ou de deux témoins est obligatoire.
+          </Text>
+        </View>
+
         {loading ? (
           <View style={styles.loaderBox}>
             <ActivityIndicator size="large" color={primaryColor} />
