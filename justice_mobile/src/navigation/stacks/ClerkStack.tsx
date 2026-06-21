@@ -16,11 +16,10 @@ import ClerkConfiscationScreen from '../../screens/clerk/ClerkConfiscationScreen
 import ClerkEvidenceScreen from '../../screens/clerk/ClerkEvidenceScreen';
 import ClerkReleaseScreen from '../../screens/clerk/ClerkReleaseScreen';
 import ClerkWitnessScreen from '../../screens/clerk/ClerkWitnessScreen';
-
+import LegalChatbotScreen from "../../screens/shared/LegalChatbotScreen";
 // --- ✅ NOUVEAUX ÉCRANS PARTAGÉS (Scanner & Rapport) ---
 import VerificationScannerScreen from '../../screens/shared/VerificationScannerScreen';
 import WeeklyReportScreen from '../../screens/shared/WeeklyReportScreen';
-
 // --- 🌍 Écrans PARTAGÉS (Système & Support) ---
 import ProfileScreen from '../../screens/Profile/ProfileScreen';
 import EditProfileScreen from '../../screens/Profile/EditProfileScreen';
@@ -31,9 +30,7 @@ import UserGuideScreen from '../../screens/shared/UserGuideScreen';
 import SupportScreen from '../../screens/shared/SupportScreen';
 import AboutScreen from '../../screens/shared/AboutScreen';
 import MyDownloadsScreen from '../../screens/citizen/MyDownloadsScreen';
-
 const Stack = createNativeStackNavigator<ClerkStackParamList>();
-
 export default function ClerkStack() {
   return (
     <Stack.Navigator 
@@ -48,57 +45,39 @@ export default function ClerkStack() {
       ========================================== */}
       <Stack.Screen name="ClerkHome" component={ClerkHomeScreen} />
       <Stack.Screen name="ClerkCalendar" component={ClerkCalendarScreen} />
-
-      {/* ==========================================
           ✅ OUTILS QUOTIDIENS (Nouveaux)
-      ========================================== */}
       {/* Scanner pour vérifier les actes et QR Codes */}
       <Stack.Screen name="VerificationScanner" component={VerificationScannerScreen as any} />
       {/* Rapport d'activité du Greffe (Lundi) */}
       <Stack.Screen name="WeeklyReport" component={WeeklyReportScreen as any} />
-
-      {/* ==========================================
           📂 GESTION DES DOSSIERS & ENRÔLEMENT
-      ========================================== */}
       <Stack.Screen name="ClerkComplaints" component={ClerkComplaintsScreen} />
       <Stack.Screen name="ClerkRegisterCase" component={ClerkRegisterCaseScreen} />
       <Stack.Screen name="ClerkComplaintDetails" component={ClerkComplaintDetailsScreen} />
       <Stack.Screen name="ClerkProsecution" component={ClerkProsecutionScreen} />
-
-      {/* ==========================================
           ⚖️ AUDIENCES & PROCÈS
-      ========================================== */}
       <Stack.Screen name={"ClerkHearings" as any} component={ClerkHearingsScreen} />
       <Stack.Screen name={"ClerkHearing" as any} component={ClerkHearingsScreen} /> 
       <Stack.Screen name={"ClerkHearingDetails" as any} component={ClerkHearingDetailsScreen} />
       <Stack.Screen name="ClerkAdjournHearing" component={ClerkAdjournHearingScreen} />
       <Stack.Screen name="ClerkWitness" component={ClerkWitnessScreen} />
-
-      {/* ==========================================
           📦 PIÈCES À CONVICTION & SCELLÉS
-      ========================================== */}
       <Stack.Screen name="ClerkEvidence" component={ClerkEvidenceScreen} />
       <Stack.Screen name="ClerkConfiscation" component={ClerkConfiscationScreen} />
       <Stack.Screen name="ClerkRelease" component={ClerkReleaseScreen} />
-
-      {/* ==========================================
           👤 COMPTE & SYSTÈME
-      ========================================== */}
       <Stack.Screen name="Profile" component={ProfileScreen} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
       <Stack.Screen name="Settings" component={SettingsScreen} />
       <Stack.Screen name="Notifications" component={AdminNotificationsScreen as any} />
       <Stack.Screen name="NationalMap" component={NationalMapScreen} />
-
-      {/* ==========================================
           ℹ️ AIDE & RESSOURCES
-      ========================================== */}
       <Stack.Screen name="UserGuide" component={UserGuideScreen} />
       <Stack.Screen name="HelpCenter" component={UserGuideScreen} />
       <Stack.Screen name="Support" component={SupportScreen} />
       <Stack.Screen name="About" component={AboutScreen} />
       <Stack.Screen name="MyDownloads" component={MyDownloadsScreen} />
-
+      <Stack.Screen name="LegalChatbot" component={LegalChatbotScreen} />
     </Stack.Navigator>
   );
 }

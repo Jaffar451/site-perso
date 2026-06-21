@@ -6,7 +6,7 @@ import PrisonInmatesScreen from "../../screens/prison/PrisonInmatesScreen";
 import PrisonEntryScreen from "../../screens/prison/PrisonEntryScreen";
 import PrisonReleaseScreen from "../../screens/prison/PrisonReleaseScreen";
 import PrisonTransferScreen from "../../screens/prison/PrisonTransferScreen";
-
+import LegalChatbotScreen from "../../screens/shared/LegalChatbotScreen";
 import VerificationScannerScreen from "../../screens/shared/VerificationScannerScreen";
 import WeeklyReportScreen from "../../screens/shared/WeeklyReportScreen";
 import ProfileScreen from "../../screens/Profile/ProfileScreen";
@@ -16,9 +16,7 @@ import AdminNotificationsScreen from "../../screens/admin/AdminNotificationsScre
 import UserGuideScreen from "../../screens/shared/UserGuideScreen";
 import SupportScreen from "../../screens/shared/SupportScreen";
 import AboutScreen from "../../screens/shared/AboutScreen";
-
 const Stack = createNativeStackNavigator();
-
 export default function PrisonStack() {
   return (
     <Stack.Navigator
@@ -30,7 +28,6 @@ export default function PrisonStack() {
       <Stack.Screen name="PrisonEntry" component={PrisonEntryScreen} />
       <Stack.Screen name="PrisonRelease" component={PrisonReleaseScreen} />
       <Stack.Screen name="PrisonTransfer" component={PrisonTransferScreen} />
-
       <Stack.Screen name="VerificationScanner" component={VerificationScannerScreen as any} />
       <Stack.Screen name="WeeklyReport" component={WeeklyReportScreen as any} />
       <Stack.Screen name="Profile" component={ProfileScreen} />
@@ -40,6 +37,7 @@ export default function PrisonStack() {
       <Stack.Screen name="UserGuide" component={UserGuideScreen} />
       <Stack.Screen name="Support" component={SupportScreen} />
       <Stack.Screen name="About" component={AboutScreen} />
+      <Stack.Screen name="LegalChatbot" component={LegalChatbotScreen} />
     </Stack.Navigator>
   );
 }
