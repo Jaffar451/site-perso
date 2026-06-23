@@ -9,6 +9,7 @@ import AdminUsersScreen from '../../screens/admin/AdminUsersScreen';
 import AdminStatsScreen from '../../screens/admin/AdminStatsScreen';
 import AdminNotificationsScreen from '../../screens/admin/AdminNotificationsScreen';
 import LegalChatbotScreen from "../../screens/shared/LegalChatbotScreen";
+import PrivacyPolicyScreen from "../../screens/shared/PrivacyPolicyScreen";
 // --- ✅ NOUVEAUX ÉCRANS PARTAGÉS (Scanner & Rapport) ---
 import VerificationScannerScreen from '../../screens/shared/VerificationScannerScreen';
 import WeeklyReportScreen from '../../screens/shared/WeeklyReportScreen';
@@ -71,6 +72,7 @@ export const StationStack = () => (
     <Stack.Screen name="About" component={AboutScreen} />
     <Stack.Screen name="MyDownloads" component={MyDownloadsScreen} />
       <Stack.Screen name="LegalChatbot" component={LegalChatbotScreen} />
+      <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
   </Stack.Navigator>
 );
 export default StationStack;

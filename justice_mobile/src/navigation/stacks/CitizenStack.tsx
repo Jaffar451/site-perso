@@ -15,6 +15,7 @@ import CitizenDirectoryScreen from '../../screens/citizen/CitizenDirectoryScreen
 import StationMapScreen from '../../screens/citizen/StationMapScreen';
 import MyDownloadsScreen from '../../screens/citizen/MyDownloadsScreen';
 import LegalChatbotScreen from "../../screens/shared/LegalChatbotScreen";
+import PrivacyPolicyScreen from "../../screens/shared/PrivacyPolicyScreen";
 // --- ✅ NOUVEAUX MODULES (Guide & Scanner) ---
 import CitizenLegalGuideScreen from '../../screens/citizen/CitizenLegalGuideScreen'; // 📖 Guide Juridique
 import VerificationScannerScreen from '../../screens/shared/VerificationScannerScreen'; // 🔍 Scanner (Chemin corrigé)
@@ -70,6 +71,7 @@ export default function CitizenStack() {
       <Stack.Screen name="Support" component={SupportScreen} />
       <Stack.Screen name="About" component={AboutScreen} />
       <Stack.Screen name="LegalChatbot" component={LegalChatbotScreen} />
+      <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
     </Stack.Navigator>
   );
 }

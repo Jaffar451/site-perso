@@ -18,6 +18,7 @@ import PoliceDetentionScreen from '../../screens/police/PoliceDetentionScreen';
 import WarrantSearchScreen from '../../screens/police/WarrantSearchScreen';
 import SosDetailScreen from '../../screens/police/SosDetailScreen';
 import LegalChatbotScreen from "../../screens/shared/LegalChatbotScreen";
+import PrivacyPolicyScreen from "../../screens/shared/PrivacyPolicyScreen";
 // --- ✅ NOUVEAUX ÉCRANS PARTAGÉS (Scanner & Rapport) ---
 import VerificationScannerScreen from '../../screens/shared/VerificationScannerScreen';
 import WeeklyReportScreen from '../../screens/shared/WeeklyReportScreen';
@@ -84,6 +85,7 @@ export default function PoliceStack() {
       <Stack.Screen name="About" component={AboutScreen} />
       <Stack.Screen name="MyDownloads" component={MyDownloadsScreen} />
       <Stack.Screen name="LegalChatbot" component={LegalChatbotScreen} />
+      <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
     </Stack.Navigator>
   );
 }

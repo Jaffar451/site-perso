@@ -6,6 +6,7 @@ import { CommissaireStackParamList } from '../../types/navigation';
 import CommissaireDashboard from '../../screens/commissaire/CommissaireDashboard';
 import CommissaireReviewScreen from '../../screens/commissaire/CommissaireReviewScreen';
 import LegalChatbotScreen from "../../screens/shared/LegalChatbotScreen";
+import PrivacyPolicyScreen from "../../screens/shared/PrivacyPolicyScreen";
 import CommissaireActionDetail from '../../screens/commissaire/CommissaireActionDetail';
 import CommissaireVisaList from '../../screens/commissaire/CommissaireVisaList';
 import CommissaireGAVSupervisionScreen from '../../screens/commissaire/CommissaireGAVSupervisionScreen';
@@ -66,6 +67,7 @@ export default function CommissaireStack() {
       <Stack.Screen name="About" component={AboutScreen} />
       <Stack.Screen name="MyDownloads" component={MyDownloadsScreen} />
       <Stack.Screen name="LegalChatbot" component={LegalChatbotScreen} />
+      <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
     </Stack.Navigator>
   );
 }

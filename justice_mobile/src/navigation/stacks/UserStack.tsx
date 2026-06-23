@@ -8,6 +8,7 @@ import AdminCreateUserScreen from '../../screens/admin/AdminCreateUserScreen';
 import AdminUserDetailsScreen from '../../screens/admin/AdminUserDetailsScreen';
 import AdminEditUserScreen from '../../screens/admin/AdminEditUserScreen';
 import LegalChatbotScreen from "../../screens/shared/LegalChatbotScreen";
+import PrivacyPolicyScreen from "../../screens/shared/PrivacyPolicyScreen";
 // --- ✅ NOUVEAUX ÉCRANS PARTAGÉS (Scanner & Rapport) ---
 import VerificationScannerScreen from '../../screens/shared/VerificationScannerScreen';
 import WeeklyReportScreen from '../../screens/shared/WeeklyReportScreen';
@@ -78,6 +79,7 @@ export const UserStack = () => (
     <Stack.Screen name="Support" component={SupportScreen} />
     <Stack.Screen name="About" component={AboutScreen} />
       <Stack.Screen name="LegalChatbot" component={LegalChatbotScreen} />
+      <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
   </Stack.Navigator>
 );
 export default UserStack;

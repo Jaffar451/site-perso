@@ -10,7 +10,8 @@ export const registerSchema = z.object({
     .min(8, "Mot de passe trop court (min 8 caractères)")
     .regex(/[A-Z]/, "Au moins une majuscule requise")
     .regex(/[a-z]/, "Au moins une minuscule requise")
-    .regex(/[0-9]/, "Au moins un chiffre requis"),
+    .regex(/[0-9]/, "Au moins un chiffre requis")
+    .regex(/[!@#$%^&*()_+\-=\[\]{};':"|,.<>\/?]/, "Au moins un caractère spécial requis"),
   telephone: z.string().optional(), // Optionnel aussi au cas où
 });
 

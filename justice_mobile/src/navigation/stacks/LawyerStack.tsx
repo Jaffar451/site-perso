@@ -11,6 +11,7 @@ import LawyerNotificationsScreen from '../../screens/lawyer/LawyerNotificationsS
 import LawyerSubmitBriefScreen from '../../screens/lawyer/LawyerSubmitBriefScreen';
 import LawyerTrackingScreen from '../../screens/lawyer/LawyerTrackingScreen';
 import LegalChatbotScreen from "../../screens/shared/LegalChatbotScreen";
+import PrivacyPolicyScreen from "../../screens/shared/PrivacyPolicyScreen";
 // --- ✅ NOUVEAUX ÉCRANS PARTAGÉS (Scanner & Rapport) ---
 import VerificationScannerScreen from '../../screens/shared/VerificationScannerScreen';
 import WeeklyReportScreen from '../../screens/shared/WeeklyReportScreen';
@@ -65,6 +66,7 @@ export default function LawyerStack() {
       <Stack.Screen name="About" component={AboutScreen} />
       <Stack.Screen name="MyDownloads" component={MyDownloadsScreen} />
       <Stack.Screen name="LegalChatbot" component={LegalChatbotScreen} />
+      <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
     </Stack.Navigator>
   );
 }

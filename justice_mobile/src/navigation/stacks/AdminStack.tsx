@@ -11,6 +11,7 @@ import AdminUserDetailsScreen from '../../screens/admin/AdminUserDetailsScreen';
 import AdminCreateUserScreen from '../../screens/admin/AdminCreateUserScreen';
 import AdminEditUserScreen from '../../screens/admin/AdminEditUserScreen';
 import LegalChatbotScreen from "../../screens/shared/LegalChatbotScreen";
+import PrivacyPolicyScreen from "../../screens/shared/PrivacyPolicyScreen";
 // 2. Admin Structures
 import AdminCourtsScreen from '../../screens/admin/AdminCourtsScreen';
 import AdminCreateCourtScreen from '../../screens/admin/AdminCreateCourtScreen';
@@ -82,6 +83,7 @@ export default function AdminStack() {
       <Stack.Screen name="AdminNotifications" component={AdminNotificationsScreen} />
       <Stack.Screen name="Notifications" component={AdminNotificationsScreen} />
       <Stack.Screen name="LegalChatbot" component={LegalChatbotScreen} />
+      <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
     </Stack.Navigator>
   );
 }

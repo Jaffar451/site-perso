@@ -36,7 +36,8 @@ export default function RegisterScreen() {
     email: "",
     telephone: "", 
     password: "",
-    confirmPassword: "", 
+    confirmPassword: "",
+    consent: false,
   });
   
   const [showPassword, setShowPassword] = useState(false);
@@ -84,6 +85,11 @@ export default function RegisterScreen() {
 
   const handleRegister = async () => {
     // 1. Validation de remplissage
+    if (!form.consent) {
+        const msg = "Vous devez accepter la politique de confidentialité pour vous inscrire.";
+        Platform.OS === 'web' ? window.alert(msg) : Alert.alert("Consentement requis", msg);
+        return;
+    }
     if (!form.firstname.trim() || !form.lastname.trim() || !form.email.trim() || !form.password || !form.confirmPassword) {
         const msg = "Veuillez remplir tous les champs obligatoires.";
         Platform.OS === 'web' ? window.alert(msg) : Alert.alert("Champs requis", msg);
@@ -227,6 +233,23 @@ export default function RegisterScreen() {
                    right={<TextInput.Icon icon={showConfirmPassword ? "eye-off" : "eye"} onPress={() => setShowConfirmPassword(!showConfirmPassword)} color="#64748B" />}
                    theme={{ roundness: 14 }}
                 />
+
+                <TouchableOpacity
+                  style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16, gap: 10 }}
+                  onPress={() => setForm(f => ({ ...f, consent: !f.consent }))}
+                  activeOpacity={0.7}
+                >
+                  <View style={{ width: 24, height: 24, borderRadius: 6, borderWidth: 2, borderColor: form.consent ? theme.colors.primary : '#94A3B8', backgroundColor: form.consent ? theme.colors.primary : 'transparent', justifyContent: 'center', alignItems: 'center' }}>
+                    {form.consent && <Ionicons name="checkmark" size={16} color="#FFF" />}
+                  </View>
+                  <Text style={{ flex: 1, fontSize: 12, color: (theme.colors as any).textSecondary || '#64748B', lineHeight: 18 }}>
+                    J'accepte la{' '}
+                    <Text style={{ color: theme.colors.primary, fontWeight: '700', textDecorationLine: 'underline' }} onPress={() => (navigation as any).navigate?.('PrivacyPolicy')}>
+                      politique de confidentialité
+                    </Text>
+                    {' '}et les conditions d'utilisation (Loi n°2017-28 Niger)
+                  </Text>
+                </TouchableOpacity>
 
                 <Button
                    mode="contained"

@@ -7,6 +7,7 @@ import BailiffHomeScreen from '../../screens/bailiff/BailiffHomeScreen';
 import BailiffMissionsScreen from '../../screens/bailiff/BailiffMissionsScreen';
 import BailiffCalendarScreen from '../../screens/bailiff/BailiffCalendarScreen';
 import LegalChatbotScreen from "../../screens/shared/LegalChatbotScreen";
+import PrivacyPolicyScreen from "../../screens/shared/PrivacyPolicyScreen";
 // --- ✅ NOUVEAUX ÉCRANS PARTAGÉS (Scanner & Rapport) ---
 import VerificationScannerScreen from '../../screens/shared/VerificationScannerScreen';
 import WeeklyReportScreen from '../../screens/shared/WeeklyReportScreen';
@@ -56,6 +57,7 @@ export default function BailiffStack() {
       <Stack.Screen name="About" component={AboutScreen} />
       <Stack.Screen name="MyDownloads" component={MyDownloadsScreen} />
       <Stack.Screen name="LegalChatbot" component={LegalChatbotScreen} />
+      <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
     </Stack.Navigator>
   );
 }

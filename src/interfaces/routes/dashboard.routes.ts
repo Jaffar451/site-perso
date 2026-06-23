@@ -5,10 +5,10 @@ import {
   getPoliceStats,
   getWeeklyReportStats,
 } from "../controllers/dashboard.controller";
-import { authenticate } from "../middleware/auth.middleware";
+import { authenticate, authorize } from "../middleware/auth.middleware";
 
 const router = Router();
-router.use(authenticate);
+router.use(authenticate, authorize(["admin", "commissaire", "prosecutor", "judge"]));
 
 /**
  * @route   GET /api/dashboard/prisons

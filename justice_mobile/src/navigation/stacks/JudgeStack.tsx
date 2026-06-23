@@ -20,6 +20,7 @@ import JudgeSentenceScreen from '../../screens/judge/JudgeSentenceScreen';
 import JudgeProsecutionScreen from '../../screens/judge/JudgeProsecutionScreen';
 import JudgeReleaseScreen from '../../screens/judge/JudgeReleaseScreen';
 import LegalChatbotScreen from "../../screens/shared/LegalChatbotScreen";
+import PrivacyPolicyScreen from "../../screens/shared/PrivacyPolicyScreen";
 // --- ✅ NOUVEAUX ÉCRANS PARTAGÉS (Scanner & Rapport) ---
 import VerificationScannerScreen from '../../screens/shared/VerificationScannerScreen';
 import WeeklyReportScreen from '../../screens/shared/WeeklyReportScreen';
@@ -92,6 +93,7 @@ export default function JudgeStack() {
       <Stack.Screen name="About" component={AboutScreen} />
       <Stack.Screen name="MyDownloads" component={MyDownloadsScreen} />
       <Stack.Screen name="LegalChatbot" component={LegalChatbotScreen} />
+      <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
     </Stack.Navigator>
   );
 }
