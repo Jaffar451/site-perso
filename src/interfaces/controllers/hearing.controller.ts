@@ -3,10 +3,12 @@ import { Op } from "sequelize";
 import Hearing from "../../models/hearing.model";
 
 // 1. Lister toutes les audiences
-export const listHearings = async (_req: Request, res: Response) => {
+export const listHearings = async (req: Request, res: Response) => {
   try {
-    const hearings = await Hearing.findAll({ order: [["createdAt", "DESC"]] });
-    return res.status(200).json({ success: true, data: hearings });
+    const { getPagination, formatPaginatedResponse } = require("../../utils/pagination");
+    const { page, limit, offset } = getPagination(req);
+    const { count, rows: hearings } = await Hearing.findAndCountAll({ order: [["createdAt", "DESC"]], limit, offset });
+    return res.json(formatPaginatedResponse(hearings, count, page, limit));
   } catch (error: any) {
     console.error("Erreur listHearings:", error);
     return res.status(500).json({ success: false, message: error.message });

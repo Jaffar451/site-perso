@@ -131,22 +131,23 @@ export const listComplaints = async (req: Request, res: Response) => {
       where.status = { [Op.in]: ["saisi_juge", "instruction", "audience_programmée", "jugée", "non_lieu"] };
     }
 
-    const complaints = await Complaint.findAll({
+    const { getPagination, formatPaginatedResponse } = require("../../utils/pagination");
+    const { page, limit, offset } = getPagination(req);
+
+    const { count, rows } = await Complaint.findAndCountAll({
       where,
+      attributes: ["id", "title", "status", "category", "location", "trackingCode", "filedAt", "createdAt", "policeStationId", "citizenId", "assignedOpjId"],
       include: [
         { model: User, as: "complainant", attributes: ["id", "firstname", "lastname", "telephone"] },
-        {
-          model: User, as: "assignedOPJ",
-          // ✅ matricule et organization inclus
-          attributes: ["id", "firstname", "lastname", "matricule", "organization"],
-        },
-        { model: PoliceStation, as: "originStation" },
-        { model: Attachment, as: "attachments" },
+        { model: User, as: "assignedOPJ", attributes: ["id", "firstname", "lastname", "matricule"] },
+        { model: PoliceStation, as: "originStation", attributes: ["id", "name", "city", "district"] },
       ],
       order: [["createdAt", "DESC"]],
+      limit,
+      offset,
     });
 
-    return res.json({ success: true, data: complaints });
+    return res.json(formatPaginatedResponse(rows, count, page, limit));
   } catch (error) {
     console.error("Error in listComplaints:", error);
     return res.status(500).json({ success: false, message: "Erreur serveur" });

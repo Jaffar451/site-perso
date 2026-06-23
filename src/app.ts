@@ -8,6 +8,7 @@ import fs from "fs";
 import rateLimit from "express-rate-limit";
 
 import cookieParser from "cookie-parser";
+import compression from "compression";
 import { env } from "./config/env";
 import routes from "./interfaces/routes/index";
 
@@ -76,6 +77,7 @@ app.use("/api/auth/forgot-password", authLimiter);
 // ==========================================
 // ⚙️ MIDDLEWARES DE PARSING & LOGS
 // ==========================================
+app.use(compression());
 app.use(cookieParser());
 app.use(express.json({ limit: "5mb" }));
 app.use(express.urlencoded({ extended: true, limit: "5mb" }));
